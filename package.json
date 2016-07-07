@@ -1,0 +1,38 @@
+{
+  "name": "tvdml",
+  "version": "1.0.0",
+  "description": "Small library for creating declarative apps for tvOS with TVML and TVJS",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/a-ignatov-parc/tvdml.git"
+  },
+  "author": "Anton Ignatov <abietis@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/a-ignatov-parc/tvdml/issues"
+  },
+  "homepage": "https://github.com/a-ignatov-parc/tvdml#readme",
+  "devDependencies": {
+    "babel-core": "^6.10.4",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.11.1",
+    "babelify": "^7.3.0",
+    "browserify": "^13.0.1",
+    "browserify-incremental": "^3.1.1",
+    "gulp": "^3.9.1",
+    "gulp-rm": "^1.0.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.4",
+    "gulp-util": "^3.0.7",
+    "gulp-watch": "^4.3.8",
+    "pretty-bytes": "^3.0.1",
+    "through2": "^2.0.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "xtend": "^4.0.1"
+  }
+}

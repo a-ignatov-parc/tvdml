@@ -1,0 +1,9 @@
+# General files
+*~
+.DS_Store
+
+# Build files
+npm-debug.log
+node_modules/
+releases/
+out/
