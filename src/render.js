@@ -30,24 +30,52 @@ export default function(template) {
 function uvdomToDocument(uvdom, document = createEmptyDocument()) {
 	[]
 		.concat(uvdom || [])
-		.forEach(({tag, attrs = {}, events = {}, children}) => {
-			const element = document.ownerDocument.createElement(tag);
+		.forEach((node) => {
+			let element;
 
-			Object
-				.keys(attrs)
-				.forEach(name => {
-					element.setAttribute(name, attrs[name])
-				});
+			if (node == null) return;
 
-			Object
-				.keys(events)
-				.forEach(name => {
-					let eventName = eventMapper[name] || name;
-					element.addEventListener(eventName, events[name]);
-				});
+			if (typeof(node) === 'string') {
+				element = document.ownerDocument.createTextNode(node);
+			} else {
+				const {
+					tag,
+					attrs = {},
+					events = {},
+				} = node;
 
-			uvdomToDocument(children, element);
-			document.appendChild(element);
+				element = document.ownerDocument.createElement(tag);
+
+				const children = []
+					.concat(node.children || [])
+					.reduce((collection, child) => collection.concat(child), [])
+					.map((child) => {
+						if (typeof(child) === 'number') {
+							return child.toString();
+						}
+						return child;
+					})
+					.filter((child) => {
+						return typeof(child) === 'string' || (child && child.tag);
+					});
+
+				Object
+					.keys(attrs)
+					.forEach(name => {
+						element.setAttribute(name, attrs[name])
+					});
+
+				Object
+					.keys(events)
+					.forEach(name => {
+						let eventName = eventMapper[name] || name;
+						element.addEventListener(eventName, events[name]);
+					});
+
+				uvdomToDocument(children, element);
+			}
+
+			element != null && document.appendChild(element);
 		});
 
 	return document;
@@ -58,5 +86,13 @@ function stringToDocument(string) {
 }
 
 function createEmptyDocument() {
-	return DOMImplementationRegistry.getDOMImplementation().createDocument();
+	const document = DOMImplementationRegistry
+		.getDOMImplementation()
+		.createDocument();
+
+	for (let i = 0, length = document.childNodes.length; i < length; i++) {
+		document.removeChild(document.childNodes.item(i));
+	}
+
+	return document;
 }

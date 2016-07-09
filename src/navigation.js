@@ -44,8 +44,6 @@ export function handleRoute(routeName) {
 		throw new Error(`Handler for "${routeName}" is already specified`);
 	}
 
-	console.log('Registered route handler for', routeName);
-
 	return routes[routeName] = createPassThroughPipeline();
 }
 
@@ -94,12 +92,10 @@ Object
 	.forEach(name => {
 		let symbol = routeMapping[name];
 
-		console.log('Registered app lifecycle handler for', name);
-
 		App[name] = navigation => {
 			let targetRoute = routes[symbol];
 
-			console.log('Fired handler for app lifecycle', name, navigation);
+			console.info('Fired handler for app lifecycle', name, navigation);
 
 			if (name === 'onLaunch') {
 				launched = true;
