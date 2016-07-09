@@ -1,4 +1,4 @@
-export default function jsxToUVDOM(tag, attrs, ...children) {
+export default function createElement(tag, attrs, ...children) {
 	const node = {tag};
 
 	if (attrs) {

@@ -3,6 +3,10 @@ import {createPipeline} from './pipeline';
 
 const parser = new DOMParser();
 
+const eventMapper = {
+	'onSelect': 'select',
+};
+
 export default function(template) {
 	return createPipeline().pipe(payload => {
 		let document;
@@ -23,10 +27,28 @@ export default function(template) {
 	});
 }
 
-function uvdomToDocument(uvdom) {
-	const document = createEmptyDocument();
+function uvdomToDocument(uvdom, document = createEmptyDocument()) {
+	[]
+		.concat(uvdom || [])
+		.forEach(({tag, attrs = {}, events = {}, children}) => {
+			const element = document.ownerDocument.createElement(tag);
 
-	console.log('uvdomToDocument', uvdom);
+			Object
+				.keys(attrs)
+				.forEach(name => {
+					element.setAttribute(name, attrs[name])
+				});
+
+			Object
+				.keys(events)
+				.forEach(name => {
+					let eventName = eventMapper[name] || name;
+					element.addEventListener(eventName, events[name]);
+				});
+
+			uvdomToDocument(children, element);
+			document.appendChild(element);
+		});
 
 	return document;
 }
@@ -38,12 +60,3 @@ function stringToDocument(string) {
 function createEmptyDocument() {
 	return DOMImplementationRegistry.getDOMImplementation().createDocument();
 }
-
-
-// const document = DOMImplementationRegistry
-// 	.getDOMImplementation()
-// 	.createDocument();
-
-// const element = document.createElement('alertTemplate');
-
-// document.appendChild(element);
