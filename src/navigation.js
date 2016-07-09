@@ -55,14 +55,17 @@ export function navigate(routeName, params) {
 	let targetRoute = routes[routeName];
 
 	if (targetRoute) {
-		return targetRoute.sink({navigation: params});
+		return targetRoute.sink({
+			route: routeName,
+			navigation: params,
+		});
 	}
 
 	if (routeName !== route.NOT_FOUND) {
 		return navigate(route.NOT_FOUND, params);
 	}
 
-	throw new Error(`Unable to resolve route "${nameMapping[routeName] || routeName}"`);
+	console.error(`Unable to resolve route "${nameMapping[routeName] || routeName}"`);
 }
 
 export function pushDocument(payload) {
@@ -83,7 +86,7 @@ export function replaceDocument(payload) {
 		throw new Error('Unable to replace undefined document');
 	}
 
-	navigationDocument.replaceDocument(document);
+	navigationDocument.replaceDocument(document, getActiveDocument());
 	return payload;
 }
 
@@ -92,14 +95,12 @@ Object
 	.forEach(name => {
 		let symbol = routeMapping[name];
 
-		App[name] = navigation => {
-			let targetRoute = routes[symbol];
-
-			console.info('Fired handler for app lifecycle', name, navigation);
+		App[name] = options => {
+			console.info('Fired handler for app lifecycle', name, options);
 
 			if (name === 'onLaunch') {
 				launched = true;
 			}
-			targetRoute && targetRoute.sink({navigation});
+			navigate(symbol);
 		}
 	});

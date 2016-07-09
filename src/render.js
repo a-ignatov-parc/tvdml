@@ -38,6 +38,10 @@ function uvdomToDocument(uvdom, document = createEmptyDocument()) {
 			if (typeof(node) === 'string') {
 				element = document.ownerDocument.createTextNode(node);
 			} else {
+				if (typeof(node.tag) === 'function') {
+					node = node.tag(node);
+				}
+
 				const {
 					tag,
 					attrs = {},
