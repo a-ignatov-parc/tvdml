@@ -1,4 +1,5 @@
 import assign from 'object-assign';
+import {Promise} from 'es6-promise';
 
 export function createPipeline(chain = [], passthrough) {
 	const pipeline = (...args) => (payload) => {
@@ -9,6 +10,10 @@ export function createPipeline(chain = [], passthrough) {
 
 	return assign(pipeline, {
 		pipe(handler) {
+			if (typeof(handler.pipe) === 'function') {
+				handler = handler();
+			}
+
 			if (passthrough) {
 				chain.push(handler);
 				return this;
