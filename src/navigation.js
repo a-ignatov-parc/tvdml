@@ -2,12 +2,15 @@
 
 import {createPassThroughPipeline} from './pipeline';
 import Blank from './components/blank';
+import {Promise} from 'es6-promise';
 import {render} from './render';
 import jsx from './jsx';
 
 let launched = false;
 
 const routes = {};
+
+const DOCUMENT_ANIMATION_TIMING = 500;
 
 export const route = {
 	EXIT: Symbol('onExit'),
@@ -60,7 +63,8 @@ export function handleRoute(routeName) {
 			return payload;
 		}
 	})
-	.pipe(render(<Blank />));
+	.pipe(render(<Blank />))
+	.pipe((payload) => new Promise(resolve => setTimeout(() => resolve(payload), DOCUMENT_ANIMATION_TIMING)));
 }
 
 export function navigate(routeName, params) {

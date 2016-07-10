@@ -33,7 +33,7 @@ export function renderModal(template) {
 			if (!hasModal) return payload;
 
 			removeModal();
-			return new Promise(resolve => setTimeout(() => resolve(payload), 1000));
+			return new Promise(resolve => setTimeout(() => resolve(payload), 500));
 		})
 		.pipe(payload => {
 			let document = createDocument(template, payload);
