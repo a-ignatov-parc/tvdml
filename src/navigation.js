@@ -93,6 +93,7 @@ Object
 			console.info('Fired handler for app lifecycle', name, options);
 
 			if (name === 'onLaunch') {
+				sessionStorage.setItem('startParams', JSON.stringify(options));
 				launched = true;
 			}
 			navigate(symbol);

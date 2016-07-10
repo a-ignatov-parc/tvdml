@@ -1,4 +1,5 @@
 import assign from 'object-assign';
+import {Promise} from 'es6-promise';
 import {createPipeline} from './pipeline';
 
 const parser = new DOMParser();
@@ -7,8 +8,11 @@ const eventMapper = {
 	'onSelect': 'select',
 };
 
+const RENDERING_TIMEOUT = 500;
+
 export default function(template) {
 	return createPipeline().pipe(payload => {
+		let defer = false;
 		let document;
 
 		if (typeof(template) === 'function') {
@@ -25,13 +29,28 @@ export default function(template) {
 
 		document.route = payload.route;
 
+		let historyLength = navigationDocument.documents.length;
+
 		if (payload.document) {
 			navigationDocument.replaceDocument(document, payload.document);
 		} else {
 			navigationDocument.pushDocument(document);
+
+			if (historyLength === navigationDocument.documents.length) {
+				defer = true;
+			}
 		}
 
-		return assign({}, payload, {document});
+		const result = assign({}, payload, {document});
+
+		if (defer) return deferResult(result);
+		return result;
+	});
+}
+
+function deferResult(result) {
+	return new Promise((resolve) => {
+		setTimeout(() => resolve(result), RENDERING_TIMEOUT)
 	});
 }
 
