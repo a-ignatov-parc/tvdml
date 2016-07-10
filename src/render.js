@@ -1,11 +1,12 @@
 import assign from 'object-assign';
 import {Promise} from 'es6-promise';
-import {
-	passthrough,
-	createPipeline,
-} from './pipeline';
+import {promisedTimeout} from './utils';
+import {passthrough, createPipeline} from './pipeline';
 
 let hasModal = false;
+let documentSwitching = Promise.resolve();
+
+const RENDERING_ANIMATION = 500;
 
 const parser = new DOMParser();
 
@@ -34,17 +35,17 @@ export function render(template) {
 			}
 
 			return {document};
-		}));
+		}))
+		.pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
 }
 
 export function renderModal(template) {
 	return createPipeline()
-		.pipe(payload => {
-			if (!hasModal) return payload;
-
+		.pipe(passthrough(() => {
+			if (!hasModal) return;
 			removeModal();
-			return new Promise(resolve => setTimeout(() => resolve(payload), 500));
-		})
+			return promisedTimeout(RENDERING_ANIMATION);
+		}))
 		.pipe(parseDocument(template))
 		.pipe(passthrough(({parsedDocument: document, route}) => {
 			hasModal = true;

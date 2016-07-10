@@ -10,8 +10,6 @@ let launched = false;
 
 const routes = {};
 
-const DOCUMENT_ANIMATION_TIMING = 500;
-
 export const route = {
 	EXIT: Symbol('onExit'),
 	ERROR: Symbol('onError'),
@@ -63,8 +61,7 @@ export function handleRoute(routeName) {
 			return payload;
 		}
 	})
-	.pipe(render(<Blank />))
-	.pipe((payload) => new Promise(resolve => setTimeout(() => resolve(payload), DOCUMENT_ANIMATION_TIMING)));
+	.pipe(render(<Blank />));
 }
 
 export function navigate(routeName, params) {
