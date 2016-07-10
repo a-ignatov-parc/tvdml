@@ -1,5 +1,6 @@
 import assign from 'object-assign';
 import {Promise} from 'es6-promise';
+import {noop} from './utils';
 
 export function createPipeline(options = {}) {
 	const {
@@ -39,6 +40,17 @@ export function createPipeline(options = {}) {
 
 export function createPassThroughPipeline(options) {
 	return createPipeline.call({passthrough: true}, options);
+}
+
+export function passthrough(handler = noop()) {
+	return payload => {
+		return Promise
+			.resolve(handler(payload))
+			.then(extra => {
+				if (extra == null || typeof(extra) !== 'object') return payload;
+				return assign({}, payload, extra);
+			});
+	};
 }
 
 function onSinkStep(step, payload) {

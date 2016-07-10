@@ -1,6 +1,9 @@
 import assign from 'object-assign';
 import {Promise} from 'es6-promise';
-import {createPipeline} from './pipeline';
+import {
+	passthrough,
+	createPipeline,
+} from './pipeline';
 
 let hasModal = false;
 
@@ -11,20 +14,27 @@ const eventMapper = {
 };
 
 export function render(template) {
-	return createPipeline().pipe(payload => {
-		let document = createDocument(template, payload);
-		document.route = payload.route;
+	return createPipeline()
+		.pipe(parseDocument(template))
+		.pipe(passthrough(payload => {
+			let {
+				route,
+				parsedDocument: document,
+				document: renderedDocument,
+			} = payload;
 
-		if (hasModal) removeModal();
+			document.route = route;
 
-		if (payload.document) {
-			navigationDocument.replaceDocument(document, payload.document);
-		} else {
-			navigationDocument.pushDocument(document);
-		}
+			if (hasModal) removeModal();
 
-		return assign({}, payload, {document});
-	});
+			if (renderedDocument) {
+				navigationDocument.replaceDocument(document, renderedDocument);
+			} else {
+				navigationDocument.pushDocument(document);
+			}
+
+			return {document};
+		}));
 }
 
 export function renderModal(template) {
@@ -35,13 +45,18 @@ export function renderModal(template) {
 			removeModal();
 			return new Promise(resolve => setTimeout(() => resolve(payload), 500));
 		})
-		.pipe(payload => {
-			let document = createDocument(template, payload);
-			document.route = payload.route;
-			navigationDocument.presentModal(document);
+		.pipe(parseDocument(template))
+		.pipe(passthrough(({parsedDocument: document, route}) => {
 			hasModal = true;
-			return payload;
-		});
+			document.route = route;
+			navigationDocument.presentModal(document);
+		}));
+}
+
+export function parseDocument(template) {
+	return createPipeline().pipe(payload => assign({}, payload, {
+		parsedDocument: createDocument(template, payload)
+	}));
 }
 
 function removeModal() {
