@@ -1,11 +1,20 @@
 import assign from 'object-assign';
 import {Promise} from 'es6-promise';
 
-export function createPipeline(chain = [], passthrough) {
+export function createPipeline(options = {}) {
+	const {
+		chain = [],
+		passthrough,
+	} = this || {};
+
 	const pipeline = (...args) => (payload) => {
-		return chain.reduce((target, handler) => {
-			return target.then(handler);
-		}, Promise.resolve(assign({}, payload, {args})));
+		return chain
+			.reduce((target, handler, i) => {
+				return target
+					.then((options.onSinkStep || onSinkStep).bind(null, i))
+					.then(handler);
+			}, Promise.resolve(assign({}, payload, {args})))
+			.catch(error => console.error(error));
 	};
 
 	return assign(pipeline, {
@@ -18,7 +27,8 @@ export function createPipeline(chain = [], passthrough) {
 				chain.push(handler);
 				return this;
 			}
-			return createPipeline(chain.concat(handler));
+
+			return createPipeline.call({chain: chain.concat(handler)}, options);
 		},
 
 		sink(payload) {
@@ -27,6 +37,10 @@ export function createPipeline(chain = [], passthrough) {
 	});
 }
 
-export function createPassThroughPipeline(chain = []) {
-	return createPipeline(chain, true);
+export function createPassThroughPipeline(options) {
+	return createPipeline.call({passthrough: true}, options);
+}
+
+function onSinkStep(step, payload) {
+	return payload;
 }

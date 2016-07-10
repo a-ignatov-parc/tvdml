@@ -1,4 +1,9 @@
+/** @jsx jsx */
+
 import {createPassThroughPipeline} from './pipeline';
+import Blank from './components/blank';
+import render from './render';
+import jsx from './jsx';
 
 let launched = false;
 
@@ -44,7 +49,18 @@ export function handleRoute(routeName) {
 		throw new Error(`Handler for "${routeName}" is already specified`);
 	}
 
-	return routes[routeName] = createPassThroughPipeline();
+	return routes[routeName] = createPassThroughPipeline({
+		onSinkStep(step, payload) {
+			let current = getActiveDocument();
+
+			if (step && current.route !== routeName) {
+				throw `Processing route "${nameMapping[routeName] || routeName}" isn't active. Terminating pipeline...`;
+			}
+
+			return payload;
+		}
+	})
+	.pipe(render(<Blank />));
 }
 
 export function navigate(routeName, params) {
@@ -66,28 +82,6 @@ export function navigate(routeName, params) {
 	}
 
 	console.error(`Unable to resolve route "${nameMapping[routeName] || routeName}"`);
-}
-
-export function pushDocument(payload) {
-	let {document} = payload;
-
-	if (!document) {
-		throw new Error('Unable to push undefined document');
-	}
-
-	navigationDocument.pushDocument(document);
-	return payload;
-}
-
-export function replaceDocument(payload) {
-	let {document} = payload;
-
-	if (!document) {
-		throw new Error('Unable to replace undefined document');
-	}
-
-	navigationDocument.replaceDocument(document, getActiveDocument());
-	return payload;
 }
 
 Object

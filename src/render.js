@@ -23,6 +23,14 @@ export default function(template) {
 			document = uvdomToDocument(template);
 		}
 
+		document.route = payload.route;
+
+		if (payload.document) {
+			navigationDocument.replaceDocument(document, payload.document);
+		} else {
+			navigationDocument.pushDocument(document);
+		}
+
 		return assign({}, payload, {document});
 	});
 }
