@@ -2,7 +2,7 @@
 
 import {createPassThroughPipeline} from './pipeline';
 import Blank from './components/blank';
-import render from './render';
+import {render} from './render';
 import jsx from './jsx';
 
 let launched = false;

@@ -1,5 +1,4 @@
 import assign from 'object-assign';
-import {Promise} from 'es6-promise';
 import {createPipeline} from './pipeline';
 
 const parser = new DOMParser();
@@ -8,50 +7,48 @@ const eventMapper = {
 	'onSelect': 'select',
 };
 
-const RENDERING_TIMEOUT = 500;
-
-export default function(template) {
+export function render(template) {
 	return createPipeline().pipe(payload => {
-		let defer = false;
-		let document;
-
-		if (typeof(template) === 'function') {
-			template = template(payload);
-		}
-
-		if (template == null) {
-			document = createEmptyDocument();
-		} else if (typeof(template) === 'string') {
-			document = stringToDocument(template);
-		} else if (typeof(template) === 'object') {
-			document = uvdomToDocument(template);
-		}
+		let document = createDocument(template, payload);
 
 		document.route = payload.route;
-
-		let historyLength = navigationDocument.documents.length;
 
 		if (payload.document) {
 			navigationDocument.replaceDocument(document, payload.document);
 		} else {
 			navigationDocument.pushDocument(document);
-
-			if (historyLength === navigationDocument.documents.length) {
-				defer = true;
-			}
 		}
 
-		const result = assign({}, payload, {document});
-
-		if (defer) return deferResult(result);
-		return result;
+		return assign({}, payload, {document});
 	});
 }
 
-function deferResult(result) {
-	return new Promise((resolve) => {
-		setTimeout(() => resolve(result), RENDERING_TIMEOUT)
+export function renderModal(template) {
+	return createPipeline().pipe(payload => {
+		let document = createDocument(template, payload);
+		navigationDocument.presentModal(document);
+		return payload;
 	});
+}
+
+function createDocument(template, payload) {
+	if (typeof(template) === 'function') {
+		template = template(payload);
+	}
+
+	if (template == null) {
+		return createEmptyDocument();
+	}
+
+	if (typeof(template) === 'string') {
+		return stringToDocument(template);
+	}
+
+	if (typeof(template) === 'object') {
+		return uvdomToDocument(template);
+	}
+
+	return null;
 }
 
 function uvdomToDocument(uvdom, document = createEmptyDocument()) {
