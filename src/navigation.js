@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import {createPassThroughPipeline} from './pipeline';
+import {passthrough, createPassThroughPipeline} from './pipeline';
 import Blank from './components/blank';
 import {Promise} from 'es6-promise';
 import {render} from './render';
@@ -37,13 +37,18 @@ const nameMapping = Object
 		return result;
 	}, {});
 
+const viewlessRoutes = [
+	route.EXIT,
+	route.ERROR,
+	route.LAUNCH,
+	route.RESUME,
+	route.RELOAD,
+	route.SUSPEND,
+];
+
 export function handleRoute(routeName) {
 	if (!routeName) {
 		throw new Error('Route handler need route to process');
-	}
-
-	if (typeof(routeName) === 'function' && !route[routeName]) {
-		throw new Error(`Route handler can't process unknown custom handler`);
 	}
 
 	if (routes[routeName]) {
@@ -53,18 +58,22 @@ export function handleRoute(routeName) {
 	return routes[routeName] = createPassThroughPipeline({
 		onSinkStep(step, payload) {
 			let current = getActiveDocument();
+			let isPriorityRoute = ~viewlessRoutes.indexOf(routeName);
 
-			if (step && current.route !== routeName) {
+			if (!isPriorityRoute && step && current && current.route !== routeName) {
 				throw `Processing route "${nameMapping[routeName] || routeName}" isn't active. Terminating pipeline...`;
 			}
-
 			return payload;
 		}
 	})
-	.pipe(render(<Blank />));
+	.pipe(passthrough(payload => {
+		if (!~viewlessRoutes.indexOf(payload.route)) {
+			return render(<Blank />).sink(payload);
+		}
+	}));
 }
 
-export function navigate(routeName, params) {
+export function navigate(routeName, params, redirect = false) {
 	if (!launched) {
 		throw new Error(`Can't process navigation before app is launched`);
 	}
@@ -75,14 +84,19 @@ export function navigate(routeName, params) {
 		return targetRoute.sink({
 			route: routeName,
 			navigation: params,
+			redirect,
 		});
 	}
+
+	console.error(`Unable to resolve route "${nameMapping[routeName] || routeName}"`);
 
 	if (routeName !== route.NOT_FOUND) {
 		return navigate(route.NOT_FOUND, params);
 	}
+}
 
-	console.error(`Unable to resolve route "${nameMapping[routeName] || routeName}"`);
+export function redirect(routeName, params) {
+	return navigate(routeName, params, true);
 }
 
 Object

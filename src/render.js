@@ -36,7 +36,17 @@ export function render(template) {
 
 			return {document};
 		}))
-		.pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
+		.pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)))
+		.pipe(passthrough(({redirect}) => {
+			if (redirect) {
+				let {documents} = navigationDocument;
+				let document = documents[documents.length - 2];
+
+				document && navigationDocument.removeDocument(document);
+			}
+
+			return {redirect: false};
+		}));
 }
 
 export function renderModal(template) {
