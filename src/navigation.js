@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
 import {passthrough, createPassThroughPipeline} from './pipeline';
-import Blank from './components/blank';
 import {Promise} from 'es6-promise';
 import {render} from './render';
 import jsx from './jsx';
@@ -68,7 +67,7 @@ export function handleRoute(routeName) {
 	})
 	.pipe(passthrough(payload => {
 		if (!~viewlessRoutes.indexOf(payload.route)) {
-			return render(<Blank />).sink(payload);
+			return render(<document />).sink(payload);
 		}
 	}));
 }
