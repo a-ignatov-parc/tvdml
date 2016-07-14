@@ -1,49 +1,28 @@
 /** @jsx jsx */
 
 import {passthrough, createPassThroughPipeline} from './pipeline';
+import {broadcast} from './event-bus';
 import {Promise} from 'es6-promise';
 import {render} from './render';
+import {Symbol} from './utils';
 import jsx from './jsx';
 
 let launched = false;
 
 const routes = {};
 
+export const event = {
+	EXIT: new Symbol('onExit'),
+	ERROR: new Symbol('onError'),
+	LAUNCH: new Symbol('onLaunch'),
+	RELOAD: new Symbol('onReload'),
+	RESUME: new Symbol('onResume'),
+	SUSPEND: new Symbol('onSuspend'),
+};
+
 export const route = {
-	EXIT: Symbol('onExit'),
-	ERROR: Symbol('onError'),
-	LAUNCH: Symbol('onLaunch'),
-	RELOAD: Symbol('onReload'),
-	RESUME: Symbol('onResume'),
-	SUSPEND: Symbol('onSuspend'),
-	NOT_FOUND: Symbol('Not found'),
+	NOT_FOUND: new Symbol('Not found'),
 };
-
-const routeMapping = {
-	onExit: route.EXIT,
-	onError: route.ERROR,
-	onLaunch: route.LAUNCH,
-	onReload: route.RELOAD,
-	onResume: route.RESUME,
-	onSuspend: route.SUSPEND,
-};
-
-const nameMapping = Object
-	.keys(routeMapping)
-	.concat(Object.keys(route))
-	.reduce((result, name) => {
-		result[routeMapping[name] || route[name]] = name;
-		return result;
-	}, {});
-
-const viewlessRoutes = [
-	route.EXIT,
-	route.ERROR,
-	route.LAUNCH,
-	route.RESUME,
-	route.RELOAD,
-	route.SUSPEND,
-];
 
 export function handleRoute(routeName) {
 	if (!routeName) {
@@ -57,19 +36,14 @@ export function handleRoute(routeName) {
 	return routes[routeName] = createPassThroughPipeline({
 		onSinkStep(step, payload) {
 			let current = getActiveDocument();
-			let isPriorityRoute = ~viewlessRoutes.indexOf(routeName);
 
-			if (!isPriorityRoute && step && current && current.route !== routeName) {
-				throw `Processing route "${nameMapping[routeName] || routeName}" isn't active. Terminating pipeline...`;
+			if (step && current && current.route !== routeName) {
+				throw `Processing route "${routeName}" isn't active. Terminating pipeline...`;
 			}
 			return payload;
 		}
 	})
-	.pipe(passthrough(payload => {
-		if (!~viewlessRoutes.indexOf(payload.route)) {
-			return render(<document />).sink(payload);
-		}
-	}));
+	.pipe(render(<document />));
 }
 
 export function navigate(routeName, params, redirect = false) {
@@ -87,7 +61,7 @@ export function navigate(routeName, params, redirect = false) {
 		});
 	}
 
-	console.error(`Unable to resolve route "${nameMapping[routeName] || routeName}"`);
+	console.error(`Unable to resolve route "${routeName}"`);
 
 	if (routeName !== route.NOT_FOUND) {
 		return navigate(route.NOT_FOUND, params);
@@ -99,9 +73,10 @@ export function redirect(routeName, params) {
 }
 
 Object
-	.keys(routeMapping)
-	.forEach(name => {
-		let symbol = routeMapping[name];
+	.keys(event)
+	.forEach(id => {
+		let symbol = event[id];
+		let name = symbol.toString();
 
 		App[name] = options => {
 			console.info('Fired handler for app lifecycle', name, options);
@@ -110,6 +85,6 @@ Object
 				sessionStorage.setItem('startParams', JSON.stringify(options));
 				launched = true;
 			}
-			navigate(symbol);
+			broadcast(symbol);
 		}
 	});

@@ -70,7 +70,7 @@ export function parseDocument(template) {
 	}));
 }
 
-function removeModal() {
+export function removeModal() {
 	hasModal = false;
 	navigationDocument.dismissModal();
 }

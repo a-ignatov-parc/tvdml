@@ -18,7 +18,7 @@ export function createPipeline(options = {}) {
 			.catch(error => console.error(error));
 	};
 
-	return assign(pipeline, {
+	return assign(pipeline, options.extend, {
 		pipe(handler) {
 			if (typeof(handler.pipe) === 'function') {
 				handler = handler();
