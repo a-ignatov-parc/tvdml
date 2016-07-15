@@ -1,5 +1,6 @@
 import assign from 'object-assign';
 import {Promise} from 'es6-promise';
+import {broadcast} from './event-bus';
 import {promisedTimeout} from './utils';
 import {passthrough, createPipeline} from './pipeline';
 
@@ -20,15 +21,20 @@ export function render(template) {
 		.pipe(passthrough(payload => {
 			let {
 				route,
+				navigation = {},
 				parsedDocument: document,
 				document: renderedDocument,
 			} = payload;
+
+			let {menuBar, menuItem} = navigation;
 
 			document.route = route;
 
 			if (hasModal) removeModal();
 
-			if (renderedDocument) {
+			if (menuBar && menuItem) {
+				menuBar.setDocument(document, menuItem);
+			} else if (renderedDocument) {
 				navigationDocument.replaceDocument(document, renderedDocument);
 			} else {
 				navigationDocument.pushDocument(document);
@@ -136,6 +142,17 @@ function uvdomToDocument(uvdom, document = createEmptyDocument()) {
 					.forEach(name => {
 						element.setAttribute(name, attrs[name])
 					});
+
+				if (tag === 'menuBar') {
+					let feature = element.getFeature('MenuBarDocument');
+
+					element.addEventListener('select', ({target}) => {
+						broadcast('menu-item-select', {
+							menuItem: target,
+							menuBar: feature,
+						});
+					});
+				}
 
 				Object
 					.keys(events)

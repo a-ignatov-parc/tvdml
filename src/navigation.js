@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {passthrough, createPassThroughPipeline} from './pipeline';
-import {broadcast} from './event-bus';
+import {broadcast, subscribe} from './event-bus';
 import {Promise} from 'es6-promise';
 import {render} from './render';
 import {Symbol} from './utils';
@@ -88,3 +88,11 @@ Object
 			broadcast(symbol);
 		}
 	});
+
+subscribe('menu-item-select').pipe(({menuItem, menuBar}) => {
+	let route = menuItem.getAttribute('route');
+
+	if (route) {
+		navigate(route, {menuItem, menuBar});
+	}
+});
