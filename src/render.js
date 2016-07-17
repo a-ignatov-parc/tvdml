@@ -140,7 +140,9 @@ function uvdomToDocument(uvdom, document = createEmptyDocument()) {
 				Object
 					.keys(attrs)
 					.forEach(name => {
-						element.setAttribute(name, attrs[name])
+						if (typeof(attrs[name]) !== 'undefined') {
+							element.setAttribute(name, attrs[name]);
+						}
 					});
 
 				if (tag === 'menuBar') {
