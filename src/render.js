@@ -4,16 +4,16 @@ import {broadcast} from './event-bus';
 import {promisedTimeout} from './utils';
 import {passthrough, createPipeline} from './pipeline';
 
+import {createPartial} from './render/partial';
+import {
+	uvdomToDocument,
+	stringToDocument,
+	createEmptyDocument,
+} from './render/document';
+
 let hasModal = false;
-let documentSwitching = Promise.resolve();
 
 const RENDERING_ANIMATION = 500;
-
-const parser = new DOMParser();
-
-const eventMapper = {
-	'onSelect': 'select',
-};
 
 export function render(template) {
 	return createPipeline()
@@ -29,6 +29,14 @@ export function render(template) {
 			let {menuBar, menuItem} = navigation;
 
 			document.route = route;
+			document.partials = Object
+				.keys(document.partialNodes)
+				.map(name => ({name, node: document.partialNodes[name]}))
+				.map(({name, node}) => ({name, node, partial: createPartial(node)}))
+				.reduce((result, {name, partial}) => {
+					result[name] = partial;
+					return result;
+				}, {});
 
 			if (hasModal) removeModal();
 
@@ -99,91 +107,4 @@ function createDocument(template, payload) {
 	}
 
 	return null;
-}
-
-function uvdomToDocument(uvdom, document = createEmptyDocument()) {
-	[]
-		.concat(uvdom || [])
-		.forEach((node) => {
-			let element;
-
-			if (node == null) return;
-
-			if (typeof(node) === 'string') {
-				element = document.ownerDocument.createTextNode(node);
-			} else {
-				if (typeof(node.tag) === 'function') {
-					node = node.tag(node);
-				}
-
-				const {
-					tag,
-					attrs = {},
-					events = {},
-				} = node;
-
-				element = document.ownerDocument.createElement(tag);
-
-				const children = []
-					.concat(node.children || [])
-					.reduce((collection, child) => collection.concat(child), [])
-					.map((child) => {
-						if (typeof(child) === 'number') {
-							return child.toString();
-						}
-						return child;
-					})
-					.filter((child) => {
-						return typeof(child) === 'string' || (child && child.tag);
-					});
-
-				Object
-					.keys(attrs)
-					.forEach(name => {
-						if (typeof(attrs[name]) !== 'undefined') {
-							element.setAttribute(name, attrs[name]);
-						}
-					});
-
-				if (tag === 'menuBar') {
-					let feature = element.getFeature('MenuBarDocument');
-
-					element.addEventListener('select', ({target}) => {
-						broadcast('menu-item-select', {
-							menuItem: target,
-							menuBar: feature,
-						});
-					});
-				}
-
-				Object
-					.keys(events)
-					.forEach(name => {
-						let eventName = eventMapper[name] || name;
-						element.addEventListener(eventName, events[name]);
-					});
-
-				uvdomToDocument(children, element);
-			}
-
-			element != null && document.appendChild(element);
-		});
-
-	return document;
-}
-
-function stringToDocument(string) {
-	return parser.parseFromString(string, 'application/xml');
-}
-
-function createEmptyDocument() {
-	const document = DOMImplementationRegistry
-		.getDOMImplementation()
-		.createDocument();
-
-	for (let i = 0, length = document.childNodes.length; i < length; i++) {
-		document.removeChild(document.childNodes.item(i));
-	}
-
-	return document;
 }
