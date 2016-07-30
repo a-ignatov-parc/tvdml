@@ -86,7 +86,7 @@ export function parseDocument(template) {
 
 export function removeModal() {
 	hasModal = false;
-	navigationDocument.dismissModal();
+	navigationDocument.dismissModal(true);
 }
 
 function createDocument(template, payload) {
