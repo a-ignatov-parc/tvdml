@@ -27,8 +27,10 @@ export function render(template) {
 			} = payload;
 
 			let {menuBar, menuItem} = navigation;
+			let [prevRouteDocument] = navigationDocument.documents.slice(-2);
 
 			document.route = route;
+			document.prevRouteDocument = prevRouteDocument;
 			document.partials = Object
 				.keys(document.partialNodes)
 				.map(name => ({name, node: document.partialNodes[name]}))
@@ -73,15 +75,16 @@ export function renderModal(template) {
 		.pipe(parseDocument(template))
 		.pipe(passthrough(({parsedDocument: document, route}) => {
 			hasModal = true;
-			document.route = route;
+			document.modal = true;
+			document.route = route || (navigationDocument.documents.pop() || {}).route;
 			navigationDocument.presentModal(document);
 		}));
 }
 
 export function parseDocument(template) {
-	return createPipeline().pipe(payload => assign({}, payload, {
+	return createPipeline().pipe(passthrough(payload => ({
 		parsedDocument: createDocument(template, payload)
-	}));
+	})));
 }
 
 export function removeModal() {

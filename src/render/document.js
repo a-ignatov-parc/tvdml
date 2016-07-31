@@ -95,6 +95,7 @@ export function createEmptyDocument() {
 		.getDOMImplementation()
 		.createDocument();
 
+	document.extra = {};
 	document.partialNodes = {};
 
 	for (let i = document.childNodes.length; i; i--) {

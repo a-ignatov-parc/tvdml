@@ -81,7 +81,6 @@ export function enable() {
 
 	methodsToPatch.forEach(name => {
 		navigationDocument[name] = function TVDMLWrapper() {
-			console.log(name, arguments);
 			handlers[name] && handlers[name].apply(this, arguments);
 			return originalMethods[name].apply(this, arguments);
 		}
@@ -99,7 +98,6 @@ export function disable() {
 	enabled = false;
 }
 
-function handleUnload(event) {
-	console.log(666, event.type);
-	// broadcast('xxx')
+function handleUnload({target: {ownerDocument: document}}) {
+	broadcast('uncontrolled-document-pop', {document});
 }
