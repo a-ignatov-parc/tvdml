@@ -8,6 +8,7 @@ export * from './navigation';
 export * from './render/partial';
 export {Promise} from 'es6-promise';
 export {default as jsx} from './jsx';
+export {default as createPlayer} from './render/player';
 
 subscribe('uncontrolled-document-pop').pipe(({document}) => {
 	let {
