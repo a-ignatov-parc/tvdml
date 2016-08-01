@@ -34,6 +34,7 @@ export default function createPlayer(options = {}) {
 		.then(payload => {
 			let {player} = payload;
 
+			player.addEventListener('shouldHandleStateChange', shouldHandleStateChange.bind(this, payload));
 			player.addEventListener('timeDidChange', timeDidChange.bind(this, payload), {interval: 1});
 			player.addEventListener('mediaItemDidChange', mediaItemDidChange.bind(this, payload));
 			player.addEventListener('stateDidChange', stateDidChange.bind(this, payload));
@@ -81,21 +82,49 @@ function getMediaItems(items, uidResolver = uidResolver) {
 function timeDidChange(payload, event) {
 	let {
 		options: {uidResolver},
-		player: {currentMediaItem: {item}},
+		player: {
+			currentMediaItem: {item},
+			currentMediaItemDuration,
+		},
 	} = payload;
+
 	let {time} = event;
 
-	console.log('timeDidChange', item, payload, event);
+	console.log('timeDidChange', item, payload, event, currentMediaItemDuration);
 
 	updateResumeTime(uidResolver(item), time);
 }
 
 function stateDidChange(payload, event) {
+	let {player} = payload;
+
+	// Feture detecting `currentMediaItemDuration` if there is no such property in player instance 
+	// then app is running under tvOS 9 and we need to use workaround to get current video duration.
+	if (!('currentMediaItemDuration' in player) && event.state === 'playing') {
+		player.pause();
+	}
+
 	console.log('stateDidChange', payload, event);
 }
 
 function mediaItemDidChange(payload, event) {
 	console.log('mediaItemDidChange', payload, event);
+}
+
+function shouldHandleStateChange(payload, event) {
+	let {player} = payload;
+
+	console.log('shouldHandleStateChange', payload, event);
+
+	// If there is no `currentMediaItemDuration` property in player then this handler was called 
+	// only to retrieve duration. 
+	// Filling propperty and skipping state change.
+	if (!('currentMediaItemDuration' in player)) {
+		player.currentMediaItemDuration = event.duration;
+		return false;
+	}
+
+	return true;
 }
 
 function uidResolver({url}) {
