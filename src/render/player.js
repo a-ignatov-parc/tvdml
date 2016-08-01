@@ -4,13 +4,15 @@ import {Promise} from 'es6-promise';
 import {noop} from '../utils';
 
 const STORAGE_KEY = 'tvdml-media-resume-time';
-const MARK_AS_WATCHED_PERCENT = 90;
+
+const MARK_AS_WATCHED_PERCENT_BREAKPOINT = 90;
+const REMOVE_RESUME_TIME_PERCENT_BREAKPOINT = 97;
 
 const defaults = {
 	items: null,
 	uidResolver: null,
 	markAsWatched: noop(),
-	markAsWatchedPercent: MARK_AS_WATCHED_PERCENT,
+	markAsWatchedPercent: MARK_AS_WATCHED_PERCENT_BREAKPOINT,
 };
 
 const metadata = [
@@ -81,18 +83,35 @@ function getMediaItems(items, uidResolver = uidResolver) {
 
 function timeDidChange(payload, event) {
 	let {
-		options: {uidResolver},
+		options: {
+			uidResolver,
+			markAsWatched,
+			markAsWatchedPercent,
+		},
 		player: {
-			currentMediaItem: {item},
+			currentMediaItem,
 			currentMediaItemDuration,
 		},
 	} = payload;
 
 	let {time} = event;
+	let {item, markedAsWatched} = currentMediaItem;
 
-	console.log('timeDidChange', item, payload, event, currentMediaItemDuration);
+	let uid = uidResolver(item);
+	let watchedPercent = ~~(time * 100 / currentMediaItemDuration);
 
-	updateResumeTime(uidResolver(item), time);
+	console.log('timeDidChange', item, payload, event, currentMediaItemDuration, watchedPercent);
+
+	if (REMOVE_RESUME_TIME_PERCENT_BREAKPOINT >= watchedPercent) {
+		getResumeTime(uid) && removeResumeTime(uid);
+	} else {
+		updateResumeTime(uid, time);
+	}
+
+	if (markAsWatchedPercent >= watchedPercent && !markedAsWatched) {
+		currentMediaItem.markedAsWatched = true;
+		markAsWatched(item);
+	}
 }
 
 function stateDidChange(payload, event) {
@@ -137,4 +156,8 @@ function getResumeTime(id) {
 
 function updateResumeTime(id, value = 0) {
 	localStorage.setItem(`${STORAGE_KEY}-${id}`, value);
+}
+
+function removeResumeTime(id) {
+	localStorage.removeItem(`${STORAGE_KEY}-${id}`);
 }
