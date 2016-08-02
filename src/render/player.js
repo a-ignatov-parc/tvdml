@@ -43,22 +43,37 @@ export default function createPlayer(options = {}) {
 
 			return payload;
 		})
-		.then(({player, options}) => {
-			let {items, uidResolver} = options;
-			return getMediaItems(items, uidResolver).then(mediaItems => ({player, options, mediaItems}));
-		})
-		.then(({player, mediaItems}) => {
+		.then(updatePlaylist)
+		.then(({player}) => player);
+}
+
+function updatePlaylist(payload) {
+	let {
+		player, 
+		options: {
+			items, 
+			uidResolver,
+		},
+	} = payload;
+
+	return getMediaItems(player, items, uidResolver)
+		.then(mediaItems => {
 			if (!mediaItems.length) {
 				return Promise.reject('Nothing to play');
 			}
 			mediaItems.forEach(mediaItem => player.playlist.push(mediaItem));
-			return player;
+			return assign({mediaItems}, payload);
 		});
 }
 
-function getMediaItems(items, uidResolver = uidResolver) {
+function getMediaItems(player, items, uidResolver = uidResolver) {
+	let {currentMediaItem} = player;
+
 	if (typeof(items) === 'function') {
-		items = items();
+		let currentItem = currentMediaItem ? currentMediaItem.item : null;
+		let request = currentMediaItem ? 'next' : 'initial';
+
+		items = items(currentItem, request);
 	}
 
 	return Promise
@@ -84,6 +99,7 @@ function getMediaItems(items, uidResolver = uidResolver) {
 function timeDidChange(payload, event) {
 	let {
 		options: {
+			items,
 			uidResolver,
 			markAsWatched,
 			markAsWatchedPercent,
@@ -102,15 +118,20 @@ function timeDidChange(payload, event) {
 
 	console.log('timeDidChange', item, payload, event, currentMediaItemDuration, watchedPercent);
 
-	if (REMOVE_RESUME_TIME_PERCENT_BREAKPOINT >= watchedPercent) {
+	if (watchedPercent >= REMOVE_RESUME_TIME_PERCENT_BREAKPOINT) {
 		getResumeTime(uid) && removeResumeTime(uid);
 	} else {
 		updateResumeTime(uid, time);
 	}
 
-	if (markAsWatchedPercent >= watchedPercent && !markedAsWatched) {
+	if (watchedPercent >= markAsWatchedPercent && !markedAsWatched) {
 		currentMediaItem.markedAsWatched = true;
 		markAsWatched(item);
+	}
+
+	if (typeof(items) === 'function' && !currentMediaItem.nextItemsRequested) {
+		currentMediaItem.nextItemsRequested = true;
+		updatePlaylist(payload);
 	}
 }
 
