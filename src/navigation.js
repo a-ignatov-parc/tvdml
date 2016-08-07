@@ -1,11 +1,9 @@
-/** @jsx jsx */
-
 import {passthrough, createPassThroughPipeline} from './pipeline';
 import {broadcast, subscribe} from './event-bus';
 import {Promise} from 'es6-promise';
+import createElement from './jsx';
 import {render} from './render';
 import {Symbol} from './utils';
-import jsx from './jsx';
 
 let launched = false;
 
@@ -43,7 +41,7 @@ export function handleRoute(routeName) {
 			return payload;
 		}
 	})
-	.pipe(render(<document />));
+	.pipe(render(createElement('document')));
 }
 
 export function navigate(routeName, params, redirect = false) {

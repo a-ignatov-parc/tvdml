@@ -6,6 +6,7 @@ let modalDocument = null;
 const handlers = {
 	presentModal(document) {
 		if (modalDocument) {
+			destroyComponents(modalDocument);
 			modalDocument.removeEventListener('unload', handleUnload);
 		}
 		modalDocument = document;
@@ -14,6 +15,7 @@ const handlers = {
 
 	dismissModal(custom) {
 		if (modalDocument && custom) {
+			destroyComponents(modalDocument);
 			modalDocument.removeEventListener('unload', handleUnload);
 		}
 		modalDocument = null;
@@ -28,18 +30,23 @@ const handlers = {
 	},
 
 	replaceDocument(document, oldDocument) {
+		destroyComponents(oldDocument);
 		oldDocument.removeEventListener('unload', handleUnload);
 		document.addEventListener('unload', handleUnload);
 	},
 
 	clear() {
 		navigationDocument.documents.forEach(document => {
+			destroyComponents(document);
 			document.removeEventListener('unload', handleUnload);
 		});
 	},
 
 	popDocument() {
-		navigationDocument.documents.pop().removeEventListener('unload', handleUnload);
+		let document = navigationDocument.documents.pop()
+
+		destroyComponents(document);
+		document.removeEventListener('unload', handleUnload);
 	},
 
 	popToDocument(document) {
@@ -48,6 +55,7 @@ const handlers = {
 		navigationDocument.documents
 			.slice(index + 1)
 			.forEach(document => {
+				destroyComponents(document);
 				document.removeEventListener('unload', handleUnload);
 			});
 	},
@@ -56,11 +64,13 @@ const handlers = {
 		navigationDocument.documents
 			.slice(1)
 			.forEach(document => {
+				destroyComponents(document);
 				document.removeEventListener('unload', handleUnload);
 			});
 	},
 
 	removeDocument(document) {
+		destroyComponents(document);
 		document.removeEventListener('unload', handleUnload);
 	},
 };
@@ -100,4 +110,8 @@ export function disable() {
 
 function handleUnload({target: {ownerDocument: document}}) {
 	broadcast('uncontrolled-document-pop', {document});
+}
+
+function destroyComponents(document) {
+	document.destroyComponent && document.destroyComponent();
 }
