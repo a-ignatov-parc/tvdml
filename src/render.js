@@ -3,13 +3,7 @@ import {Promise} from 'es6-promise';
 import {broadcast} from './event-bus';
 import {promisedTimeout} from './utils';
 import {passthrough, createPipeline} from './pipeline';
-
-import {createPartial} from './render/partial';
-import {
-	uvdomToDocument,
-	stringToDocument,
-	createEmptyDocument,
-} from './render/document';
+import {vdomToDocument, createEmptyDocument} from './render/document';
 
 let hasModal = false;
 
@@ -31,14 +25,6 @@ export function render(template) {
 
 			document.route = route;
 			document.prevRouteDocument = prevRouteDocument;
-			document.partials = Object
-				.keys(document.partialNodes)
-				.map(name => ({name, node: document.partialNodes[name]}))
-				.map(({name, node}) => ({name, node, partial: createPartial(node)}))
-				.reduce((result, {name, partial}) => {
-					result[name] = partial;
-					return result;
-				}, {});
 
 			if (hasModal) removeModal();
 
@@ -93,21 +79,17 @@ export function removeModal() {
 }
 
 function createDocument(template, payload) {
+	if (typeof(template) === 'string') {
+		throw `String templates aren't supported. Use jsx templates.`
+	}
+
 	if (typeof(template) === 'function') {
 		template = template(payload);
 	}
 
-	if (template == null) {
-		return createEmptyDocument();
+	if (typeof(template) === 'object' && template) {
+		return vdomToDocument(template, payload);
 	}
 
-	if (typeof(template) === 'string') {
-		return stringToDocument(template);
-	}
-
-	if (typeof(template) === 'object') {
-		return uvdomToDocument(template);
-	}
-
-	return null;
+	return createEmptyDocument();
 }

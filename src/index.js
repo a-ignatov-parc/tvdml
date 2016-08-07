@@ -5,10 +5,10 @@ export {subscribe};
 export * from './render';
 export * from './pipeline';
 export * from './navigation';
-export * from './render/partial';
 export {Promise} from 'es6-promise';
 export {default as jsx} from './jsx';
 export {default as createPlayer} from './render/player';
+export {default as createComponent} from './render/component';
 
 subscribe('uncontrolled-document-pop').pipe(({document}) => {
 	let {
