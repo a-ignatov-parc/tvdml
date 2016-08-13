@@ -4,43 +4,69 @@ import diff from 'virtual-dom/diff';
 import patch from 'virtual-dom/patch';
 import createElement from 'virtual-dom/create-element';
 
-import {passthrough, createPipeline} from '../pipeline';
-import {render as createRender} from '../render';
+import CustomNode from './custom-node';
 
 export default function createComponent(lifecycle) {
-	return createPipeline().pipe(createRender(new Component(lifecycle)));
+	return new CustomNode(Component, lifecycle);
 }
 
 const excludeList = [
+	'init',
+	'update',
+	'destroy',
 	'setState',
 ];
 
 export class Component {
-	constructor(lifecycle) {
+	constructor(props, lifecycle, ownerDocument) {
 		Object
 			.keys(lifecycle)
-			.filter(name => !~excludeList.indexOf(name))
+			.filter(name => {
+				let isExcluded = !!~excludeList.indexOf(name);
+				if (isExcluded) throw `Can't override system method "${name}"`;
+				return !isExcluded;
+			})
 			.forEach(name => this[name] = lifecycle[name].bind(this));
+
+		this._props = assign({}, props);
+		this._owner = ownerDocument;
+
+		this.type = 'Widget';
 	}
 
-	init(props, container) {
+	init() {
 		this._queue = null;
-		this._container = container;
 
-		let document = this._container.ownerDocument;
-
-		document.renderComponentWithProps = renderComponent.bind(this);
-		document.destroyComponent = destroy.bind(this);
-
-		this.props = assign({}, props, this.getDefaultProps());
+		this.props = assign({}, this._props, this.getDefaultProps());
 		this.state = assign({}, this.getInitialState());
 
 		this._vdom = render.call(this);
-		this._rootNode = createElement(this._vdom, {document});
+		this._rootNode = createElement(this._vdom, {document: this._owner});
 		this.componentWillMount();
 
-		this._container.appendChild(this._rootNode);
-		this.componentDidMount();
+		setTimeout(this.componentDidMount.bind(this), 0);
+		return this._rootNode;
+	}
+
+	update(previous, domNode) {
+		let props = this._props;
+
+		this._queue = {};
+		this._rootNode = domNode;
+		this._vdom = previous._vdom;
+		this.componentWillReceiveProps(props);
+
+		let {state} = this._queue;
+		this._queue = null;
+
+		update.call(this, props, assign({}, previous.state, state));
+	}
+
+	destroy(domNode) {
+		this.componentWillUnmount();
+		this._rootNode = null;
+		this._queue = null;
+		this._vdom = null;
 	}
 
 	setState(newState = {}) {
@@ -113,22 +139,4 @@ function update(nextProps, nextState) {
 		patch(this._rootNode, update);
 		this.componentDidUpdate(prevProps, prevState);
 	}
-}
-
-function destroy() {
-	this.componentWillUnmount();
-	this._container = null;
-	this._rootNode = null;
-	this._queue = null;
-	this._vdom = null;
-}
-
-function renderComponent(props) {
-	this._queue = {};
-	this.componentWillReceiveProps(props);
-
-	let {state} = this._queue;
-
-	this._queue = null;
-	update.call(this, props, state);
 }

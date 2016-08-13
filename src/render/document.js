@@ -1,6 +1,6 @@
 import createElement from 'virtual-dom/create-element';
 
-import {Component} from './component';
+import CustomNode from './custom-node';
 import {broadcast} from '../event-bus';
 
 const eventMapper = {
@@ -33,8 +33,9 @@ const handlers = {
 export function vdomToDocument(vdom, payload) {
 	let document = createEmptyDocument();
 
-	if (vdom instanceof Component) {
-		vdom.init(payload, document);
+	if (vdom instanceof CustomNode) {
+		let vnode = vdom.toNode(payload, document);
+		document.appendChild(vnode.init());
 	} else {
 		document.appendChild(createElement(vdom, {document}));
 	}
