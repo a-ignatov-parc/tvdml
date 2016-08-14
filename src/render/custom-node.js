@@ -4,8 +4,8 @@ export default class CustomNode {
 		this.lifecycle = lifecycle;
 	}
 
-	toNode(payload, ownerDocument) {
+	toNode(payload) {
 		let {Constructor, lifecycle} = this;
-		return new Constructor(payload, lifecycle, ownerDocument);
+		return new Constructor(payload, lifecycle);
 	}
 }

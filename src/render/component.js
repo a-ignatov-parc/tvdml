@@ -18,7 +18,7 @@ const excludeList = [
 ];
 
 export class Component {
-	constructor(props, lifecycle, ownerDocument) {
+	constructor(props, lifecycle) {
 		Object
 			.keys(lifecycle)
 			.filter(name => {
@@ -29,19 +29,17 @@ export class Component {
 			.forEach(name => this[name] = lifecycle[name].bind(this));
 
 		this._props = assign({}, props);
-		this._owner = ownerDocument;
-
 		this.type = 'Widget';
 	}
 
-	init() {
+	init(options) {
 		this._queue = null;
 
 		this.props = assign({}, this._props, this.getDefaultProps());
 		this.state = assign({}, this.getInitialState());
 
 		this._vdom = render.call(this);
-		this._rootNode = createElement(this._vdom, {document: this._owner});
+		this._rootNode = createElement(this._vdom, options);
 		this.componentWillMount();
 
 		setTimeout(this.componentDidMount.bind(this), 0);

@@ -32,14 +32,15 @@ const handlers = {
 
 export function vdomToDocument(vdom, payload) {
 	let document = createEmptyDocument();
+	let vnode;
 
 	if (vdom instanceof CustomNode) {
-		let vnode = vdom.toNode(payload, document);
-		document.appendChild(vnode.init());
+		vnode = vdom.toNode(payload);
 	} else {
-		document.appendChild(createElement(vdom, {document}));
+		vnode = vdom;
 	}
 
+	document.appendChild(createElement(vnode, {document}));
 	document.addEventListener('select', function(event, ...args) {
 		let {target} = event;
 		let {tagName} = target;

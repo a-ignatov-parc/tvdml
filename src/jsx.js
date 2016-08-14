@@ -1,5 +1,7 @@
 import h from 'virtual-dom/h';
 
+import CustomNode from './render/custom-node';
+
 const cumulativeTypes = ['string', 'number'];
 
 export default function createElement(tag, attrs, ...children) {
@@ -10,7 +12,11 @@ export default function createElement(tag, attrs, ...children) {
 		Object
 			.keys(attrs)
 			.forEach(name => {
-				if (typeof(attrs[name]) === 'function') {
+				if (name === 'key') {
+					node.key = attrs[name];
+				} else if (name === 'ref') {
+					node.ref = new Ref(attrs[name]);
+				} else if (typeof(attrs[name]) === 'function') {
 					node.events || (node.events = {});
 					node.events[name] = attrs[name];
 				} else {
@@ -41,11 +47,15 @@ export default function createElement(tag, attrs, ...children) {
 		node.children = children;
 	}
 
-	if (typeof(node.tag) === 'function') {
+	if (node.tag instanceof CustomNode) {
+		return node.tag.toNode(node.attrs);
+	} else if (typeof(node.tag) === 'function') {
 		return node.tag(node);
 	}
 
 	vnode = h(node.tag, {
+		key: node.key,
+		ref: node.ref,
 		events: node.events,
 		attributes: node.attrs,
 	}, node.children);
@@ -54,4 +64,16 @@ export default function createElement(tag, attrs, ...children) {
 	vnode.tagName = node.tag;
 
 	return vnode;
+}
+
+class Ref {
+	constructor(handler) {
+		this.handler = handler;
+	}
+
+	hook(node, propertyName, previousValue) {
+		if (typeof(this.handler) === 'function') {
+			this.handler(node);
+		}
+	}
 }
