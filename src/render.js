@@ -15,18 +15,26 @@ export function render(template) {
 		.pipe(passthrough(payload => {
 			let {
 				route,
+				redirect,
 				navigation = {},
 				parsedDocument: document,
 				document: renderedDocument,
 			} = payload;
 
 			let {menuBar, menuItem} = navigation;
-			let [prevRouteDocument] = navigationDocument.documents.slice(-2);
+			let [
+				prevRouteDocument,
+				currentRouteDocument,
+			] = navigationDocument.documents.slice(-2);
 
 			document.route = route;
 			document.prevRouteDocument = prevRouteDocument;
 
 			if (hasModal) removeModal();
+
+			if (redirect) {
+				renderedDocument = currentRouteDocument;
+			}
 
 			if (menuBar && menuItem) {
 				menuBar.setDocument(document, menuItem);
@@ -36,19 +44,9 @@ export function render(template) {
 				navigationDocument.pushDocument(document);
 			}
 
-			return {document};
+			return {document, redirect: false};
 		}))
-		.pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)))
-		.pipe(passthrough(({redirect}) => {
-			if (redirect) {
-				let {documents} = navigationDocument;
-				let document = documents[documents.length - 2];
-
-				document && navigationDocument.removeDocument(document);
-			}
-
-			return {redirect: false};
-		}));
+		.pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
 }
 
 export function renderModal(template) {
