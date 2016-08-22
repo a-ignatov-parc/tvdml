@@ -14,23 +14,31 @@ subscribe('uncontrolled-document-pop').pipe(({document}) => {
 	let {
 		modal,
 		route,
-		extra,
 		prevRouteDocument,
 	} = document;
+
+	let prevDocument = modal ? document : prevRouteDocument;
 
 	let {
 		modal: prevModal,
 		route: prevRoute,
-		extra: prevExtra,
-	} = modal ? document : prevRouteDocument;
+	} = prevDocument;
 
 	if (modal) {
 		prevModal = false;
 	}
 
 	broadcast('menu-button-press', {
-		from: {route, modal: !!modal, extra},
-		to: {route: prevRoute, modal: !!prevModal, extra: prevExtra},
+		from: {
+			route,
+			document,
+			modal: !!modal,
+		},
+		to: {
+			route: prevRoute,
+			document: prevDocument,
+			modal: !!prevModal,
+		},
 	});
 });
 

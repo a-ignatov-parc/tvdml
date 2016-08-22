@@ -123,10 +123,12 @@ function update(nextProps, nextState) {
 	nextProps || (nextProps = prevProps);
 	nextState || (nextState = prevState);
 
+	let shouldUpdate = this.shouldComponentUpdate(nextProps, nextState);
+
 	this.props = nextProps;
 	this.state = nextState;
 
-	if (this.shouldComponentUpdate(nextProps, nextState)) {
+	if (shouldUpdate) {
 		let prev = this._vdom;
 		let next = render.call(this);
 
@@ -134,7 +136,7 @@ function update(nextProps, nextState) {
 		this._vdom = next;
 		this.componentWillUpdate(nextProps, nextState);
 
-		patch(this._rootNode, update);
+		this._rootNode = patch(this._rootNode, update);
 		this.componentDidUpdate(prevProps, prevState);
 	}
 }
