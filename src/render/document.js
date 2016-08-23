@@ -40,7 +40,14 @@ export function vdomToDocument(vdom, payload) {
 		vnode = vdom;
 	}
 
-	document.appendChild(createElement(vnode, {document}));
+	let childNode = createElement(vnode, {document});
+	let menuBars = childNode.getElementsByTagName('menuBar');
+
+	if (menuBars.length) {
+		document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
+	}
+
+	document.appendChild(childNode);
 	document.addEventListener('select', function(event, ...args) {
 		let {target} = event;
 		let {tagName} = target;

@@ -30,6 +30,10 @@ export function render(template) {
 			document.route = route;
 			document.prevRouteDocument = prevRouteDocument;
 
+			if (prevRouteDocument === renderedDocument) {
+				document.prevRouteDocument = null;
+			}
+
 			if (hasModal) removeModal();
 
 			if (redirect) {
