@@ -25,7 +25,7 @@ const handlers = {
 		let {onSelect} = events;
 
 		if (typeof(onSelect) === 'function') {
-			onSelect.apply(this, ...arguments);
+			onSelect.apply(this, arguments);
 		}
 	},
 }
