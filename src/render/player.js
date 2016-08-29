@@ -42,11 +42,34 @@ export default function createPlayer(player, options) {
 		})
 		.then(payload => {
 			let {player} = payload;
+			let originalAddEventListener = player.addEventListener;
+			let originalRemoveEventListener = player.removeEventListener;
+			let shouldHandleStateChangeCtx = {userHandler: null};
 
-			player.addEventListener('shouldHandleStateChange', shouldHandleStateChange.bind(this, payload));
+			player.addEventListener('shouldHandleStateChange', shouldHandleStateChange.bind(this, shouldHandleStateChangeCtx, payload));
 			player.addEventListener('timeDidChange', timeDidChange.bind(this, payload), {interval: 1});
-			player.addEventListener('mediaItemDidChange', mediaItemDidChange.bind(this, payload));
 			player.addEventListener('stateDidChange', stateDidChange.bind(this, payload));
+
+			// Overriding `addEventListener` and `removeEventListener` methods to resolve issue 
+			// with single `shouldHandleStateChange` event listener. With this proxies we can have 
+			// our internal handler and user handler simultaneous.
+			player.addEventListener = function TVDMLWrapper(eventName, listener) {
+				if (eventName === 'shouldHandleStateChange') {
+					shouldHandleStateChangeCtx.userHandler = listener;
+				} else {
+					return originalAddEventListener.apply(this, arguments);
+				}
+			}
+
+			player.removeEventListener = function TVDMLWrapper(eventName, listener) {
+				if (eventName === 'shouldHandleStateChange') {
+					if (shouldHandleStateChangeCtx.userHandler === listener) {
+						shouldHandleStateChangeCtx.userHandler = null;
+					}
+				} else {
+					return originalRemoveEventListener.apply(this, arguments);
+				}
+			}
 
 			return payload;
 		})
@@ -123,8 +146,6 @@ function timeDidChange(payload, event) {
 	let uid = uidResolver(item);
 	let watchedPercent = ~~(time * 100 / currentMediaItemDuration);
 
-	console.log('timeDidChange', item, payload, event, currentMediaItemDuration, watchedPercent);
-
 	if (watchedPercent >= REMOVE_RESUME_TIME_PERCENT_BREAKPOINT) {
 		getResumeTime(uid) && removeResumeTime(uid);
 	} else {
@@ -150,18 +171,11 @@ function stateDidChange(payload, event) {
 	if (!('currentMediaItemDuration' in player) && event.state === 'playing') {
 		player.pause();
 	}
-
-	console.log('stateDidChange', payload, event);
 }
 
-function mediaItemDidChange(payload, event) {
-	console.log('mediaItemDidChange', payload, event);
-}
-
-function shouldHandleStateChange(payload, event) {
+function shouldHandleStateChange(ctx, payload, event) {
 	let {player} = payload;
-
-	console.log('shouldHandleStateChange', payload, event);
+	let {userHandler} = ctx;
 
 	// If there is no `currentMediaItemDuration` property in player then this handler was called 
 	// only to retrieve duration. 
@@ -169,6 +183,10 @@ function shouldHandleStateChange(payload, event) {
 	if (!('currentMediaItemDuration' in player)) {
 		player.currentMediaItemDuration = event.duration;
 		return false;
+	}
+
+	if (typeof(userHandler) === 'function') {
+		return userHandler(event)
 	}
 
 	return true;
