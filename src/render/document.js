@@ -2,33 +2,44 @@ import createElement from 'virtual-dom/create-element';
 
 import CustomNode from './custom-node';
 import {broadcast} from '../event-bus';
-
-const eventMapper = {
-	'onSelect': 'select',
-};
+import {noop} from '../utils';
 
 const DEFAULT_HANDLER = 'default';
 
 const handlers = {
-	menuItem({target: menuItem}) {
-		let menuBar = menuItem.parentNode;
-		let feature = menuBar.getFeature('MenuBarDocument');
-
-		broadcast('menu-item-select', {
-			menuItem,
-			menuBar: feature,
-		});
+	play: {
+		[DEFAULT_HANDLER]: createDefaultHandler('onPlay'),
 	},
 
-	[DEFAULT_HANDLER]({target}) {
-		let {events = {}} = target;
-		let {onSelect} = events;
+	select: {
+		[DEFAULT_HANDLER]: createDefaultHandler('onSelect'),
 
-		if (typeof(onSelect) === 'function') {
-			onSelect.apply(this, arguments);
-		}
+		menuItem({target: menuItem}) {
+			let menuBar = menuItem.parentNode;
+			let feature = menuBar.getFeature('MenuBarDocument');
+
+			broadcast('menu-item-select', {
+				menuItem,
+				menuBar: feature,
+			});
+		},
 	},
-}
+
+	highlight: {
+		[DEFAULT_HANDLER]: createDefaultHandler('onHighlight'),
+	},
+
+	holdselect: {
+		[DEFAULT_HANDLER]: createDefaultHandler('onHoldselect'),
+	},
+};
+
+const eventsList = [
+	'play',
+	'select',
+	'highlight',
+	'holdselect',
+];
 
 export function vdomToDocument(vdom, payload) {
 	let document = createEmptyDocument();
@@ -48,11 +59,8 @@ export function vdomToDocument(vdom, payload) {
 	}
 
 	document.appendChild(childNode);
-	document.addEventListener('select', function(event, ...args) {
-		let {target} = event;
-		let {tagName} = target;
-		let handler = handlers[tagName] || handlers[DEFAULT_HANDLER];
-		return handler.call(this, event, ...args);
+	eventsList.forEach(eventName => {
+		document.addEventListener(eventName, createEventHandler(handlers[eventName]))
 	});
 
 	return document;
@@ -70,4 +78,24 @@ export function createEmptyDocument() {
 	}
 
 	return document;
+}
+
+function createEventHandler(handlersCollection = {}) {
+	return function(event, ...args) {
+		let {target} = event;
+		let {tagName} = target;
+		let handler = handlersCollection[tagName] || handlersCollection[DEFAULT_HANDLER] || noop();
+		return handler.call(this, event, ...args);
+	}
+}
+
+function createDefaultHandler(handlerName) {
+	return function({target}) {
+		let {events = {}} = target;
+		let handler = events[handlerName];
+
+		if (typeof(handler) === 'function') {
+			handler.apply(this, arguments);
+		}
+	}
 }
