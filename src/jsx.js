@@ -16,6 +16,8 @@ export default function createElement(tag, attrs, ...children) {
 					node.key = attrs[name];
 				} else if (name === 'ref') {
 					node.ref = new Ref(attrs[name]);
+				} else if (name === 'content' && tag === 'style') {
+					node.content = attrs[name];
 				} else if (typeof(attrs[name]) === 'function') {
 					node.events || (node.events = {});
 					node.events[name] = attrs[name];
@@ -53,12 +55,18 @@ export default function createElement(tag, attrs, ...children) {
 		return node.tag(node);
 	}
 
-	vnode = h(node.tag, {
+	let props = {
 		key: node.key,
 		ref: node.ref,
 		events: node.events,
 		attributes: node.attrs,
-	}, node.children);
+	};
+
+	if (node.content) {
+		props.innerHTML = node.content;
+	}
+
+	vnode = h(node.tag, props, node.children);
 
 	// Fixing HTML namespace rules for handling tagName.
 	vnode.tagName = node.tag;

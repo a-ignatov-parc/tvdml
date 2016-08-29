@@ -25,11 +25,18 @@ const metadata = [
 	'contentRatingRanking',
 ];
 
-export default function createPlayer(options = {}) {
+export default function createPlayer(player, options) {
+	if (player instanceof Player) {
+		options || (options = {});
+	} else {
+		options = player || {};
+		player = undefined;
+	}
+
 	return Promise
 		.resolve(assign({}, defaults, options))
 		.then(options => {
-			let player = new Player();
+			if (!player) player = new Player();
 			player.playlist = new Playlist();
 			return {player, options};
 		})
