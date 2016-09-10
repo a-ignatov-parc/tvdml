@@ -25,7 +25,9 @@ export function render(template) {
 			let [
 				prevRouteDocument,
 				currentRouteDocument,
-			] = navigationDocument.documents.slice(-2);
+			] = [null, null]
+				.concat(navigationDocument.documents)
+				.slice(-2);
 
 			document.route = route;
 			document.prevRouteDocument = prevRouteDocument;

@@ -1,5 +1,4 @@
 import {createPassThroughPipeline} from './pipeline';
-import {Promise} from 'es6-promise';
 
 const subscriptions = {};
 

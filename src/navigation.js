@@ -44,6 +44,18 @@ export function handleRoute(routeName) {
 	.pipe(render(createElement('document')));
 }
 
+export function dismissRoute(routeName) {
+	if (!routeName) {
+		throw new Error('Route handler need route to process');
+	}
+
+	if (!routes[routeName]) {
+		throw new Error(`Handler for "${routeName}" isn't specified`);
+	}
+
+	delete routes[routeName];
+}
+
 export function navigate(routeName, params, redirect = false) {
 	if (!launched) {
 		throw new Error(`Can't process navigation before app is launched`);
