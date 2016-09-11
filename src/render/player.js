@@ -111,7 +111,7 @@ function getMediaItems(player, items, uidResolver = uidResolver) {
 		.then(list => [].concat(list || []).filter(Boolean))
 		.then(list => list.map(item => {
 			let mediaItem = new MediaItem(item.type || 'video', item.url);
-			let resumeTime = getResumeTime(uidResolver(item));
+			let resumeTime = item.resumeTime || getResumeTime(uidResolver(item));
 
 			mediaItem.item = item;
 			metadata
