@@ -31,8 +31,8 @@ export default function createElement(tag, attrs, ...children) {
 	children = children.reduce((result, item, i) => {
 		// Processing tvml special case when multiple TextNodes always merged into one and this 
 		// behaviour breaks virtual-dom diff mechanism.
-		if (i && ~cumulativeTypes.indexOf(typeof(item)) && typeof(result[i - 1]) === 'string') {
-			result[i - 1] += `${item}`;
+		if (i && ~cumulativeTypes.indexOf(typeof(item)) && typeof(result[result.length - 1]) === 'string') {
+			result[result.length - 1] += `${item}`;
 		} else if (typeof(item) !== 'boolean') {
 			// Numbers always should be added as strings.
 			if (typeof(item) === 'number') {
