@@ -174,11 +174,11 @@ function stateDidChange(payload, event) {
 	} = payload;
 
 	let {currentMediaItem} = player;
-	let {item} =currentMediaItem;
-	let uid = uidResolver(item);
-	let elapsedTime = getResumeTime(uid);
 
-	if (event.state === 'end') {
+	if (currentMediaItem && event.state === 'end') {
+		let {item} = currentMediaItem;
+		let uid = uidResolver(item);
+		let elapsedTime = getResumeTime(uid);
 		markAsStopped(item, elapsedTime);
 	}
 
