@@ -11,6 +11,7 @@ const REMOVE_RESUME_TIME_PERCENT_BREAKPOINT = 97;
 const defaults = {
 	items: null,
 	uidResolver: null,
+	markAsStopped: noop(),
 	markAsWatched: noop(),
 	markAsWatchedPercent: MARK_AS_WATCHED_PERCENT_BREAKPOINT,
 };
@@ -164,7 +165,22 @@ function timeDidChange(payload, event) {
 }
 
 function stateDidChange(payload, event) {
-	let {player} = payload;
+	let {
+		player,
+		options: {
+			uidResolver,
+			markAsStopped,
+		},
+	} = payload;
+
+	let {currentMediaItem} = player;
+	let {item} =currentMediaItem;
+	let uid = uidResolver(item);
+	let elapsedTime = getResumeTime(uid);
+
+	if (event.state === 'end') {
+		markAsStopped(item, elapsedTime);
+	}
 
 	// Feture detecting `currentMediaItemDuration` if there is no such property in player instance 
 	// then app is running under tvOS 9 and we need to use workaround to get current video duration.
