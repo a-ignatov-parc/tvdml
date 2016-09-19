@@ -1,6 +1,5 @@
 import {passthrough, createPassThroughPipeline} from './pipeline';
 import {broadcast, subscribe} from './event-bus';
-import {Promise} from 'es6-promise';
 import createElement from './jsx';
 import {render} from './render';
 import {Symbol} from './utils';

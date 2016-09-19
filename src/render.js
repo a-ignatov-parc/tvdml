@@ -1,5 +1,4 @@
 import assign from 'object-assign';
-import {Promise} from 'es6-promise';
 import {broadcast} from './event-bus';
 import {promisedTimeout} from './utils';
 import {passthrough, createPipeline} from './pipeline';
