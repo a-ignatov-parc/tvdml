@@ -104,9 +104,15 @@ export class Component {
 };
 
 function render() {
+	let result;
+
 	this._queue = {};
 
-	let result = this.render();
+	try {
+		result = this.render();
+	} catch(error) {
+		console.error(error);
+	}
 
 	if (this._queue.state) {
 		throw `You can't use setState during rendering phase`;
