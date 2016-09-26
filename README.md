@@ -51,3 +51,21 @@ TVDML
 
 > This is small example of using navigation and rendering modules to handle routes and present views to user.
 
+Here is complete navigation module's api:
+
+- `TVDML.handleRoute(routeName)` — Creates pipeline for route handling. Only one pipeline can be created for the route. Otherwise it will throw error.
+- `TVDML.dismissRoute(routeName)` — Destroy previously created route pipeline. Can destroy only created pipelines. Otherwise it will throw error.
+- `TVDML.navigate(routeName[, params][, isRedirect])` — Navigation trigger. Will invoke registered route pipeline with passed params if they are specified. Route pipeline will result in creating new navigation document. if param `isRedirect` is passed then route pipeline will replace current navigation document with new one.
+- `TVDML.redirect(routeName[, params])` — Same as `TVDML.navigate(routeName, params, true)`.
+
+And a list of predefined constants:
+
+- `event`
+	- `EXIT` — 
+	- `ERROR` — 
+	- `LAUNCH` — 
+	- `RELOAD` — 
+	- `RESUME` — 
+	- `SUSPEND` — 
+- `route`
+	- `NOT_FOUND` — 
