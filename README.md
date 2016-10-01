@@ -61,6 +61,32 @@ Here is complete navigation module's api:
 
 - `TVDML.redirect(routeName[, params])` — Same as `TVDML.navigate(routeName, params, true)`.
 
+```javascript
+import * as TVDML from 'tvdml';
+
+TVDML
+	.subscribe(TVDML.event.LAUNCH)
+	.pipe(() => TVDML.navigate('start', {foo: 'bar'}));
+
+// To create route handler use `handleRoute` method.
+TVDML
+	.handleRoute('start')
+	.pipe(payload => {
+		const {
+			route,
+			redirect,
+			navigation,
+		} = payload;
+		
+		console.log(route); // 'start'
+		console.log(redirect); // false
+		console.log(navigation); // {foo: 'bar'}
+	});
+	
+// `dismissRoute` method will help you destroy route handler.
+TVDML.dismissRoute('start');
+```
+
 Here is a list of predefined constants for system events:
 
 - `TVDML.event.EXIT`
@@ -96,4 +122,8 @@ suspendEventPipeline.unsubscribe();
 Also there are some predefined routes that may help you:
 
 - `TVDML.route.NOT_FOUND` — Will be invoked when navigation module was unable to find match to requested route.
+
+The next big thing is...
+
+## Templating
 
