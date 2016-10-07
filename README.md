@@ -54,7 +54,7 @@ import {handleRoute, navigate} from 'tvdml/src/navigation';
 
 Despite being written totally in ES6 TVDML is not forcing you to use it. 
 
-But you should agree with me that this...
+But you should agree that this...
 
 ```javascript
 App.onLaunch = function(options) {
@@ -313,25 +313,7 @@ TVDML
 
 TVDML
 	.handleRoute('start')
-	.pipe(() => {
-		// Creating and returning promise to pause current pipeline from executing next 
-		// step until we load data.
-		return new Promise((resolve) => {
-			const XHR = new XMLHttpRequest();
-
-			// Configuring XHR instance to load data that we need.
-			XHR.open('GET', '/tvshows/all');
-
-			// Adding event listener to retreive data when it will be loaded.
-			XHR.addEventListener('load', event => {
-				// Parsing request response to JSON and resolving promise
-				resolve(JSON.parse(event.target.responseText));
-			});
-
-			// Initiating request.
-			XHR.send();
-		});
-	})
+	.pipe(downloadTVShows())
 	.pipe(TVDML.render(tvshows => {
 		return (
 			<document>
@@ -355,6 +337,28 @@ TVDML
 			</document>
 		);
 	}));
+	
+function downloadTVShows() {
+	return payload => {
+		// Creating and returning promise to pause current pipeline from executing next 
+		// step until we load data.
+		return new Promise((resolve) => {
+			const XHR = new XMLHttpRequest();
+
+			// Configuring XHR instance to load data that we need.
+			XHR.open('GET', '/tvshows/all');
+
+			// Adding event listener to retreive data when it will be loaded.
+			XHR.addEventListener('load', event => {
+				// Parsing request response to JSON and resolving promise
+				resolve(JSON.parse(event.target.responseText));
+			});
+
+			// Initiating request.
+			XHR.send();
+		});
+	};
+}
 ```
 
 Now lets try to show user some usefull information when he selects tv show
