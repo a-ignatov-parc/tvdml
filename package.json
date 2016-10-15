@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Small library for creating declarative apps for tvOS with TVML and TVJS",
   "main": "src/index.js",
+  "engine-strict": true,
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,9 +15,13 @@
     "url": "git+https://github.com/a-ignatov-parc/tvdml.git"
   },
   "keywords": [
-    "appletv",
+    "virtual",
+    "apple",
     "tvos",
-    "tvjs"
+    "tvjs",
+    "tvml",
+    "dom",
+    "tv"
   ],
   "author": "Anton Ignatov <abietis@gmail.com>",
   "license": "MIT",
@@ -32,11 +40,7 @@
     "gulp-uglify": "^1.5.4",
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.8",
-    "pretty-bytes": "^3.0.1",
-    "through2": "^2.0.1",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "xtend": "^4.0.1"
+    "pretty-bytes": "^3.0.1"
   },
   "dependencies": {
     "es6-promise": "^3.2.1",

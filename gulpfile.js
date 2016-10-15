@@ -1,34 +1,61 @@
-var gulp = require('gulp');
-var gutil = require('gulp-util');
+'use strict';
 
-var rm = require('gulp-rm');
-var watch = require('gulp-watch');
-var uglify = require('gulp-uglify');
-var sourcemaps = require('gulp-sourcemaps');
+const stream = require('stream');
 
-var xtend = require('xtend');
-var babelify = require('babelify');
-var browserify = require('browserify');
-var prettyBytes = require('pretty-bytes');
-var incremental = require('browserify-incremental');
+const gulp = require('gulp');
+const utils = require('gulp-util');
 
-var through = require('through2');
-var buffer = require('vinyl-buffer');
-var source = require('vinyl-source-stream');
+const rm = require('gulp-rm');
+const watch = require('gulp-watch');
+const uglify = require('gulp-uglify');
+const sourcemaps = require('gulp-sourcemaps');
 
-var EXPOSE = 'TVDML';
-var LIVE = process.argv.indexOf('--production') !== -1;
+const babelify = require('babelify');
+const browserify = require('browserify');
+const prettyBytes = require('pretty-bytes');
+const incremental = require('browserify-incremental');
 
-var DEST = './out';
-var SOURCE = './src';
-var CACHE = './build.json';
+const File = utils.File;
+
+const EXPOSE = 'TVDML';
+const LIVE = !!~process.argv.indexOf('--production');
+
+const DEST = './out';
+const SOURCE = './src';
+const CACHE = './build.json';
 
 function pass() {
-	return through.obj();
+	return new stream.Transform({
+		objectMode: true,
+		transform(file, enc, next) {
+			next(null, file);
+		},
+	});
+}
+
+function buffer(filename) {
+	let chunks = '';
+
+	return new stream.Transform({
+		objectMode: true,
+
+		transform(chunk, enc, next) {
+			chunks += chunk;
+			next();
+		},
+
+		flush(done) {
+			this.push(new File({
+				path: filename,
+				contents: new Buffer(chunks),
+			}));
+			done();
+		},
+	});
 }
 
 gulp.task('build', function() {
-	var build = browserify(xtend(incremental.args, {
+	const build = browserify(Object.assign({}, incremental.args, {
 		debug: true,
 		entries: SOURCE + '/index.js',
 		standalone: EXPOSE,
@@ -40,9 +67,9 @@ gulp.task('build', function() {
 
 	return build
 		.on('log', function(info) {
-			var parts = info.split(/\s*bytes\s*/);
+			const parts = info.split(/\s*bytes\s*/);
 			parts[0] = prettyBytes(+parts[0]);
-			gutil.log(gutil.colors.green('Build info:'), parts.join(' '));
+			utils.log(utils.colors.green('Build info:'), parts.join(' '));
 		})
 		.transform(babelify, {
 			global: true,
@@ -50,11 +77,10 @@ gulp.task('build', function() {
 		})
 		.bundle()
 		.on('error', function(error) {
-			gutil.log(gutil.colors.red('Browserify compile error:'), error.message);
+			utils.log(utils.colors.red('Browserify compile error:'), error.message);
 			this.emit('end');
 		})
-		.pipe(source('tvdml.js'))
-		.pipe(buffer())
+		.pipe(buffer('tvdml.js'))
 		.pipe(sourcemaps.init({loadMaps: true}))
 		.pipe(LIVE ? uglify() : pass())
 		.pipe(sourcemaps.write('./'))
@@ -69,8 +95,9 @@ gulp.task('clear-cache', function() {
 
 gulp.task('watch', ['clear-cache'], function() {
 	gulp.start('build');
+
 	watch([SOURCE + '/**/*.js'], function() {
-		gulp.start('build')
+		gulp.start('build');
 	});
 });
 
