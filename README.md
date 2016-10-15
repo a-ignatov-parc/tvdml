@@ -223,13 +223,13 @@ Also there are some predefined routes that may help you:
 
 The next big thing is...
 
-## Templating
+## Templating and styling
 
 Using TVDML you have multiple ways to create documents for TVML depending on your need.
 
 > Here is a [list of all possible documents](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TextboxTemplate.html) you can use in TVML.
 
-## Rendering static document
+### Rendering static document
 
 The simples way to create view:
 	
@@ -258,7 +258,7 @@ TVDML
 
 > TVDML works only with templates created using JSX. Please check how to configure your build to be able to use it in "Getting started" section.
 
-## Rendering custom data using factory approach
+### Rendering custom data using factory approach
 
 ```javascript
 /** @jsx TVDML.jsx */
@@ -296,7 +296,7 @@ Using this approach you can render any data that you need. But you may ask yours
 
 Easy!
 
-## Requesting and rendering data
+### Requesting and rendering data
 
 TVDML's pipelines support promises so you can pause them when you need it. For example to retreive any data you need from remote server.
 
@@ -365,7 +365,7 @@ function downloadTVShows() {
 
 Now lets figure out how can we react to user activity.
 
-## Events
+### Events
 
 It's easy to bind event handlers using JSX. All you need to do is add one of the available handlers as attribute on controllable element.
 
@@ -388,7 +388,7 @@ List of available handlers:
 </button>
 ```
 
-## Modals
+### Modals
 
 Modals are perfect when you need to show some useful information but don't want to interupt opened view context. You can use `TVDML.renderModal()` method to render any document you want in overlay. `TVDML.renderModal()` behaviour is similar to `TVDML.render()`. 
 
@@ -448,7 +448,7 @@ function showTVShowDescription(tvshow) {
 }
 ```
 
-## Working with rendered elements
+### Working with rendered elements
 
 TVDML provides you with `ref` mechanism to help with access to rendered document nodes. This is useful when you need to get features of elements like: `textField`, `searchField` and `menuBar`.
 
@@ -466,7 +466,7 @@ That was easy! Right? But how can we update views depending on user activity?
 
 That is a good question and that is where TVDML components comes to the rescue!
 
-## Creating interactive components
+### Creating interactive components
 
 I think at least someone has notised that some approaches used in TVDML are similar to those that used is react.js and you will be right! No! There is no react.js inside TVDML but it's hard to argue that its ideas are greatly fit to app development for Apple TV. React.js Components lifecycle are one of them.
 
@@ -616,7 +616,7 @@ TVDML
 
 Looks nice! But what can we do with document parts that are need to be reused in other places? Please welcome partials!
 
-## Partials
+### Partials
 
 Partials are elements that can encapsulate complex markup and logic. They can be distinguished by names that starts with capital letters.
 
@@ -683,11 +683,11 @@ Full `node` specification:
 
 The last thing that we need to cover is how to style elements.
 
-## Styling elements
+### Styling elements
 
 There is a big [section in TVML documentation](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/ITMLStyles.html) related to elements styling. And there are two ways you can attach styles to elements.
 
-### Inline styles
+#### Inline styles
 
 You can write styles directly on elements using `style` attribute.
 
@@ -714,7 +714,7 @@ If you need to set multiple of styles on one element you can use ES6 template li
 >{counter}</textBadge>
 ```
 
-### Document styles and class names
+#### Document styles and class names
 
 If you have repeated styles or want to keep all styles in one place then you should use document styles. They are must be defined in `<style />` tag inside document's `<head />`.
 
@@ -774,3 +774,22 @@ After defining class names you can attach them to elements using `class` attribu
 	</decorationLabel>
 </listItemLockup>
 ```
+
+### Complete rendering module api
+
+- `TVDML.render(template)` — Main rendering factory that transforms JSX templates to TVML documents and responsible for rendering them to screen. Uses `TVDML.parseDocument` to parse and evaluate `template` object into TVML document before applying to `NavigationDocument`.
+
+- `TVDML.parseDocument(template)` — Responsible for transforming JSX templates to TVML documents. In most cases you are not supposed to use this method.
+
+  `template` can be:
+
+  - JSX template.
+  - function that will return JSX template on execution.
+
+  > String templates are prohibited to use.
+
+- `TVDML.renderModal(template)` — Same as `TVDML.render(template)` but will render passed document in modal overlay.
+
+- `TVDML.removeModal()` — Removes any rendered modals.
+
+- `TVDML.createComponent(spec)` — You should provide a specification object that contains at least `render` method and can optionaly contains other lifecycle methods described [here](https://facebook.github.io/react/docs/component-specs.html). Please check for differences with react.js specification in [Creating interactive components](#creating-interactive-components) section.
