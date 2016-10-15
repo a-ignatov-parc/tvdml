@@ -215,7 +215,7 @@ const suspendEventPipeline = TVDML
 suspendEventPipeline.unsubscribe();
 ```
 
-> To know more about how pipelines works check section "Pipelines".
+> To know more about how pipelines works check [Pipelines](#pipelines) section.
 
 Also there are some predefined routes that may help you:
 
@@ -775,6 +775,10 @@ After defining class names you can attach them to elements using `class` attribu
 </listItemLockup>
 ```
 
+#### Working with `menuBar`
+
+...
+
 ### Complete rendering module api
 
 - `TVDML.render(template)` — Main rendering factory that transforms JSX templates to TVML documents and responsible for rendering them to screen. Uses `TVDML.parseDocument` to parse and evaluate `template` object into TVML document before applying to `NavigationDocument`.
@@ -796,3 +800,34 @@ After defining class names you can attach them to elements using `class` attribu
 
 - `TVDML.jsx` — Transforms virtual DOM elements from JSX notation into [hyperscript](https://github.com/Matt-Esch/virtual-dom/tree/master/virtual-hyperscript) notation.
 
+## Player
+
+...
+
+## Pipelines
+
+...
+
+## Additional tools
+
+### Detecting Menu button press
+
+...
+
+## Sample code
+
+You can check example application [written using TVDML](https://github.com/a-ignatov-parc/tvos-soap4.me) for [soap4.me](https://soap4.me/) video service.
+
+## Useful Links
+
+...
+
+## Contributions
+
+1. Fork the project
+1. Commit your enhancements and bug fixes
+1. Create a pull request describing the changes
+
+## License
+
+TVDML is released under the [MIT License](http://opensource.org/licenses/MIT).
