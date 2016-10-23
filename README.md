@@ -931,7 +931,52 @@ Complete example can be found [here](https://github.com/a-ignatov-parc/tvos-soap
 
 ### Detecting Menu button press
 
-...
+tvOS and TVJS aren't providing any way to detect Menu button activity on Apple TV Remote (Siri Remote). To be able to detect when user returns from active screen to previous TVDML provides special event that describes activitiy that is posible only with press of the Menu button.
+
+```javascript
+TVDML
+	.subscribe('menu-button-press')
+	.pipe(transition => {
+		console.log(transition); // {from: {route, document, modal}, to: {route, document, modal}}
+	});
+```
+
+With this snippet you can detect when user returned to specific screen and perform some activity like update results etc.
+
+```javascript
+TVDML
+	.createPipeline()
+	.pipe(TVDML.render(TVDML.createComponent({
+		componentDidMount() {
+			let currentDocument = this._rootNode.ownerDocument;
+
+			this.menuButtonPressPipeline = TVDML
+				.subscribe('menu-button-press')
+				.pipe(isMenuButtonPressNavigatedTo(currentDocument))
+				.pipe(isNavigated => isNavigated && this.loadData().then(this.setState.bind(this)));
+		},
+
+		componentWillUnmount() {
+			this.menuButtonPressPipeline.unsubscribe();
+		},
+
+		loadData() {...},
+
+		render() {...},
+	})));
+
+function isMenuButtonPressNavigatedTo(targetDocument) {
+	return ({to: {document}}) => {
+		let {menuBarDocument} = document;
+
+		if (menuBarDocument) {
+			document = menuBarDocument.getDocument(menuBarDocument.getSelectedItem());
+		}
+
+		return targetDocument === document;
+	}
+}
+```
 
 ## Sample code
 
