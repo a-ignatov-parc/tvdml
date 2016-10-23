@@ -925,7 +925,7 @@ Complete example can be found [here](https://github.com/a-ignatov-parc/tvos-soap
 
 ## Pipelines
 
-...
+One of the core concepts of the TVDML is to be able to easily understand what is happening in the application code...
 
 ## Additional tools
 
@@ -984,7 +984,10 @@ You can check example application [written using TVDML](https://github.com/a-ign
 
 ## Useful Links
 
-...
+- [TVMLKit JS](https://developer.apple.com/reference/tvmljs)
+- [TVML Programming Guide](https://developer.apple.com/library/content/documentation/TVMLKitJS/Conceptual/TVMLProgrammingGuide/)
+- [Apple TV Markup Language Reference](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/)
+- [Beginning tvOS Development with TVML Tutorial](http://www.raywenderlich.com/114886/beginning-tvos-development-with-tvml-tutorial) by Kelvin Lau ([@KelvinlauKl](https://twitter.com/KelvinlauKL))
 
 ## Contributions
 
