@@ -45,6 +45,6 @@
   "dependencies": {
     "es6-promise": "^3.2.1",
     "object-assign": "^4.1.0",
-    "virtual-dom": "a-ignatov-parc/virtual-dom#v2.1.1-tvml.1"
+    "virtual-dom": "a-ignatov-parc/virtual-dom#v2.1.1-tvml.2"
   }
 }
