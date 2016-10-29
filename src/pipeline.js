@@ -2,11 +2,60 @@ import assign from 'object-assign';
 import {Promise} from 'es6-promise';
 import {noop} from './utils';
 
-export function createPipeline(options = {}) {
+class Pipeline {
+	constructor(options) {
+		this.options = options || {};
+		this.pipelines = [];
+	}
+
+	pipe(handler) {
+		let pipeline;
+
+		if (handler instanceof Pipeline) {
+			pipeline = handler;
+			handler = payload => payload;
+		} else {
+			pipeline = new this.constructor(this.options);
+		}
+		this.pipelines.push({pipeline, handler});
+		return pipeline;
+	}
+
+	sink(payload) {
+		return this._sink(payload);
+	}
+
+	_sink(payload) {
+		return Promise.all(this.pipelines.map(({pipeline, handler}) => {
+			return Promise
+				.resolve(payload)
+				.then(handler)
+				.then(pipeline._sink.bind(pipeline));
+		}));
+	}
+}
+
+class PassthroughPipeline extends Pipeline {
+	pipe(handler) {
+		const pipeline = super.pipe(handler);
+		pipeline.sink = this.sink.bind(this);
+		return pipeline;
+	}
+}
+
+export function createPipeline2(options) {
+	return new Pipeline(options);
+}
+
+export function createPassThroughPipeline2(options) {
+	return new PassthroughPipeline(options);
+}
+
+export function createPipeline(options = {}, params) {
 	const {
 		chain = [],
 		passthrough,
-	} = this || {};
+	} = params || {};
 
 	const pipeline = (...args) => (payload) => {
 		return chain
@@ -29,7 +78,7 @@ export function createPipeline(options = {}) {
 				return this;
 			}
 
-			return createPipeline.call({chain: chain.concat(handler)}, options);
+			return createPipeline(options, {chain: chain.concat(handler)});
 		},
 
 		sink(payload) {
@@ -39,7 +88,7 @@ export function createPipeline(options = {}) {
 }
 
 export function createPassThroughPipeline(options) {
-	return createPipeline.call({passthrough: true}, options);
+	return createPipeline(options, {passthrough: true});
 }
 
 export function passthrough(handler = noop()) {
