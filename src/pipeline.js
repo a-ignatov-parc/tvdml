@@ -2,9 +2,14 @@ import assign from 'object-assign';
 import {Promise} from 'es6-promise';
 import {noop} from './utils';
 
+// Need to implement:
+// + options.extend
+// - options.onSinkStep
+
 class Pipeline {
-	constructor(options) {
-		this.options = options || {};
+	constructor(options = {}) {
+		assign(this, options.extend);
+		this.options = options;
 		this.pipelines = [];
 	}
 
