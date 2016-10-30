@@ -89,26 +89,6 @@ describe('Pipelines', () => {
 			});
 	});
 
-	it('onSinkStep', () => {
-		const values = [];
-
-		const pipeline = new Pipeline({
-			onSinkStep(step, value) {
-				values[step] = value;
-				return value;
-			}
-		});
-
-		return pipeline
-			.pipe(value => value + 1)
-			.pipe(value => value + 1)
-			.pipe(noop())
-			.sink(1)
-			.then(() => {
-				assert.deepEqual(values, [1, 2, 3], 'values should be equal to expected ones');
-			});
-	});
-
 	it('streams interoperability', () => {
 		const values = [];
 

@@ -49,13 +49,17 @@ export default class Stream {
 			.all(this.forks.map(resolver => {
 				return Promise
 					.resolve(payload)
-					.then(payload => {
-						const {onSinkStep} = this.options;
-						if (typeof(onSinkStep) === 'function') return onSinkStep(step, payload);
-						return payload;
-					})
+					.then(this.handleSinkByStep(step))
 					.then(resolver.bind(resolver, step));
 			}))
-			.then(() => payload);
+			.then(forks => payload);
+	}
+
+	handleSinkByStep(step) {
+		return payload => {
+			const {onSinkStep} = this.options;
+			if (typeof(onSinkStep) === 'function') return onSinkStep(step, payload);
+			return payload;
+		};
 	}
 }

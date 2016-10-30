@@ -9,7 +9,7 @@ export default class Pipeline extends Stream {
 	}
 
 	isHandlerValid(handler) {
-		return handler instanceof this.constructor || handler instanceof Stream || typeof(handler) === 'function';
+		return handler instanceof Stream || typeof(handler) === 'function';
 	}
 
 	createTransform(handler) {
@@ -26,13 +26,9 @@ export default class Pipeline extends Stream {
 	}
 
 	_sink(step = 0, payload) {
-		return this.pipeline.reduce((result, handler, step) => {
+		return this.pipeline.reduce((result, handler, pipelineStep) => {
 			return result
-				.then(payload => {
-					const {onSinkStep} = this.options;
-					if (typeof(onSinkStep) === 'function') return onSinkStep(step, payload);
-					return payload;
-				})
+				.then(this.handleSinkByStep(pipelineStep))
 				.then(handler);
 		}, Promise.resolve(payload));
 	}
