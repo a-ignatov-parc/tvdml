@@ -7,13 +7,19 @@ import {Promise} from 'es6-promise';
 
 export default class Pipeline {
 	constructor(options = {}) {
-		assign(this, options.extend);
+		// assign(this, options.extend);
 		this.options = options;
 		this.pipelines = [];
 	}
 
 	pipe(handler) {
 		let pipeline;
+
+		if (!(handler instanceof Pipeline) && typeof(handler) !== 'function') {
+			const error = new TypeError(`Unsupported handler type`);
+			error.code = 'EUNSUPPORTEDHANDLER';
+			throw error;
+		}
 
 		if (handler instanceof Pipeline) {
 			pipeline = handler;
