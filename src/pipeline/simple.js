@@ -1,10 +1,6 @@
 import assign from 'object-assign';
 import {Promise} from 'es6-promise';
 
-// Need to implement:
-// + options.extend
-// - options.onSinkStep
-
 export default class Pipeline {
 	constructor(options = {}) {
 		assign(this, options.extend);
@@ -32,15 +28,20 @@ export default class Pipeline {
 	}
 
 	sink(payload) {
-		return this._sink(payload);
+		return this._sink(0, payload);
 	}
 
-	_sink(payload) {
+	_sink(step = 0, payload) {
 		return Promise.all(this.pipelines.map(({pipeline, handler}) => {
 			return Promise
 				.resolve(payload)
+				.then(payload => {
+					const {onSinkStep} = this.options;
+					if (typeof(onSinkStep) === 'function') return onSinkStep(step, payload);
+					return payload;
+				})
 				.then(handler)
-				.then(pipeline._sink.bind(pipeline));
+				.then(pipeline._sink.bind(pipeline, step + 1));
 		}));
 	}
 }
