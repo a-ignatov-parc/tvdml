@@ -7,7 +7,7 @@ import {Promise} from 'es6-promise';
 
 export default class Pipeline {
 	constructor(options = {}) {
-		// assign(this, options.extend);
+		assign(this, options.extend);
 		this.options = options;
 		this.pipelines = [];
 	}

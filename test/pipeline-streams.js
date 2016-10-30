@@ -65,6 +65,24 @@ describe('Pipeline Streams', () => {
 
 			return tail.sink(1);
 		});
+
+		it('extends', () => {
+			const obj = {};
+
+			const pipeline = new Pipeline();
+			const extended = new Pipeline({extend: {foo: 'bar', obj}});
+
+			assert.ok(!('foo' in pipeline), '"foo" property should not be in common pipeline');
+			assert.equal(extended.foo, 'bar', 'value of "foo" property should be equal to passed in options');
+
+			const fork1 = pipeline.pipe(none());
+			const fork2 = extended.pipe(none());
+
+			assert.ok(!('foo' in fork1), '"foo" property should not be in fork of the common pipeline');
+			assert.equal(fork2.foo, extended.foo, '"foo" property should be in all extended pipeline forks');
+			assert.equal(fork2.obj, extended.obj, '"obj" property should be in all extended pipeline forks');
+			assert.equal(fork2.obj, obj, '"obj" object should be link to original object');
+		});
 	});
 });
 
