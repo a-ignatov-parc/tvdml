@@ -925,7 +925,9 @@ Complete example can be found [here](https://github.com/a-ignatov-parc/tvos-soap
 
 ## Pipelines
 
-One of the core concepts of the TVDML is to be able to easily understand what is happening in the application code...
+One of the core concepts of the TVDML is to be able to easily understand what is happening in the application's code. The best way to create understandable code is to operate with data flows pipelines. When you declaring **what** your code is doing and not **how**.
+
+Sounds interesting, right? So how can we create such pipelines? Use `TVDML.createPipeline`
 
 ## Additional tools
 

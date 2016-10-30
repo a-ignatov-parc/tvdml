@@ -1,7 +1,7 @@
 import assign from 'object-assign';
 import {broadcast} from './event-bus';
 import {promisedTimeout} from './utils';
-import {passthrough, createPipeline} from './pipeline';
+import {passthrough, createPipeline} from './pipelines';
 import {vdomToDocument, createEmptyDocument} from './render/document';
 
 let hasModal = false;
