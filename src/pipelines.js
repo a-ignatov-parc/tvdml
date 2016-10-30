@@ -2,15 +2,15 @@ import assign from 'object-assign';
 import {Promise} from 'es6-promise';
 import {noop} from './utils';
 
-import Pipeline from './pipeline/simple';
-import PassthroughPipeline from './pipeline/passthrough';
+import Stream from './pipelines/stream';
+import Pipeline from './pipelines/pipeline';
+
+export function createStream(options) {
+	return new Stream(options);
+}
 
 export function createPipeline(options) {
 	return new Pipeline(options);
-}
-
-export function createPassThroughPipeline(options) {
-	return new PassthroughPipeline(options);
 }
 
 export function passthrough(handler = noop()) {

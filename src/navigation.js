@@ -1,4 +1,4 @@
-import {passthrough, createPassThroughPipeline} from './pipeline';
+import {passthrough, createStream} from './pipelines';
 import {broadcast, subscribe} from './event-bus';
 import createElement from './jsx';
 import {render} from './render';
@@ -30,7 +30,7 @@ export function handleRoute(routeName) {
 		throw new Error(`Handler for "${routeName}" is already specified`);
 	}
 
-	return routes[routeName] = createPassThroughPipeline({
+	routes[routeName] = createStream({
 		onSinkStep(step, payload) {
 			let current = getActiveDocument();
 
@@ -39,8 +39,9 @@ export function handleRoute(routeName) {
 			}
 			return payload;
 		}
-	})
-	.pipe(render(createElement('document')));
+	});
+
+	return routes[routeName].pipe(render(createElement('document')));
 }
 
 export function dismissRoute(routeName) {

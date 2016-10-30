@@ -1,4 +1,4 @@
-import {createPassThroughPipeline} from './pipeline';
+import {createStream} from './pipelines';
 
 const subscriptions = {};
 
@@ -7,10 +7,10 @@ export function subscribe(name) {
 		subscriptions[name] = [];
 	}
 
-	let pipeline = createPassThroughPipeline({
+	const pipeline = createStream({
 		extend: {
 			unsubscribe() {
-				let index = subscriptions[name].indexOf(pipeline);
+				const index = subscriptions[name].indexOf(pipeline);
 
 				if (~index) {
 					subscriptions[name].splice(index, 1);
