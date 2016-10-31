@@ -475,7 +475,7 @@ I think at least someone has notised that some approaches used in TVDML are simi
 1. There is no need for child components in TVDML so this feature isn't supported. But is a subject to change in future.
 1. Rendering mechanism are different from ones used in react.js so interoperability with react components are not tested and most likely not possible.
 
-What is not supported from [Component Specs and Lifecycle](https://facebook.github.io/react/docs/component-specs.html):
+What is not supported (from [Component Specs and Lifecycle](https://facebook.github.io/react/docs/component-specs.html)):
 
 - `propTypes`
 - `mixins`
@@ -923,11 +923,132 @@ TVDML
 
 Complete example can be found [here](https://github.com/a-ignatov-parc/tvos-soap4.me/blob/5a4a7bce2bc617311a9a5c8314cc66d101121e75/src/routes/season.js#L299-L367).
 
-## Pipelines
+## Pipelines and Streams
 
-One of the core concepts of the TVDML is to be able to easily understand what is happening in the application's code. The best way to create understandable code is to operate with data flows pipelines. When you declaring **what** your code is doing and not **how**.
+To be able to easily manage your data flows TVDML provides two additional utils. They are **Streams** and **Pipelines**. They have similar api but a little different behaviours. All core functionality in TVDML is based upon them.
 
-Sounds interesting, right? So how can we create such pipelines? Use `TVDML.createPipeline`
+### Streams
+
+Streams can be created using `TVDML.createStream()` factory and can be described as event bus with ability to combine transforms and create forks. Here is an example:
+
+```javascript
+const head = TVDML.createStream();
+
+head.pipe(value => console.log(value));
+head.pipe(value => console.log(value));
+
+head.sink(1);
+```
+
+Console:
+
+```javascript
+1
+1
+```
+
+This code will be resulted with two records in the console because we create two forks of the main stream and all of them will receive sinked value.
+
+Every `pipe` creates another stream that can be used separately:
+
+```javascript
+const head = TVDML.createStream();
+const tail = head.pipe(value => log(value + 1));
+
+tail.pipe(value => log(value * 3));
+
+head.sink(1);
+tail.sink(1);
+
+function log(value) {
+	console.log(value);
+	return value;
+}
+```
+
+Console:
+
+```javascript
+2 // ├── 1 + 1
+3 // │ ─── 1 * 3
+6 // └── 2 * 3
+```
+
+As you can see `2` and `6` were produced by sinking `1` to `head` stream and `3` were produced by sinking `1` to `tail` stream. `3` is placed between `2` and `6` because of using promises to resolve pipes.
+
+> Promises execution scheduled after current event loop.
+
+Streams can be combined:
+
+```javascript
+const head1 = TVDML.createStream();
+const head2 = TVDML.createStream();
+
+head1
+	.pipe(value => log(value + 1))
+	.pipe(head2)
+	.pipe(value => log(value + 2))
+
+head2
+	.pipe(value => log(value + 3))
+	.pipe(value => log(value + 4))
+
+head1.sink(1);
+
+function log(value) {
+	console.log(value);
+	return value;
+}
+```
+
+Console:
+
+```javascript
+2 // ├─┬ 1 + 1
+5 // │ ├── 2 + 3
+9 // │ └── 5 + 4
+4 // └── 2 + 2
+```
+
+Pipe transformations supports promised operations:
+
+```javascript
+const head = TVDML.createStream();
+
+head
+	.pipe(value => {
+		return new Promise(resolve => {
+			setTimeout(() => resolve(log(value + 1)), 100);
+		});
+	})
+	.pipe(value => log(value + 2))
+
+return head.sink(1);
+
+function log(value) {
+	console.log(value);
+	return value;
+}
+```
+
+Console:
+
+```javascript
+2 // (100ms)
+4
+```
+
+#### Stream's public api
+
+- `pipe(handler)` — Fork parent stream and apply transform provided by `handler` function. `handler` can be function or other stream.
+
+  > If stream is passed as `handler` then it will pass incoming value to other pipe without changes.
+
+- `sink(value)` — Emit passed value to stream and all of its forks.
+
+### Pipelines
+
+test
 
 ## Additional tools
 
@@ -952,14 +1073,14 @@ TVDML
 		componentDidMount() {
 			let currentDocument = this._rootNode.ownerDocument;
 
-			this.menuButtonPressPipeline = TVDML
-				.subscribe('menu-button-press')
+			this.menuButtonPressStream = TVDML.subscribe('menu-button-press');
+			this.menuButtonPressStream
 				.pipe(isMenuButtonPressNavigatedTo(currentDocument))
 				.pipe(isNavigated => isNavigated && this.loadData().then(this.setState.bind(this)));
 		},
 
 		componentWillUnmount() {
-			this.menuButtonPressPipeline.unsubscribe();
+			this.menuButtonPressStream.unsubscribe();
 		},
 
 		loadData() {...},
