@@ -10,7 +10,7 @@ export function subscribe(name) {
 	const stream = createStream({
 		extend: {
 			unsubscribe() {
-				const index = subscriptions[name].indexOf(stream);
+				const index = subscriptions[name].indexOf(this);
 
 				if (~index) {
 					subscriptions[name].splice(index, 1);
