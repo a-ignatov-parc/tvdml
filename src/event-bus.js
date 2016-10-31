@@ -7,10 +7,10 @@ export function subscribe(name) {
 		subscriptions[name] = [];
 	}
 
-	const pipeline = createStream({
+	const stream = createStream({
 		extend: {
 			unsubscribe() {
-				const index = subscriptions[name].indexOf(pipeline);
+				const index = subscriptions[name].indexOf(stream);
 
 				if (~index) {
 					subscriptions[name].splice(index, 1);
@@ -19,11 +19,11 @@ export function subscribe(name) {
 		}
 	});
 
-	subscriptions[name].push(pipeline);
+	subscriptions[name].push(stream);
 
-	return pipeline;
+	return stream;
 }
 
 export function broadcast(name, data) {
-	(subscriptions[name] || []).forEach(pipeline => pipeline.sink(data));
+	(subscriptions[name] || []).forEach(stream => stream.sink(data));
 }
