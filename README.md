@@ -1,5 +1,38 @@
 # TVDML
 
+- [Intro](#intro)
+- [Getting started](#getting-started)
+- [Routing](#routing)
+- [Templating and styling](#templating-and-styling)
+	- [Rendering static document](#rendering-static-document)
+	- [Rendering custom data using factory approach](#rendering-custom-data-using-factory-approach)
+	- [Requesting and rendering data](#requesting-and-rendering-data)
+	- [Events](#events)
+	- [Modals](#modals)
+	- [Working with rendered elements](#working-with-rendered-elements)
+	- [Creating interactive components](#creating-interactive-components)
+	- [Partials](#partials)
+	- [Styling elements](#styling-elements)
+		- [Inline styles](#inline-styles)
+		- [Document styles and class names](#document-styles-and-class-names)
+	- [Working with `menuBar`](#working-with-menubar)
+	- [Complete rendering module api](#complete-rendering-module-api)
+- [Player](#player)
+- [Pipelines and Streams](#pipelines-and-streams)
+	- [Streams](#streams)
+		- [Streams' public api](#streams-public-api)
+	- [Pipelines](#pipelines)
+		- [Pipelines' public api](#pipelines-public-api)
+	- [Rules of combining streams and pipelines](#rules-of-combining-streams-and-pipelines)
+- [Additional tools](#additional-tools)
+	- [Detecting Menu button press](#detecting-menu-button-press)
+- [Sample code](#sample-code)
+- [Useful Links](#useful-links)
+- [Contributions](#contributions)
+- [License](#license)
+
+## Intro
+
 This is library that main goal is to greatly simplify app development for Apple TV using pure Javascript and [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) providing tools to solve problems like:
 
 - Routing
@@ -256,7 +289,7 @@ TVDML
 	));
 ```
 
-> TVDML works only with templates created using JSX. Please check how to configure your build to be able to use it in "Getting started" section.
+> TVDML works only with templates created using JSX. Please check how to configure your build to be able to use it in [Getting started](#getting-started) section.
 
 ### Rendering custom data using factory approach
 
@@ -775,7 +808,7 @@ After defining class names you can attach them to elements using `class` attribu
 </listItemLockup>
 ```
 
-#### Working with `menuBar`
+### Working with `menuBar`
 
 One of the trickiest things in TVML is configure and use [menu bar](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/MenuBarTemplate.html) across multiple views.
 
