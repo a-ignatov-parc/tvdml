@@ -6,8 +6,8 @@ import createElement from 'virtual-dom/create-element';
 
 import CustomNode from './custom-node';
 
-export default function createComponent(lifecycle) {
-	return new CustomNode(Component, lifecycle);
+export default function createComponent(spec) {
+	return new CustomNode(Component, spec);
 }
 
 const excludeList = [
@@ -18,15 +18,15 @@ const excludeList = [
 ];
 
 export class Component {
-	constructor(props, lifecycle) {
+	constructor(props, spec) {
 		Object
-			.keys(lifecycle)
+			.keys(spec)
 			.filter(name => {
 				let isExcluded = !!~excludeList.indexOf(name);
 				if (isExcluded) throw `Can't override system method "${name}"`;
 				return !isExcluded;
 			})
-			.forEach(name => this[name] = lifecycle[name].bind(this));
+			.forEach(name => this[name] = spec[name].bind(this));
 
 		this._props = assign({}, props);
 		this.type = 'Widget';

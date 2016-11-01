@@ -2,11 +2,8 @@ import h from 'virtual-dom/h';
 
 import CustomNode from './render/custom-node';
 
-const cumulativeTypes = ['string', 'number'];
-
 export default function createElement(tag, attrs, ...children) {
 	let node = {tag};
-	let vnode;
 
 	if (attrs) {
 		Object
@@ -28,21 +25,6 @@ export default function createElement(tag, attrs, ...children) {
 			});
 	}
 
-	children = children.reduce((result, item, i) => {
-		// Processing tvml special case when multiple TextNodes always merged into one and this 
-		// behaviour breaks virtual-dom diff mechanism.
-		if (i && ~cumulativeTypes.indexOf(typeof(item)) && typeof(result[result.length - 1]) === 'string') {
-			result[result.length - 1] += `${item}`;
-		} else if (typeof(item) !== 'boolean') {
-			// Numbers always should be added as strings.
-			if (typeof(item) === 'number') {
-				item = `${item}`;
-			}
-			result.push(item);
-		}
-		return result;
-	}, []);
-
 	if (children.length === 1) {
 		node.children = children[0];
 	} else if (children.length > 1) {
@@ -56,6 +38,7 @@ export default function createElement(tag, attrs, ...children) {
 	}
 
 	let props = {
+		tvml: true,
 		key: node.key,
 		ref: node.ref,
 		events: node.events,
@@ -66,12 +49,7 @@ export default function createElement(tag, attrs, ...children) {
 		props.innerHTML = node.content;
 	}
 
-	vnode = h(node.tag, props, node.children);
-
-	// Fixing HTML namespace rules for handling tagName.
-	vnode.tagName = node.tag;
-
-	return vnode;
+	return h(node.tag, props, node.children);
 }
 
 class Ref {
