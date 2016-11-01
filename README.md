@@ -969,7 +969,7 @@ function log(value) {
 Console:
 
 ```javascript
-2 // ├── 1 + 1
+2 // ┬── 1 + 1
 3 // │ ─── 1 * 3
 6 // └── 2 * 3
 ```
@@ -1004,7 +1004,7 @@ function log(value) {
 Console:
 
 ```javascript
-2 // ├─┬ 1 + 1
+2 // ┬─┬ 1 + 1
 5 // │ ├── 2 + 3
 9 // │ └── 5 + 4
 4 // └── 2 + 2
@@ -1013,7 +1013,7 @@ Console:
 Pipe transformations supports promised operations:
 
 ```javascript
-const head = TVDML.createStream();
+const head = TVDML.createPipeline();
 
 head
 	.pipe(value => {
@@ -1022,8 +1022,7 @@ head
 		});
 	})
 	.pipe(value => log(value + 2))
-
-return head.sink(1);
+	.sink(1);
 
 function log(value) {
 	console.log(value);
@@ -1038,17 +1037,101 @@ Console:
 4
 ```
 
-#### Stream's public api
+#### Streams' public api
 
 - `pipe(handler)` — Fork parent stream and apply transform provided by `handler` function. `handler` can be function or other stream.
 
-  > If stream is passed as `handler` then it will pass incoming value to other pipe without changes.
-
-- `sink(value)` — Emit passed value to stream and all of its forks.
+- `sink(value)` — Emit passed value to stream and all of its forks. Returns promise that will be resolved when all branches will process sinked value.
 
 ### Pipelines
 
-test
+Pipelines are streams too. But instead sinking values from the starting point of the stream you create processing pipeline with transformations and sink values from its end. Only requested brunch will be executed. Other forks stays untouched.
+
+Let's compare with streams' first example:
+
+```javascript
+const head = TVDML.createPipeline();
+
+head.pipe(value => console.log(value));
+head
+	.pipe(value => console.log(value))
+	.sink(1);
+```
+
+Console:
+
+```javascript
+1
+```
+
+As we can see only sinked branch were exected.
+
+Let's compare other examples:
+
+```javascript
+const head = TVDML.createPipeline();
+const tail = head.pipe(value => log(value + 1));
+
+tail.sink(1);
+tail
+	.pipe(value => log(value * 3))
+	.sink(1);
+
+function log(value) {
+	console.log(value);
+	return value;
+}
+```
+
+Console:
+
+```javascript
+2 // ─── 1 + 1
+2 // ┬── 1 + 1
+6 // └── 2 * 3
+```
+
+Combining pipelines:
+
+```javascript
+const head1 = TVDML.createPipeline();
+const head2 = TVDML.createPipeline();
+
+const tail2 = head2
+	.pipe(value => log(value + 3))
+	.pipe(value => log(value + 4));
+
+head1
+	.pipe(value => log(value + 1))
+	.pipe(tail2)
+	.pipe(value => log(value + 2))
+	.sink(1);
+
+function log(value) {
+	console.log(value);
+	return value;
+}
+```
+
+Console:
+
+```javascript
+2  // ┬── 1 + 1
+5  // ├── 2 + 3
+9  // ├── 5 + 4
+11 // └── 9 + 2
+```
+
+#### Pipelines' public api
+
+- `pipe(handler)` — Fork parent pipeline and create new one with applying transform provided by `handler` function. `handler` can be function or other stream or pipeline.
+
+- `sink(value)` — Emit passed value to pipeline from its first pipe. Returns promise that will be resolved when all transforms in pipeline will process sinked value.
+
+### Rules of combining streams and pipelines
+
+- If stream is passed as `handler` it will pass incoming value to next pipe without changes.
+- If pipeline is passed as `handler` it will return computed value to next pipe.
 
 ## Additional tools
 
