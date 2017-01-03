@@ -97,8 +97,9 @@ function updatePlaylist(payload) {
 		});
 }
 
-function getMediaItems(player, items, uidResolver = uidResolver) {
-	let {currentMediaItem} = player;
+function getMediaItems(player, items, customUidResolver) {
+	const uidResolver = customUidResolver || defaultUidResolver;
+	const {currentMediaItem} = player;
 
 	if (typeof(items) === 'function') {
 		let currentItem = currentMediaItem ? currentMediaItem.item : null;
@@ -212,7 +213,7 @@ function shouldHandleStateChange(ctx, payload, event) {
 	return true;
 }
 
-function uidResolver({url}) {
+function defaultUidResolver({url}) {
 	return url;
 }
 
