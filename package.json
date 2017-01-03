@@ -2,13 +2,14 @@
   "name": "tvdml",
   "version": "1.0.0",
   "description": "Small library for creating declarative apps for tvOS with TVML and TVJS",
-  "main": "src/index.js",
+  "main": "dist/tvdml.js",
   "engine-strict": true,
   "engines": {
     "node": ">=4.0.0"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter spec --timeout 4000 --compilers js:babel-register"
+    "test": "./node_modules/.bin/mocha --reporter spec --timeout 4000 --compilers js:babel-register",
+    "prepublish": "./node_modules/.bin/gulp --production"
   },
   "repository": {
     "type": "git",
@@ -48,5 +49,8 @@
     "es6-promise": "^3.2.1",
     "object-assign": "^4.1.0",
     "virtual-dom": "a-ignatov-parc/virtual-dom#v2.1.1-tvml.3"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

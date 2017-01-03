@@ -8,4 +8,4 @@ build.json
 # Build files
 npm-debug.log
 node_modules/
-out/
+dist/

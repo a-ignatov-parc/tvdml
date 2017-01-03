@@ -20,7 +20,7 @@ const File = utils.File;
 const EXPOSE = 'TVDML';
 const LIVE = !!~process.argv.indexOf('--production');
 
-const DEST = './out';
+const DEST = './dist';
 const SOURCE = './src';
 const CACHE = './build.json';
 
