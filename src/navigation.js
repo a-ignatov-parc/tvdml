@@ -61,7 +61,7 @@ export function navigate(routeName, params, redirect = false) {
 		throw new Error(`Can't process navigation before app is launched`);
 	}
 
-	let targetRoute = routes[routeName];
+	const targetRoute = routes[routeName];
 
 	if (targetRoute) {
 		return targetRoute.sink({
@@ -85,8 +85,8 @@ export function redirect(routeName, params) {
 Object
 	.keys(event)
 	.forEach(id => {
-		let symbol = event[id];
-		let name = symbol.toString();
+		const symbol = event[id];
+		const name = symbol.toString();
 
 		App[name] = options => {
 			console.info('Fired handler for app lifecycle', name, options);
@@ -100,7 +100,7 @@ Object
 	});
 
 subscribe('menu-item-select').pipe(({menuItem, menuBar}) => {
-	let route = menuItem.getAttribute('route');
+	const route = menuItem.getAttribute('route');
 
 	if (route) {
 		navigate(route, {menuItem, menuBar});

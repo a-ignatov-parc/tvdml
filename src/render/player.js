@@ -10,7 +10,7 @@ const REMOVE_RESUME_TIME_PERCENT_BREAKPOINT = 97;
 
 const defaults = {
 	items: null,
-	uidResolver: null,
+	uidResolver,
 	markAsStopped: noop(),
 	markAsWatched: noop(),
 	markAsWatchedPercent: MARK_AS_WATCHED_PERCENT_BREAKPOINT,
@@ -97,8 +97,7 @@ function updatePlaylist(payload) {
 		});
 }
 
-function getMediaItems(player, items, customUidResolver) {
-	const uidResolver = customUidResolver || defaultUidResolver;
+function getMediaItems(player, items, uidResolver) {
 	const {currentMediaItem} = player;
 
 	if (typeof(items) === 'function') {
@@ -213,7 +212,7 @@ function shouldHandleStateChange(ctx, payload, event) {
 	return true;
 }
 
-function defaultUidResolver({url}) {
+function uidResolver({url}) {
 	return url;
 }
 

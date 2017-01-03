@@ -1,6 +1,7 @@
 import createElement from 'virtual-dom/create-element';
 
 import CustomNode from './custom-node';
+import {Component} from './component';
 import {broadcast} from '../event-bus';
 import {noop} from '../utils';
 
@@ -42,7 +43,7 @@ const eventsList = [
 ];
 
 export function vdomToDocument(vdom, payload) {
-	let document = createEmptyDocument();
+	const document = createEmptyDocument();
 	let vnode;
 
 	if (vdom instanceof CustomNode) {
@@ -51,11 +52,13 @@ export function vdomToDocument(vdom, payload) {
 		vnode = vdom;
 	}
 
-	let childNode = createElement(vnode, {document});
-	let menuBars = childNode.getElementsByTagName('menuBar');
+	const childNode = createElement(vnode, {document});
+	const menuBars = childNode.getElementsByTagName('menuBar');
 
 	if (menuBars.length) {
 		document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
+	} else if (vnode instanceof Component) {
+		document.destroyComponent = vnode.destroy.bind(vnode, childNode);
 	}
 
 	document.appendChild(childNode);

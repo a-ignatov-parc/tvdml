@@ -109,6 +109,7 @@ export function disable() {
 }
 
 function handleUnload({target: {ownerDocument: document}}) {
+	destroyComponents(document);
 	broadcast('uncontrolled-document-pop', {document});
 }
 

@@ -20,7 +20,8 @@ export function render(template) {
 				document: renderedDocument,
 			} = payload;
 
-			let {menuBar, menuItem} = navigation;
+			const {menuBar, menuItem} = navigation;
+
 			let [
 				prevRouteDocument,
 				currentRouteDocument,
@@ -42,6 +43,13 @@ export function render(template) {
 			}
 
 			if (menuBar && menuItem) {
+				const menuBarDocument = menuItem.parentNode;
+
+				if (menuBarDocument.selectedMenuItem) {
+					const activeDocument = menuBar.getDocument(menuBarDocument.selectedMenuItem);
+					activeDocument.destroyComponent && activeDocument.destroyComponent();
+				}
+				menuBarDocument.selectedMenuItem = menuItem;
 				menuBar.setDocument(document, menuItem);
 			} else if (renderedDocument) {
 				navigationDocument.replaceDocument(document, renderedDocument);
