@@ -1,4 +1,4 @@
-# TVDML
+# TVDML ![Travis CI Status](https://api.travis-ci.org/a-ignatov-parc/tvdml.svg?branch=master)
 
 - [Intro](#intro)
 - [Getting started](#getting-started)
