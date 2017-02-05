@@ -42,7 +42,7 @@
     "webpack": "^2.2.1"
   },
   "dependencies": {
-    "es6-promise": "^3.2.1",
+    "es6-promise": "^4.0.5",
     "object-assign": "^4.1.0",
     "virtual-dom": "a-ignatov-parc/virtual-dom#v2.1.1-tvml.3"
   },
