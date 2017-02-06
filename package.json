@@ -9,9 +9,9 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "build": "./node_modules/.bin/webpack",
-    "watch": "./node_modules/.bin/webpack -w",
-    "release": "./node_modules/.bin/webpack -p",
+    "build": "./node_modules/.bin/webpack --progress",
+    "watch": "./node_modules/.bin/webpack --watch --progress",
+    "release": "./node_modules/.bin/webpack -p --progress",
     "test": "./node_modules/.bin/mocha --reporter spec --timeout 4000 --compilers js:babel-register",
     "prepublish": "npm run release"
   },
