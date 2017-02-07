@@ -11,8 +11,9 @@
   "scripts": {
     "build": "./node_modules/.bin/webpack --progress",
     "watch": "./node_modules/.bin/webpack --watch --progress",
-    "release": "./node_modules/.bin/webpack -p --progress",
+    "release": "npm run clear && ./node_modules/.bin/webpack -p --progress",
     "test": "./node_modules/.bin/mocha --reporter spec --timeout 4000 --compilers js:babel-register",
+    "clear": "rm -rf ./dist",
     "prepublish": "npm run release"
   },
   "repository": {
