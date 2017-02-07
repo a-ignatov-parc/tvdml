@@ -3,9 +3,6 @@
 .DS_Store
 
 # Build files
-build.json
-
-# Build files
 npm-debug.log
 node_modules/
 dist/

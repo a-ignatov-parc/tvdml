@@ -1,4 +1,4 @@
-# TVDML ![Travis CI Status](https://api.travis-ci.org/a-ignatov-parc/tvdml.svg?branch=master)
+# TVDML [![Travis CI Status](https://api.travis-ci.org/a-ignatov-parc/tvdml.svg?branch=master)](https://travis-ci.org/a-ignatov-parc/tvdml)
 
 - [Intro](#intro)
 - [Getting started](#getting-started)
@@ -7,6 +7,7 @@
 	- [Rendering static document](#rendering-static-document)
 	- [Rendering custom data using factory approach](#rendering-custom-data-using-factory-approach)
 	- [Requesting and rendering data](#requesting-and-rendering-data)
+		- [Important note](#important-note)
 	- [Events](#events)
 	- [Modals](#modals)
 	- [Working with rendered elements](#working-with-rendered-elements)
@@ -397,6 +398,39 @@ function downloadTVShows() {
 ```
 
 Now lets figure out how can we react to user activity.
+
+#### Important note
+
+It is important to remember that `TVDML.render()` uses `document` property in passed pipe's payload to update existing document. If there will be no `document` then new navigation record will be created.
+
+Initial `document` is created in `TVDML.handleRoute()` pipeline. This docuemen is blank by default.
+
+Example:
+
+```javascript
+/** @jsx TVDML.jsx */
+
+TVDML
+	.handleRoute('start')
+	.pipe(payload => {
+		console.log(payload.document); // Initial blank document created by `TVDML.handleRoute()`.
+		return payload; // If we wont return `payload` here `TVDML.render()` will create new document record. This isn't what you usualy want.
+	})
+	.pipe(TVDML.render(
+		<document>
+			<alertTemplate>
+				<title>Hello world</title>
+				<button>
+					<text>Ok</text>
+				</button>
+			</alertTemplate>
+		</document>
+	))
+	.pipe(payload => {
+		console.log(payload.document); // Updated document with "Hello world".
+		return payload; // As if this is the last pipe we don't need to return anything but it's a good practice to return current payload.
+	});
+```
 
 ### Events
 

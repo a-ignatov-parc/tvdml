@@ -32,7 +32,7 @@ export function handleRoute(routeName) {
 
 	routes[routeName] = createStream({
 		onSinkStep(step, payload) {
-			let current = getActiveDocument();
+			const current = getActiveDocument();
 
 			if (step && current && current.route !== routeName) {
 				throw `Processing route "${routeName}" isn't active. Terminating pipeline...`;
