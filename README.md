@@ -403,9 +403,7 @@ Now lets figure out how can we react to user activity.
 
 It is important to remember that `TVDML.render()` uses `document` property in passed pipe's payload to update existing document. If there will be no `document` then new navigation record will be created.
 
-Initial `document` is created in `TVDML.handleRoute()` pipeline. This docuemen is blank by default.
-
-Example:
+Explanation:
 
 ```javascript
 /** @jsx TVDML.jsx */
@@ -413,7 +411,18 @@ Example:
 TVDML
 	.handleRoute('start')
 	.pipe(payload => {
-		console.log(payload.document); // Initial blank document created by `TVDML.handleRoute()`.
+		console.log(payload.document); // At the begining there is no document rendered for handled route.
+		return payload; // If we wont return `payload` here `TVDML.render()` won't be able to get information about route and will throw error later.
+	})
+	.pipe(TVDML.render(
+		<document>
+			<loadingTemplate>
+				<activityIndicator />
+			</loadingTemplate>
+		</document>
+	))
+	.pipe(payload => {
+		console.log(payload.document); // Loading template created in previous pipe by `TVDML.render()`.
 		return payload; // If we wont return `payload` here `TVDML.render()` will create new document record. This isn't what you usualy want.
 	})
 	.pipe(TVDML.render(

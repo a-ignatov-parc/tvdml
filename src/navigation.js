@@ -1,6 +1,5 @@
 import {passthrough, createStream} from './pipelines';
 import {broadcast, subscribe} from './event-bus';
-import createElement from './jsx';
 import {render} from './render';
 import {Symbol} from './utils';
 
@@ -41,7 +40,7 @@ export function handleRoute(routeName) {
 		}
 	});
 
-	return routes[routeName].pipe(render(createElement('document')));
+	return routes[routeName];
 }
 
 export function dismissRoute(routeName) {
