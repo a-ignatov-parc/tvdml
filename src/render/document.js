@@ -26,6 +26,10 @@ const handlers = {
 		},
 	},
 
+	change: {
+		[DEFAULT_HANDLER]: createDefaultHandler('onChange'),
+	},
+
 	highlight: {
 		[DEFAULT_HANDLER]: createDefaultHandler('onHighlight'),
 	},
@@ -38,6 +42,7 @@ const handlers = {
 const eventsList = [
 	'play',
 	'select',
+	'change',
 	'highlight',
 	'holdselect',
 ];

@@ -455,6 +455,7 @@ List of available handlers:
 
 - `onPlay` — Triggers when "Play" button is pressed.
 - `onSelect` — Triggers when Touchpad is pressed.
+- `onChange` — Triggers when element change its value. `<ratingBadge />` for example.
 - `onHighlight` — Triggers when element becoming highlighted.
 - `onHoldselect` — Triggers when Touchpad is pressed with a long press.
 

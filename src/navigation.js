@@ -32,7 +32,7 @@ export function handleRoute(routeName) {
 	routes[routeName] = createStream({
 		onSinkStepEnd(step, payload, ctx) {
 			if (!ctx.documents) ctx.documents = [];
-			if (payload.document && !~ctx.documents.indexOf(payload.document)) {
+			if (payload && payload.document && !~ctx.documents.indexOf(payload.document)) {
 				ctx.documents.push(payload.document);
 			}
 			return payload;
