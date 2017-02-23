@@ -12,22 +12,17 @@ export function render(template) {
 	return createPipeline()
 		.pipe(parseDocument(template))
 		.pipe(passthrough(payload => {
-			let {
+			const {
 				route,
 				redirect,
 				navigation = {},
 				parsedDocument: document,
-				document: renderedDocument,
 			} = payload;
 
-			const {menuBar, menuItem} = navigation;
+			let {document: renderedDocument} = payload;
 
-			let [
-				prevRouteDocument,
-				currentRouteDocument,
-			] = [null, null]
-				.concat(navigationDocument.documents)
-				.slice(-2);
+			const {menuBar, menuItem} = navigation;
+			const prevRouteDocument = renderedDocument ? renderedDocument.prevRouteDocument : navigationDocument.documents.slice(-1)[0];
 
 			document.route = route;
 			document.prevRouteDocument = prevRouteDocument;
@@ -38,8 +33,8 @@ export function render(template) {
 
 			if (hasModal) removeModal();
 
-			if (redirect) {
-				renderedDocument = currentRouteDocument;
+			if (redirect && prevRouteDocument) {
+				renderedDocument = prevRouteDocument;
 			}
 
 			if (menuBar && menuItem) {
@@ -80,7 +75,7 @@ export function renderModal(template) {
 
 export function parseDocument(template) {
 	return createPipeline().pipe(passthrough(payload => ({
-		parsedDocument: createDocument(template, payload)
+		parsedDocument: createDocument(template, payload),
 	})));
 }
 

@@ -30,12 +30,29 @@ export function handleRoute(routeName) {
 	}
 
 	routes[routeName] = createStream({
-		onSinkStep(step, payload) {
-			const current = getActiveDocument();
-
-			if (step && current && current.route !== routeName) {
-				throw `Processing route "${routeName}" isn't active. Terminating pipeline...`;
+		onSinkStepEnd(step, payload, ctx) {
+			if (!ctx.documents) ctx.documents = [];
+			if (payload.document && !~ctx.documents.indexOf(payload.document)) {
+				ctx.documents.push(payload.document);
 			}
+			return payload;
+		},
+
+		onSinkComplete(payload, ctx) {
+			const {documents} = ctx;
+
+			if (!documents.length) {
+				console.warn(`Navigation to route "${routeName}" ended without rendering any navigation record!`);
+			}
+
+			if (documents.length > 1) {
+				console.warn(`Navigation to route "${routeName}" ended with rendering more than one navigation record!`);
+			}
+
+			if (documents[0].route !== routeName) {
+				console.warn(`Navigation to route "${routeName}" ended with unexpected navigation document "${documents[0].route}"!`);
+			}
+
 			return payload;
 		}
 	});
@@ -64,9 +81,9 @@ export function navigate(routeName, params, redirect = false) {
 
 	if (targetRoute) {
 		return targetRoute.sink({
+			redirect,
 			route: routeName,
 			navigation: params,
-			redirect,
 		});
 	}
 

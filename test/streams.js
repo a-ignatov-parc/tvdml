@@ -117,10 +117,12 @@ describe('Streams', () => {
 
 	it('onSinkStep', () => {
 		const values = [];
+		const queue = [];
 
 		const stream = new Stream({
 			onSinkStep(step, value) {
 				values[step] = value;
+				queue.push(value);
 				return value;
 			}
 		});
@@ -134,6 +136,63 @@ describe('Streams', () => {
 			.sink(1)
 			.then(() => {
 				assert.deepEqual(values, [1, 2, 3], 'values should be equal to expected ones');
+				assert.deepEqual(queue, [1, 2, 3], 'queue should be equal to expected ones');
+			});
+	});
+
+	it('onSinkStepEnd', () => {
+		const values = [];
+		const queue = [];
+
+		const stream = new Stream({
+			onSinkStepEnd(step, value) {
+				values[step] = value;
+				queue.push(value);
+				return value;
+			}
+		});
+
+		stream
+			.pipe(value => value + 1)
+			.pipe(value => value + 1)
+			.pipe(noop());
+
+		return stream
+			.sink(1)
+			.then(() => {
+				assert.deepEqual(values, [2, 3, undefined], 'values should be equal to expected ones');
+				assert.deepEqual(queue, [undefined, 3, 2], 'queue should be equal to expected ones');
+			});
+	});
+
+	it('onSinkComplete', () => {
+		let complete = null;
+		const values = [];
+
+		const stream = new Stream({
+			onSinkStep(step, value) {
+				values[step] = value;
+				return value;
+			},
+
+			onSinkComplete(value) {
+				complete = value;
+				values.push(4);
+				return value * 10;
+			},
+		});
+
+		stream
+			.pipe(value => value + 1)
+			.pipe(value => value + 1)
+			.pipe(noop());
+
+		return stream
+			.sink(1)
+			.then(result => {
+				assert.deepEqual(values, [1, 2, 3, 4], 'values should be equal to expected ones');
+				assert.deepEqual(result, 10, 'result value should be equal to expected ones');
+				assert.deepEqual(complete, 1, 'complete value should be equal to expected ones');
 			});
 	});
 

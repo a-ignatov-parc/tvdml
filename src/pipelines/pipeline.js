@@ -25,11 +25,12 @@ export default class Pipeline extends Stream {
 		return {stream};
 	}
 
-	_sink(step = 0, payload) {
+	_sink(step = 0, ctx, payload) {
 		return this.pipeline.reduce((result, handler, pipelineStep) => {
 			return result
-				.then(this.handleSinkByStep(pipelineStep))
-				.then(handler);
+				.then(this.handleSinkByStep(pipelineStep, ctx))
+				.then(handler)
+				.then(this.handleSinkByStepEnd(pipelineStep, ctx));
 		}, Promise.resolve(payload));
 	}
 }
