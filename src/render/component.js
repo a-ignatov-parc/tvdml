@@ -15,6 +15,7 @@ const excludeList = [
 	'update',
 	'destroy',
 	'setState',
+	'updateProps',
 ];
 
 export class Component {
