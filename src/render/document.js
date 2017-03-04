@@ -48,7 +48,8 @@ const eventsList = [
 ];
 
 export function vdomToDocument(vdom, payload) {
-	const document = createEmptyDocument();
+	const {menuBar, menuItem} = payload && payload.navigation || {};
+
 	let vnode;
 
 	if (vdom instanceof CustomNode) {
@@ -57,12 +58,24 @@ export function vdomToDocument(vdom, payload) {
 		vnode = vdom;
 	}
 
+	if (menuItem) {
+		const menuItemDocument = menuBar.getDocument(menuItem);
+
+		if (menuItemDocument) {
+			menuItemDocument.updateComponent(payload);
+			return menuItemDocument;
+		}
+	}
+
+	const document = createEmptyDocument();
+
 	const childNode = createElement(vnode, {document});
 	const menuBars = childNode.getElementsByTagName('menuBar');
 
 	if (menuBars.length) {
 		document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
 	} else if (vnode instanceof Component) {
+		document.updateComponent = vnode.updateProps.bind(vnode);
 		document.destroyComponent = vnode.destroy.bind(vnode, childNode);
 	}
 

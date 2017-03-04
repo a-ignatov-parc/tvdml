@@ -38,14 +38,11 @@ export function render(template) {
 			}
 
 			if (menuBar && menuItem) {
-				const menuBarDocument = menuItem.parentNode;
+				const menuItemDocument = menuBar.getDocument(menuItem);
 
-				if (menuBarDocument.selectedMenuItem) {
-					const activeDocument = menuBar.getDocument(menuBarDocument.selectedMenuItem);
-					activeDocument.destroyComponent && activeDocument.destroyComponent();
+				if (menuItemDocument !== document) {
+					menuBar.setDocument(document, menuItem);
 				}
-				menuBarDocument.selectedMenuItem = menuItem;
-				menuBar.setDocument(document, menuItem);
 			} else if (renderedDocument) {
 				navigationDocument.replaceDocument(document, renderedDocument);
 			} else {

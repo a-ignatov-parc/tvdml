@@ -47,17 +47,22 @@ export class Component {
 	}
 
 	update(previous, domNode) {
-		let props = this._props;
+		const props = this._props;
 
 		this._queue = {};
 		this._rootNode = domNode;
 		this._vdom = previous._vdom;
 		this.componentWillReceiveProps(props);
 
-		let {state} = this._queue;
+		const {state} = this._queue;
 		this._queue = null;
 
 		update.call(this, props, assign({}, previous.state, state));
+	}
+
+	updateProps(nextProps) {
+		this._props = nextProps;
+		this.update(this, this._rootNode);
 	}
 
 	destroy(domNode) {
@@ -68,7 +73,7 @@ export class Component {
 	}
 
 	setState(newState = {}) {
-		let nextState = assign({}, this.state, newState);
+		const nextState = assign({}, this.state, newState);
 
 		if (this._queue) {
 			this._queue.state = nextState;
@@ -123,22 +128,22 @@ function render() {
 }
 
 function update(nextProps, nextState) {
-	let prevProps = this.props;
-	let prevState = this.state;
+	const prevProps = this.props;
+	const prevState = this.state;
 
 	nextProps || (nextProps = prevProps);
 	nextState || (nextState = prevState);
 
-	let shouldUpdate = this.shouldComponentUpdate(nextProps, nextState);
+	const shouldUpdate = this.shouldComponentUpdate(nextProps, nextState);
 
 	this.props = nextProps;
 	this.state = nextState;
 
 	if (shouldUpdate) {
-		let prev = this._vdom;
-		let next = render.call(this);
+		const prev = this._vdom;
+		const next = render.call(this);
+		const update = diff(prev, next);
 
-		let update = diff(prev, next);
 		this._vdom = next;
 		this.componentWillUpdate(nextProps, nextState);
 
