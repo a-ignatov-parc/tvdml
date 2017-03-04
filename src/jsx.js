@@ -1,6 +1,7 @@
 import h from 'virtual-dom/h';
 import assign from 'object-assign';
 
+import {Component} from './render/component';
 import CustomNode from './render/custom-node';
 
 export default function createElement(tag, attrs, ...children) {
@@ -34,6 +35,8 @@ export default function createElement(tag, attrs, ...children) {
 
 	if (node.tag instanceof CustomNode) {
 		return node.tag.toNode(assign({}, node.attrs, node.events));
+	} else if (node.tag.prototype instanceof Component) {
+		return new node.tag(assign({}, node.attrs, node.events));
 	} else if (typeof(node.tag) === 'function') {
 		const resolved = node.tag(assign({}, node.attrs, node.events));
 		resolved.key = node.key;

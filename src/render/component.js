@@ -6,38 +6,19 @@ import createElement from 'virtual-dom/create-element';
 
 import CustomNode from './custom-node';
 
-export default function createComponent(spec) {
-	return new CustomNode(Component, spec);
+export function createComponent(spec) {
+	return new CustomNode(FactoryComponent, spec);
 }
 
-const excludeList = [
-	'init',
-	'update',
-	'destroy',
-	'setState',
-];
-
 export class Component {
-	constructor(props, spec) {
-		Object
-			.keys(spec)
-			.filter(name => {
-				let isExcluded = !!~excludeList.indexOf(name);
-				if (isExcluded) throw `Can't override system method "${name}"`;
-				return !isExcluded;
-			})
-			.forEach(name => this[name] = spec[name].bind(this));
-
-		this._props = assign({}, props);
+	constructor(props) {
+		this._queue = null;
 		this.type = 'Widget';
+		this.props = this._props = assign({}, this.constructor.defaultProps, props);
+		this.state = {};
 	}
 
 	init(options) {
-		this._queue = null;
-
-		this.props = assign({}, this._props, this.getDefaultProps());
-		this.state = assign({}, this.getInitialState());
-
 		this._vdom = render.call(this);
 		this._rootNode = createElement(this._vdom, options);
 		this.componentWillMount();
@@ -72,8 +53,10 @@ export class Component {
 		this._vdom = null;
 	}
 
-	setState(newState = {}) {
-		const nextState = assign({}, this.state, newState);
+	setState(newState = {}, callback) {
+		const nextState = typeof(newState) === 'function'
+			? newState(this.state, this.props)
+			: assign({}, this.state, newState);
 
 		if (this._queue) {
 			this._queue.state = nextState;
@@ -81,11 +64,19 @@ export class Component {
 		}
 
 		update.call(this, null, nextState);
+
+		if (typeof(callback) === 'function') {
+			callback();
+		}
 	}
 
-	getDefaultProps() {}
+	forceUpdate(callback) {
+		update.call(this, null, null, true);
 
-	getInitialState() {}
+		if (typeof(callback) === 'function') {
+			callback();
+		}
+	}
 
 	componentWillMount() {}
 
@@ -127,14 +118,14 @@ function render() {
 	return result;
 }
 
-function update(nextProps, nextState) {
+function update(nextProps, nextState, force) {
 	const prevProps = this.props;
 	const prevState = this.state;
 
 	nextProps || (nextProps = prevProps);
 	nextState || (nextState = prevState);
 
-	const shouldUpdate = this.shouldComponentUpdate(nextProps, nextState);
+	const shouldUpdate = force || this.shouldComponentUpdate(nextProps, nextState);
 
 	this.props = nextProps;
 	this.state = nextState;
@@ -150,4 +141,39 @@ function update(nextProps, nextState) {
 		this._rootNode = patch(this._rootNode, update);
 		this.componentDidUpdate(prevProps, prevState);
 	}
+}
+
+const excludeList = [
+	'init',
+	'update',
+	'destroy',
+	'setState',
+	'updateProps',
+	'forceUpdate',
+];
+
+export class FactoryComponent extends Component {
+	constructor(spec, props) {
+		super(props);
+
+		Object
+			.keys(spec)
+			.filter(name => {
+				let isExcluded = !!~excludeList.indexOf(name);
+				if (isExcluded) throw `Can't override system method "${name}"`;
+				return !isExcluded;
+			})
+			.forEach(name => this[name] = spec[name].bind(this));
+	}
+
+	init(options) {
+		this.props = assign({}, this._props, this.getDefaultProps());
+		this.state = assign({}, this.getInitialState());
+
+		return super.init(options);
+	}
+
+	getDefaultProps() {}
+
+	getInitialState() {}
 }

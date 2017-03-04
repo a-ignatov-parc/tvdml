@@ -6,6 +6,6 @@ export default class CustomNode {
 
 	toNode(payload) {
 		let {Constructor, lifecycle} = this;
-		return new Constructor(payload, lifecycle);
+		return new Constructor(lifecycle, payload);
 	}
 }
