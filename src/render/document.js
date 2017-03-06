@@ -61,7 +61,7 @@ export function vdomToDocument(vdom, payload) {
 	if (menuItem) {
 		const menuItemDocument = menuBar.getDocument(menuItem);
 
-		if (menuItemDocument) {
+		if (menuItemDocument && menuItemDocument.updateComponent) {
 			menuItemDocument.updateComponent(payload);
 			return menuItemDocument;
 		}
