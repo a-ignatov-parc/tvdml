@@ -41,7 +41,7 @@ export function render(template) {
 				const menuItemDocument = menuBar.getDocument(menuItem);
 
 				if (menuItemDocument !== document) {
-					menuBar.setDocument(document, menuItem);
+					setTimeout(() => menuBar.setDocument(document, menuItem), RENDERING_ANIMATION);
 				}
 			} else if (renderedDocument) {
 				navigationDocument.replaceDocument(document, renderedDocument);
