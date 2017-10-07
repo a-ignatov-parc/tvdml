@@ -6,7 +6,7 @@ import {vdomToDocument, createEmptyDocument} from './render/document';
 
 let hasModal = false;
 
-const RENDERING_ANIMATION = 500;
+const RENDERING_ANIMATION = 600;
 
 export function render(template) {
 	return createPipeline()
