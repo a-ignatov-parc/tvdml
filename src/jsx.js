@@ -1,9 +1,11 @@
 import h from 'virtual-dom/h';
+import assign from 'object-assign';
 
+import {Component} from './render/component';
 import CustomNode from './render/custom-node';
 
 export default function createElement(tag, attrs, ...children) {
-	let node = {tag};
+	const node = {tag};
 
 	if (attrs) {
 		Object
@@ -32,12 +34,16 @@ export default function createElement(tag, attrs, ...children) {
 	}
 
 	if (node.tag instanceof CustomNode) {
-		return node.tag.toNode(node.attrs);
+		return node.tag.toNode(assign({}, node.attrs, node.events));
+	} else if (node.tag.prototype instanceof Component) {
+		return new node.tag(assign({}, node.attrs, node.events));
 	} else if (typeof(node.tag) === 'function') {
-		return node.tag(node);
+		const resolved = node.tag(assign({}, node.attrs, node.events));
+		resolved.key = node.key;
+		return resolved;
 	}
 
-	let props = {
+	const props = {
 		tvml: true,
 		key: node.key,
 		ref: node.ref,
