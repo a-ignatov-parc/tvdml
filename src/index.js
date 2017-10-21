@@ -11,35 +11,35 @@ export {default as createPlayer} from './render/player';
 export {default as createComponent} from './render/component';
 
 subscribe('uncontrolled-document-pop').pipe(({document}) => {
-	let {
-		modal,
-		route,
-		prevRouteDocument,
-	} = document;
+  let {
+    modal,
+    route,
+    prevRouteDocument,
+  } = document;
 
-	let prevDocument = modal ? document : prevRouteDocument;
+  let prevDocument = modal ? document : prevRouteDocument;
 
-	let {
-		modal: prevModal,
-		route: prevRoute,
-	} = prevDocument;
+  let {
+    modal: prevModal,
+    route: prevRoute,
+  } = prevDocument;
 
-	if (modal) {
-		prevModal = false;
-	}
+  if (modal) {
+    prevModal = false;
+  }
 
-	broadcast('menu-button-press', {
-		from: {
-			route,
-			document,
-			modal: !!modal,
-		},
-		to: {
-			route: prevRoute,
-			document: prevDocument,
-			modal: !!prevModal,
-		},
-	});
+  broadcast('menu-button-press', {
+    from: {
+      route,
+      document,
+      modal: !!modal,
+    },
+    to: {
+      route: prevRoute,
+      document: prevDocument,
+      modal: !!prevModal,
+    },
+  });
 });
 
 hooks.enable();
