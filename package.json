@@ -6,15 +6,18 @@
   "module": "src/index.js",
   "engine-strict": true,
   "engines": {
-    "node": ">=4.0.0"
+    "node": "^6.0.0",
+    "yarn": ">=1.0.0"
   },
   "scripts": {
-    "build": "./node_modules/.bin/webpack --progress",
-    "watch": "./node_modules/.bin/webpack --watch --progress",
-    "release": "npm run clear && ./node_modules/.bin/webpack -p --progress",
-    "test": "./node_modules/.bin/mocha --reporter spec --timeout 4000 --compilers js:babel-register",
-    "clear": "rm -rf ./dist",
-    "prepublish": "npm run release"
+    "install-deps": "npm run yarn:install && npm run yarn:install-deps",
+    "yarn:install": "npm i yarn@$npm_package_engines_yarn",
+    "yarn:install-deps": "yarn",
+    "build": "webpack --progress",
+    "watch": "webpack --watch --progress",
+    "dist": "NODE_ENV=production webpack --progress",
+    "lint": "eslint webpack.config.js src",
+    "test": "mocha --reporter spec --timeout 4000 --compilers js:babel-register"
   },
   "repository": {
     "type": "git",
