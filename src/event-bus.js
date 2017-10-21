@@ -12,11 +12,12 @@ export function subscribe(name) {
       unsubscribe() {
         const index = subscriptions[name].indexOf(this);
 
+        // eslint-disable-next-line no-bitwise
         if (~index) {
           subscriptions[name].splice(index, 1);
         }
-      }
-    }
+      },
+    },
   });
 
   subscriptions[name].push(stream);

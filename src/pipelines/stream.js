@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+
 export default class Stream {
   constructor(options = {}) {
     Object.assign(this, options.extend);
@@ -7,34 +9,37 @@ export default class Stream {
 
   pipe(handler) {
     if (!this.isHandlerValid(handler)) {
-      const error = new TypeError(`Unsupported handler type`);
+      const error = new TypeError('Unsupported handler type');
       error.code = 'EUNSUPPORTEDHANDLER';
       throw error;
     }
 
-    const {stream, resolver} = this.createTransform(handler);
-    resolver && this.forks.push(resolver);
+    const { stream, resolver } = this.createTransform(handler);
+
+    if (resolver) {
+      this.forks.push(resolver);
+    }
     return stream;
   }
 
   isHandlerValid(handler) {
-    return handler instanceof this.constructor || typeof(handler) === 'function';
+    return handler instanceof this.constructor || typeof handler === 'function';
   }
 
   createTransform(handler) {
     if (handler instanceof this.constructor) {
-      return {stream: this.pipe(handler.sink.bind(handler))};
-    } else {
-      const stream = new this.constructor(this.options);
-      const resolver = (step, ctx, payload) => {
-        return Promise
-          .resolve(payload)
-          .then(handler)
-          .then(stream._sink.bind(stream, step + 1, ctx));
+      return {
+        stream: this.pipe(handler.sink.bind(handler)),
       };
-
-      return {stream, resolver};
     }
+
+    const stream = new this.constructor(this.options);
+    const resolver = (step, ctx, payload) => Promise
+      .resolve(payload)
+      .then(handler)
+      .then(stream._sink.bind(stream, step + 1, ctx));
+
+    return { stream, resolver };
   }
 
   sink(payload) {
@@ -42,7 +47,7 @@ export default class Stream {
 
     return this._sink(0, ctx, payload)
       .then(this.handleSinkComplete(ctx))
-      .catch(error => {
+      .catch((error) => {
         console.error(error);
         return Promise.reject(error);
       });
@@ -50,36 +55,43 @@ export default class Stream {
 
   _sink(step = 0, ctx, payload) {
     return Promise
-      .all(this.forks.map(resolver => {
-        return Promise
-          .resolve(payload)
-          .then(this.handleSinkByStep(step, ctx))
-          .then(resolver.bind(resolver, step, ctx))
-          .then(this.handleSinkByStepEnd(step, ctx));
-      }))
-      .then(forks => payload);
+      .all(this.forks.map(resolver => Promise
+        .resolve(payload)
+        .then(this.handleSinkByStep(step, ctx))
+        .then(resolver.bind(resolver, step, ctx))
+        .then(this.handleSinkByStepEnd(step, ctx))))
+      .then(() => payload);
   }
 
   handleSinkByStep(step, ctx) {
-    return payload => {
-      const {onSinkStep} = this.options;
-      if (typeof(onSinkStep) === 'function') return onSinkStep(step, payload, ctx);
+    return (payload) => {
+      const { onSinkStep } = this.options;
+
+      if (typeof onSinkStep === 'function') {
+        return onSinkStep(step, payload, ctx);
+      }
       return payload;
     };
   }
 
   handleSinkByStepEnd(step, ctx) {
-    return payload => {
-      const {onSinkStepEnd} = this.options;
-      if (typeof(onSinkStepEnd) === 'function') return onSinkStepEnd(step, payload, ctx);
+    return (payload) => {
+      const { onSinkStepEnd } = this.options;
+
+      if (typeof onSinkStepEnd === 'function') {
+        return onSinkStepEnd(step, payload, ctx);
+      }
       return payload;
     };
   }
 
   handleSinkComplete(ctx) {
-    return payload => {
-      const {onSinkComplete} = this.options;
-      if (typeof(onSinkComplete) === 'function') return onSinkComplete(payload, ctx);
+    return (payload) => {
+      const { onSinkComplete } = this.options;
+
+      if (typeof onSinkComplete === 'function') {
+        return onSinkComplete(payload, ctx);
+      }
       return payload;
     };
   }

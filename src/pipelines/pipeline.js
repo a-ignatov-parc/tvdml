@@ -6,6 +6,7 @@ export default class Pipeline extends Stream {
     this.pipeline = pipeline;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   isHandlerValid(handler) {
     return handler instanceof Stream || typeof handler === 'function';
   }
@@ -19,16 +20,21 @@ export default class Pipeline extends Stream {
       tail = payload => handler.sink(payload);
     }
 
-    const stream = new this.constructor(this.options, this.pipeline.concat(tail));
+    const stream = new this.constructor(
+      this.options,
+      this.pipeline.concat(tail),
+    );
+
     return { stream };
   }
 
-  _sink(step = 0, ctx, payload) {
+  _sink(step, ctx, payload) {
     return this.pipeline.reduce((result, handler, pipelineStep) => {
-      return result
+      const promise = result
         .then(this.handleSinkByStep(pipelineStep, ctx))
         .then(handler)
         .then(this.handleSinkByStepEnd(pipelineStep, ctx));
+      return promise;
     }, Promise.resolve(payload));
   }
 }

@@ -1,7 +1,8 @@
-import {passthrough, createStream} from './pipelines';
-import {broadcast, subscribe} from './event-bus';
-import {render} from './render';
-import {Symbol} from './utils';
+/* global App sessionStorage */
+
+import { createStream } from './pipelines';
+import { broadcast, subscribe } from './event-bus';
+import { Symbol } from './utils';
 
 let launched = false;
 
@@ -31,30 +32,37 @@ export function handleRoute(routeName) {
 
   routes[routeName] = createStream({
     onSinkStepEnd(step, payload, ctx) {
+      const hasDocument = payload && payload.document;
+
       if (!ctx.documents) ctx.documents = [];
-      if (payload && payload.document && !~ctx.documents.indexOf(payload.document)) {
+
+      // eslint-disable-next-line no-bitwise
+      if (hasDocument && !~ctx.documents.indexOf(payload.document)) {
         ctx.documents.push(payload.document);
       }
       return payload;
     },
 
     onSinkComplete(payload, ctx) {
-      const {documents} = ctx;
+      const { documents } = ctx;
 
       if (!documents.length) {
+        // eslint-disable-next-line max-len
         console.warn(`Navigation to route "${routeName}" ended without rendering any navigation record!`);
       }
 
       if (documents.length > 1) {
+        // eslint-disable-next-line max-len
         console.warn(`Navigation to route "${routeName}" ended with rendering more than one navigation record!`);
       }
 
       if (documents[0].route !== routeName) {
+        // eslint-disable-next-line max-len
         console.warn(`Navigation to route "${routeName}" ended with unexpected navigation document "${documents[0].route}"!`);
       }
 
       return payload;
-    }
+    },
   });
 
   return routes[routeName];
@@ -72,18 +80,18 @@ export function dismissRoute(routeName) {
   delete routes[routeName];
 }
 
-export function navigate(routeName, params, redirect = false) {
+export function navigate(routeName, params, isRedirect = false) {
   if (!launched) {
-    throw new Error(`Can't process navigation before app is launched`);
+    throw new Error('Can\'t process navigation before app is launched');
   }
 
   const targetRoute = routes[routeName];
 
   if (targetRoute) {
     return targetRoute.sink({
-      redirect,
       route: routeName,
       navigation: params,
+      redirect: isRedirect,
     });
   }
 
@@ -92,6 +100,8 @@ export function navigate(routeName, params, redirect = false) {
   if (routeName !== route.NOT_FOUND) {
     return navigate(route.NOT_FOUND, params);
   }
+
+  return Promise.reject();
 }
 
 export function redirect(routeName, params) {
@@ -100,11 +110,11 @@ export function redirect(routeName, params) {
 
 Object
   .keys(event)
-  .forEach(id => {
+  .forEach((id) => {
     const symbol = event[id];
     const name = symbol.toString();
 
-    App[name] = options => {
+    App[name] = (options) => {
       console.info('Fired handler for app lifecycle', name, options);
 
       if (name === 'onLaunch') {
@@ -112,13 +122,10 @@ Object
         launched = true;
       }
       broadcast(symbol);
-    }
+    };
   });
 
-subscribe('menu-item-select').pipe(({menuItem, menuBar}) => {
-  const route = menuItem.getAttribute('route');
-
-  if (route) {
-    navigate(route, {menuItem, menuBar});
-  }
+subscribe('menu-item-select').pipe(({ menuItem, menuBar }) => {
+  const routeValue = menuItem.getAttribute('route');
+  if (routeValue) navigate(routeValue, { menuItem, menuBar });
 });

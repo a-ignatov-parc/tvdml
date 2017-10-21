@@ -1,3 +1,5 @@
+/* global describe it */
+
 import assert from 'assert';
 
 import {
@@ -14,12 +16,24 @@ describe('Streams', () => {
   it('creation', () => {
     const stream = new Stream();
 
-    assert.ok(stream instanceof Stream, 'stream should be instance of Stream class');
-    assert.throws(() => stream.pipe(), TypeError, 'stream should not allow creating pipes without handlers');
+    assert.ok(
+      stream instanceof Stream,
+      'stream should be instance of Stream class',
+    );
+
+    assert.throws(
+      () => stream.pipe(),
+      TypeError,
+      'stream should not allow creating pipes without handlers',
+    );
 
     const fork1 = stream.pipe(noop());
 
-    assert.ok(fork1 instanceof Stream, 'fork should be instance of Stream class');
+    assert.ok(
+      fork1 instanceof Stream,
+      'fork should be instance of Stream class',
+    );
+
     assert.notEqual(stream, fork1, 'fork should not be equal to parent stream');
 
     const fork2 = stream.pipe(noop());
@@ -30,22 +44,22 @@ describe('Streams', () => {
   it('data flow', () => {
     const head = new Stream();
 
-    const body = head.pipe(value => {
+    const body = head.pipe((value) => {
       assert.equal(value, 1, 'initial value should not be changed');
       return value + 1;
     });
 
-    const body2 = head.pipe(value => {
+    const body2 = head.pipe((value) => {
       assert.equal(value, 1, 'initial value should not be changed');
       return value;
     });
 
-    const tail = body.pipe(value => {
+    body.pipe((value) => {
       assert.equal(value, 2, 'passed value should be changed as supposed');
       return value;
     });
 
-    const tail2 = body2.pipe(value => {
+    body2.pipe((value) => {
       assert.equal(value, 1, 'value should be equal to passed one');
       return value;
     });
@@ -60,11 +74,11 @@ describe('Streams', () => {
   it('subsink', () => {
     const stream = new Stream();
 
-    const head = stream.pipe(value => {
-      throw 'should not execute this part';
+    const head = stream.pipe(() => {
+      throw new Error('should not execute this part');
     });
 
-    const tail = head.pipe(value => {
+    const tail = head.pipe((value) => {
       assert.equal(value, 1, 'value should be equal to passed one');
       return value;
     });
@@ -91,8 +105,17 @@ describe('Streams', () => {
     return main
       .sink(1)
       .then(() => {
-        assert.deepEqual(mainValues, [2, 3], '"mainValues" should be equal to expected ones');
-        assert.deepEqual(secondaryValues, [7, 12], '"secondaryValues" should be equal to expected ones');
+        assert.deepEqual(
+          mainValues,
+          [2, 3],
+          '"mainValues" should be equal to expected ones',
+        );
+
+        assert.deepEqual(
+          secondaryValues,
+          [7, 12],
+          '"secondaryValues" should be equal to expected ones',
+        );
       });
   });
 
@@ -100,18 +123,44 @@ describe('Streams', () => {
     const obj = {};
 
     const stream = new Stream();
-    const extended = new Stream({extend: {foo: 'bar', obj}});
+    const extended = new Stream({ extend: { foo: 'bar', obj } });
 
-    assert.ok(!('foo' in stream), '"foo" property should not be in common stream');
-    assert.equal(extended.foo, 'bar', 'value of "foo" property should be equal to passed in options');
+    assert.ok(
+      !('foo' in stream),
+      '"foo" property should not be in common stream',
+    );
+
+    assert.equal(
+      extended.foo,
+      'bar',
+      'value of "foo" property should be equal to passed in options',
+    );
 
     const fork1 = stream.pipe(noop());
     const fork2 = extended.pipe(noop());
 
-    assert.ok(!('foo' in fork1), '"foo" property should not be in fork of the common stream');
-    assert.equal(fork2.foo, extended.foo, '"foo" property should be in all extended stream forks');
-    assert.equal(fork2.obj, extended.obj, '"obj" property should be in all extended stream forks');
-    assert.equal(fork2.obj, obj, '"obj" object should be link to original object');
+    assert.ok(
+      !('foo' in fork1),
+      '"foo" property should not be in fork of the common stream',
+    );
+
+    assert.equal(
+      fork2.foo,
+      extended.foo,
+      '"foo" property should be in all extended stream forks',
+    );
+
+    assert.equal(
+      fork2.obj,
+      extended.obj,
+      '"obj" property should be in all extended stream forks',
+    );
+
+    assert.equal(
+      fork2.obj,
+      obj,
+      '"obj" object should be link to original object',
+    );
   });
 
   it('onSinkStep', () => {
@@ -123,7 +172,7 @@ describe('Streams', () => {
         values[step] = value;
         queue.push(value);
         return value;
-      }
+      },
     });
 
     stream
@@ -134,8 +183,17 @@ describe('Streams', () => {
     return stream
       .sink(1)
       .then(() => {
-        assert.deepEqual(values, [1, 2, 3], 'values should be equal to expected ones');
-        assert.deepEqual(queue, [1, 2, 3], 'queue should be equal to expected ones');
+        assert.deepEqual(
+          values,
+          [1, 2, 3],
+          'values should be equal to expected ones',
+        );
+
+        assert.deepEqual(
+          queue,
+          [1, 2, 3],
+          'queue should be equal to expected ones',
+        );
       });
   });
 
@@ -148,7 +206,7 @@ describe('Streams', () => {
         values[step] = value;
         queue.push(value);
         return value;
-      }
+      },
     });
 
     stream
@@ -159,8 +217,17 @@ describe('Streams', () => {
     return stream
       .sink(1)
       .then(() => {
-        assert.deepEqual(values, [2, 3, undefined], 'values should be equal to expected ones');
-        assert.deepEqual(queue, [undefined, 3, 2], 'queue should be equal to expected ones');
+        assert.deepEqual(
+          values,
+          [2, 3, undefined],
+          'values should be equal to expected ones',
+        );
+
+        assert.deepEqual(
+          queue,
+          [undefined, 3, 2],
+          'queue should be equal to expected ones',
+        );
       });
   });
 
@@ -188,10 +255,24 @@ describe('Streams', () => {
 
     return stream
       .sink(1)
-      .then(result => {
-        assert.deepEqual(values, [1, 2, 3, 4], 'values should be equal to expected ones');
-        assert.deepEqual(result, 10, 'result value should be equal to expected ones');
-        assert.deepEqual(complete, 1, 'complete value should be equal to expected ones');
+      .then((result) => {
+        assert.deepEqual(
+          values,
+          [1, 2, 3, 4],
+          'values should be equal to expected ones',
+        );
+
+        assert.deepEqual(
+          result,
+          10,
+          'result value should be equal to expected ones',
+        );
+
+        assert.deepEqual(
+          complete,
+          1,
+          'complete value should be equal to expected ones',
+        );
       });
   });
 
@@ -216,7 +297,11 @@ describe('Streams', () => {
     return stream
       .sink(1)
       .then(() => {
-        assert.deepEqual(values, [2, 7, 12, 13, 13], '"values" should be equal to expected ones');
+        assert.deepEqual(
+          values,
+          [2, 7, 12, 13, 13],
+          '"values" should be equal to expected ones',
+        );
       });
   });
 });

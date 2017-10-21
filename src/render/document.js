@@ -1,11 +1,24 @@
+/* global DOMImplementationRegistry */
+
 import createElement from '@a-ignatov-parc/virtual-dom/create-element';
 
 import CustomNode from './custom-node';
-import {Component} from './component';
-import {broadcast} from '../event-bus';
-import {noop} from '../utils';
+import { Component } from './component';
+import { broadcast } from '../event-bus';
+import { noop } from '../utils';
 
 const DEFAULT_HANDLER = 'default';
+
+function createDefaultHandler(handlerName) {
+  return function defaultHandler(event, ...args) {
+    const { events = {} } = event.target;
+    const handler = events[handlerName];
+
+    if (typeof handler === 'function') {
+      handler(event, ...args);
+    }
+  };
+}
 
 const handlers = {
   play: {
@@ -15,9 +28,9 @@ const handlers = {
   select: {
     [DEFAULT_HANDLER]: createDefaultHandler('onSelect'),
 
-    menuItem({target: menuItem}) {
-      let menuBar = menuItem.parentNode;
-      let feature = menuBar.getFeature('MenuBarDocument');
+    menuItem({ target: menuItem }) {
+      const menuBar = menuItem.parentNode;
+      const feature = menuBar.getFeature('MenuBarDocument');
 
       broadcast('menu-item-select', {
         menuItem,
@@ -47,8 +60,37 @@ const eventsList = [
   'holdselect',
 ];
 
+export function createEmptyDocument() {
+  const document = DOMImplementationRegistry
+    .getDOMImplementation()
+    .createDocument();
+
+  document.extra = {};
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = document.childNodes.length; i; i--) {
+    document.removeChild(document.childNodes.item(i - 1));
+  }
+
+  return document;
+}
+
+function createEventHandler(handlersCollection = {}) {
+  return function eventHandler(event, ...args) {
+    const { target } = event;
+    const { tagName } = target;
+
+    const handler = handlersCollection[tagName]
+      || handlersCollection[DEFAULT_HANDLER]
+      || noop();
+
+    return handler(event, ...args);
+  };
+}
+
 export function vdomToDocument(vdom, payload) {
-  const {menuBar, menuItem} = payload && payload.navigation || {};
+  const { navigation } = payload || {};
+  const { menuBar, menuItem } = navigation || {};
 
   let vnode;
 
@@ -69,7 +111,7 @@ export function vdomToDocument(vdom, payload) {
 
   const document = createEmptyDocument();
 
-  const childNode = createElement(vnode, {document});
+  const childNode = createElement(vnode, { document });
   const menuBars = childNode.getElementsByTagName('menuBar');
 
   if (menuBars.length) {
@@ -80,43 +122,12 @@ export function vdomToDocument(vdom, payload) {
   }
 
   document.appendChild(childNode);
-  eventsList.forEach(eventName => {
-    document.addEventListener(eventName, createEventHandler(handlers[eventName]))
+  eventsList.forEach((eventName) => {
+    document.addEventListener(
+      eventName,
+      createEventHandler(handlers[eventName]),
+    );
   });
 
   return document;
-}
-
-export function createEmptyDocument() {
-  const document = DOMImplementationRegistry
-    .getDOMImplementation()
-    .createDocument();
-
-  document.extra = {};
-
-  for (let i = document.childNodes.length; i; i--) {
-    document.removeChild(document.childNodes.item(i - 1));
-  }
-
-  return document;
-}
-
-function createEventHandler(handlersCollection = {}) {
-  return function(event, ...args) {
-    let {target} = event;
-    let {tagName} = target;
-    let handler = handlersCollection[tagName] || handlersCollection[DEFAULT_HANDLER] || noop();
-    return handler.call(this, event, ...args);
-  }
-}
-
-function createDefaultHandler(handlerName) {
-  return function({target}) {
-    let {events = {}} = target;
-    let handler = events[handlerName];
-
-    if (typeof(handler) === 'function') {
-      handler.apply(this, arguments);
-    }
-  }
 }

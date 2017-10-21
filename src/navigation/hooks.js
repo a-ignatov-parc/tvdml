@@ -1,7 +1,18 @@
-import {broadcast} from '../event-bus';
+/* global navigationDocument */
+
+import { broadcast } from '../event-bus';
 
 let enabled = false;
 let modalDocument = null;
+
+function destroyComponents(document) {
+  if (document.destroyComponent) document.destroyComponent();
+}
+
+function handleUnload({ target: { ownerDocument: document } }) {
+  destroyComponents(document);
+  broadcast('uncontrolled-document-pop', { document });
+}
 
 const handlers = {
   presentModal(document) {
@@ -21,7 +32,7 @@ const handlers = {
     modalDocument = null;
   },
 
-  insertBeforeDocument(document, beforeDocument) {
+  insertBeforeDocument(document) {
     document.addEventListener('unload', handleUnload);
   },
 
@@ -36,34 +47,34 @@ const handlers = {
   },
 
   clear() {
-    navigationDocument.documents.forEach(document => {
+    navigationDocument.documents.forEach((document) => {
       destroyComponents(document);
       document.removeEventListener('unload', handleUnload);
     });
   },
 
   popDocument() {
-    let document = navigationDocument.documents.pop()
+    const document = navigationDocument.documents.pop();
 
     destroyComponents(document);
     document.removeEventListener('unload', handleUnload);
   },
 
   popToDocument(document) {
-    let index = navigationDocument.documents.indexOf(document);
+    const index = navigationDocument.documents.indexOf(document);
 
     navigationDocument.documents
       .slice(index + 1)
-      .forEach(document => {
-        destroyComponents(document);
-        document.removeEventListener('unload', handleUnload);
+      .forEach((documentItem) => {
+        destroyComponents(documentItem);
+        documentItem.removeEventListener('unload', handleUnload);
       });
   },
 
   popToRootDocument() {
     navigationDocument.documents
       .slice(1)
-      .forEach(document => {
+      .forEach((document) => {
         destroyComponents(document);
         document.removeEventListener('unload', handleUnload);
       });
@@ -78,22 +89,23 @@ const handlers = {
 const methodsToPatch = Object.keys(handlers);
 
 const originalMethods = methodsToPatch
-  .map(name => ({name, method: navigationDocument[name]}))
-  .reduce((result, {name, method}) => {
+  .map(name => ({ name, method: navigationDocument[name] }))
+  .reduce((result, { name, method }) => {
+    // eslint-disable-next-line no-param-reassign
     result[name] = method;
     return result;
   }, {});
 
 export function enable() {
   if (enabled) {
-    throw 'Hooks already enabled';
+    throw new Error('Hooks already enabled');
   }
 
-  methodsToPatch.forEach(name => {
-    navigationDocument[name] = function TVDMLWrapper() {
-      handlers[name] && handlers[name].apply(this, arguments);
-      return originalMethods[name].apply(this, arguments);
-    }
+  methodsToPatch.forEach((name) => {
+    navigationDocument[name] = function TVDMLWrapper(...args) {
+      if (handlers[name]) handlers[name](...args);
+      return originalMethods[name](...args);
+    };
   });
 
   enabled = true;
@@ -101,18 +113,12 @@ export function enable() {
 
 export function disable() {
   if (!enabled) {
-    throw `Hooks aren't enabled`;
+    throw new Error('Hooks aren\'t enabled');
   }
 
-  methodsToPatch.forEach(name => navigationDocument[name] = originalMethods[name]);
+  methodsToPatch.forEach((name) => {
+    navigationDocument[name] = originalMethods[name];
+  });
+
   enabled = false;
-}
-
-function handleUnload({target: {ownerDocument: document}}) {
-  destroyComponents(document);
-  broadcast('uncontrolled-document-pop', {document});
-}
-
-function destroyComponents(document) {
-  document.destroyComponent && document.destroyComponent();
 }
