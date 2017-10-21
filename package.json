@@ -16,7 +16,7 @@
     "build": "webpack --progress",
     "watch": "webpack --watch --progress",
     "dist": "NODE_ENV=production webpack --progress",
-    "lint": "eslint webpack.config.js src",
+    "lint": "eslint webpack.config.js src test",
     "test": "mocha --reporter spec --timeout 4000 --require babel-register"
   },
   "repository": {
@@ -55,8 +55,7 @@
     "webpack": "^3.8.1"
   },
   "dependencies": {
-    "es6-promise": "^4.0.5",
-    "virtual-dom": "a-ignatov-parc/virtual-dom#v2.1.1-tvml.3"
+    "@a-ignatov-parc/virtual-dom": "^2.2.0"
   },
   "files": [
     "dist"

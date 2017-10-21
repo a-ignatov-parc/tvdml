@@ -2,6 +2,19 @@
 # yarn lockfile v1
 
 
+"@a-ignatov-parc/virtual-dom@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@a-ignatov-parc/virtual-dom/-/virtual-dom-2.2.0.tgz#7050cc99a0b83e165a0fbed4c0266ab4f242ac31"
+  dependencies:
+    browser-split "0.0.1"
+    error "^4.3.0"
+    ev-store "^7.0.0"
+    global "^4.3.0"
+    is-object "^1.0.1"
+    next-tick "^0.2.2"
+    x-is-array "0.1.0"
+    x-is-string "0.1.0"
+
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -1249,10 +1262,6 @@ es6-map@^0.1.3:
     es6-set "~0.1.5"
     es6-symbol "~3.1.1"
     event-emitter "~0.3.5"
-
-es6-promise@^4.0.5:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.1.1.tgz#8811e90915d9a0dba36274f0b242dbda78f9c92a"
 
 es6-set@~0.1.5:
   version "0.1.5"
@@ -3379,19 +3388,6 @@ verror@1.10.0:
     assert-plus "^1.0.0"
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
-
-virtual-dom@a-ignatov-parc/virtual-dom#v2.1.1-tvml.3:
-  version "2.1.1"
-  resolved "https://codeload.github.com/a-ignatov-parc/virtual-dom/tar.gz/fc4e3666f9daff727e5ece0b9bcdefe7d1e65630"
-  dependencies:
-    browser-split "0.0.1"
-    error "^4.3.0"
-    ev-store "^7.0.0"
-    global "^4.3.0"
-    is-object "^1.0.1"
-    next-tick "^0.2.2"
-    x-is-array "0.1.0"
-    x-is-string "0.1.0"
 
 vm-browserify@0.0.4:
   version "0.0.4"

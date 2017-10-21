@@ -1,5 +1,3 @@
-import {Promise} from 'es6-promise';
-
 export default class Stream {
   constructor(options = {}) {
     Object.assign(this, options.extend);

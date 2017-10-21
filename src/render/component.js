@@ -1,6 +1,6 @@
-import diff from 'virtual-dom/diff';
-import patch from 'virtual-dom/patch';
-import createElement from 'virtual-dom/create-element';
+import diff from '@a-ignatov-parc/virtual-dom/diff';
+import patch from '@a-ignatov-parc/virtual-dom/patch';
+import createElement from '@a-ignatov-parc/virtual-dom/create-element';
 
 import CustomNode from './custom-node';
 

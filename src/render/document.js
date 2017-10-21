@@ -1,4 +1,4 @@
-import createElement from 'virtual-dom/create-element';
+import createElement from '@a-ignatov-parc/virtual-dom/create-element';
 
 import CustomNode from './custom-node';
 import {Component} from './component';

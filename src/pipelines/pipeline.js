@@ -1,5 +1,3 @@
-import { Promise } from 'es6-promise';
-
 import Stream from './stream';
 
 export default class Pipeline extends Stream {

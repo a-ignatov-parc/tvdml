@@ -1,5 +1,3 @@
-import { Promise } from 'es6-promise';
-
 import { noop } from '../utils';
 
 const STORAGE_KEY = 'tvdml-media-resume-time';

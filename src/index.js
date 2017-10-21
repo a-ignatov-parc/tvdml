@@ -5,7 +5,6 @@ export {subscribe};
 export * from './render';
 export * from './pipelines';
 export * from './navigation';
-export {Promise} from 'es6-promise';
 export {default as jsx} from './jsx';
 export {default as createPlayer} from './render/player';
 export {default as createComponent} from './render/component';

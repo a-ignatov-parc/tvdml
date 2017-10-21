@@ -46,12 +46,6 @@ This is library that main goal is to greatly simplify app development for Apple 
 
 TVDML tries to be as simple as possible and not include more than it needs to provide functionality for its core features. But yeah we've got something inside:
 
-- [`es6-promise`](https://www.npmjs.com/package/es6-promise) as polyfill for [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) for async data flow.
-
-	> Exposed to user as `TVDML.Promise`
-
-- [`Object.assign()`](https://www.npmjs.com/package/object-assign) ponyfill to cover your data immutability.
-
 - [`virtual-dom`](https://www.npmjs.com/package/virtual-dom) library to provide you easy to use update mechanism. [Patched](https://github.com/Matt-Esch/virtual-dom/compare/master...a-ignatov-parc:tvml) and ready to be used with TVML.
 
 ## Getting started

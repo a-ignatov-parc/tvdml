@@ -1,4 +1,3 @@
-import {Promise} from 'es6-promise';
 import {noop} from './utils';
 
 import Stream from './pipelines/stream';

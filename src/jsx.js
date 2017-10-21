@@ -1,4 +1,4 @@
-import h from 'virtual-dom/h';
+import h from '@a-ignatov-parc/virtual-dom/h';
 
 import CustomNode from './render/custom-node';
 
