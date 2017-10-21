@@ -48,6 +48,7 @@ jobs:
             - src
             - test
             - package.json
+            - webpack.config.js
 
   lint:
     <<: *job-configuration
