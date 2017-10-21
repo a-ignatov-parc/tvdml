@@ -1,6 +1,6 @@
 {
   "name": "tvdml",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Small library for creating declarative apps for tvOS with TVML and TVJS",
   "main": "dist/tvdml.js",
   "module": "src/index.js",
