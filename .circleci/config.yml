@@ -42,6 +42,7 @@ jobs:
           root: ./
           paths:
             - .git
+            - .babelrc
             - .eslintrc
             - node_modules
             - src
