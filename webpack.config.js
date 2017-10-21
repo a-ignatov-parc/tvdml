@@ -21,16 +21,6 @@ const rules = [
     use: {
       loader: 'babel-loader',
       options: {
-        presets: [
-          ['env', {
-            useBuiltIns: true,
-            modules: false,
-          }],
-        ],
-        plugins: [
-          'transform-class-properties',
-          'transform-object-rest-spread',
-        ],
         cacheDirectory: true,
       },
     },
