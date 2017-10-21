@@ -1,124 +1,131 @@
-import {passthrough, createStream} from './pipelines';
-import {broadcast, subscribe} from './event-bus';
-import {render} from './render';
-import {Symbol} from './utils';
+/* global App sessionStorage */
+
+import { createStream } from './pipelines';
+import { broadcast, subscribe } from './event-bus';
+import { Symbol } from './utils';
 
 let launched = false;
 
 const routes = {};
 
 export const event = {
-	EXIT: new Symbol('onExit'),
-	ERROR: new Symbol('onError'),
-	LAUNCH: new Symbol('onLaunch'),
-	RELOAD: new Symbol('onReload'),
-	RESUME: new Symbol('onResume'),
-	SUSPEND: new Symbol('onSuspend'),
+  EXIT: new Symbol('onExit'),
+  ERROR: new Symbol('onError'),
+  LAUNCH: new Symbol('onLaunch'),
+  RELOAD: new Symbol('onReload'),
+  RESUME: new Symbol('onResume'),
+  SUSPEND: new Symbol('onSuspend'),
 };
 
 export const route = {
-	NOT_FOUND: new Symbol('Not found'),
+  NOT_FOUND: new Symbol('Not found'),
 };
 
 export function handleRoute(routeName) {
-	if (!routeName) {
-		throw new Error('Route handler need route to process');
-	}
+  if (!routeName) {
+    throw new Error('Route handler need route to process');
+  }
 
-	if (routes[routeName]) {
-		throw new Error(`Handler for "${routeName}" is already specified`);
-	}
+  if (routes[routeName]) {
+    throw new Error(`Handler for "${routeName}" is already specified`);
+  }
 
-	routes[routeName] = createStream({
-		onSinkStepEnd(step, payload, ctx) {
-			if (!ctx.documents) ctx.documents = [];
-			if (payload && payload.document && !~ctx.documents.indexOf(payload.document)) {
-				ctx.documents.push(payload.document);
-			}
-			return payload;
-		},
+  routes[routeName] = createStream({
+    onSinkStepEnd(step, payload, ctx) {
+      const hasDocument = payload && payload.document;
 
-		onSinkComplete(payload, ctx) {
-			const {documents} = ctx;
+      if (!ctx.documents) ctx.documents = [];
 
-			if (!documents.length) {
-				console.warn(`Navigation to route "${routeName}" ended without rendering any navigation record!`);
-			}
+      // eslint-disable-next-line no-bitwise
+      if (hasDocument && !~ctx.documents.indexOf(payload.document)) {
+        ctx.documents.push(payload.document);
+      }
+      return payload;
+    },
 
-			if (documents.length > 1) {
-				console.warn(`Navigation to route "${routeName}" ended with rendering more than one navigation record!`);
-			}
+    onSinkComplete(payload, ctx) {
+      const { documents } = ctx;
 
-			if (documents[0].route !== routeName) {
-				console.warn(`Navigation to route "${routeName}" ended with unexpected navigation document "${documents[0].route}"!`);
-			}
+      if (!documents.length) {
+        // eslint-disable-next-line max-len
+        console.warn(`Navigation to route "${routeName}" ended without rendering any navigation record!`);
+      }
 
-			return payload;
-		}
-	});
+      if (documents.length > 1) {
+        // eslint-disable-next-line max-len
+        console.warn(`Navigation to route "${routeName}" ended with rendering more than one navigation record!`);
+      }
 
-	return routes[routeName];
+      if (documents[0].route !== routeName) {
+        // eslint-disable-next-line max-len
+        console.warn(`Navigation to route "${routeName}" ended with unexpected navigation document "${documents[0].route}"!`);
+      }
+
+      return payload;
+    },
+  });
+
+  return routes[routeName];
 }
 
 export function dismissRoute(routeName) {
-	if (!routeName) {
-		throw new Error('Route handler need route to process');
-	}
+  if (!routeName) {
+    throw new Error('Route handler need route to process');
+  }
 
-	if (!routes[routeName]) {
-		throw new Error(`Handler for "${routeName}" isn't specified`);
-	}
+  if (!routes[routeName]) {
+    throw new Error(`Handler for "${routeName}" isn't specified`);
+  }
 
-	delete routes[routeName];
+  delete routes[routeName];
 }
 
-export function navigate(routeName, params, redirect = false) {
-	if (!launched) {
-		throw new Error(`Can't process navigation before app is launched`);
-	}
+export function navigate(routeName, params, isRedirect = false) {
+  if (!launched) {
+    throw new Error('Can\'t process navigation before app is launched');
+  }
 
-	const targetRoute = routes[routeName];
+  const targetRoute = routes[routeName];
 
-	if (targetRoute) {
-		return targetRoute.sink({
-			redirect,
-			route: routeName,
-			navigation: params,
-		});
-	}
+  if (targetRoute) {
+    return targetRoute.sink({
+      route: routeName,
+      navigation: params,
+      redirect: isRedirect,
+    });
+  }
 
-	console.error(`Unable to resolve route "${routeName}"`);
+  console.error(`Unable to resolve route "${routeName}"`);
 
-	if (routeName !== route.NOT_FOUND) {
-		return navigate(route.NOT_FOUND, params);
-	}
+  if (routeName !== route.NOT_FOUND) {
+    return navigate(route.NOT_FOUND, params);
+  }
+
+  return Promise.reject();
 }
 
 export function redirect(routeName, params) {
-	return navigate(routeName, params, true);
+  return navigate(routeName, params, true);
 }
 
 Object
-	.keys(event)
-	.forEach(id => {
-		const symbol = event[id];
-		const name = symbol.toString();
+  .keys(event)
+  .forEach((id) => {
+    const symbol = event[id];
+    const name = symbol.toString();
 
-		App[name] = options => {
-			console.info('Fired handler for app lifecycle', name, options);
+    App[name] = (options) => {
+      console.info('Fired handler for app lifecycle', name, options);
 
-			if (name === 'onLaunch') {
-				sessionStorage.setItem('startParams', JSON.stringify(options));
-				launched = true;
-			}
-			broadcast(symbol);
-		}
-	});
+      if (name === 'onLaunch') {
+        sessionStorage.setItem('startParams', JSON.stringify(options));
+        launched = true;
+      }
+      broadcast(symbol);
+    };
+  });
 
-subscribe('menu-item-select').pipe(({menuItem, menuBar}) => {
-	const route = menuItem.getAttribute('route');
-
-	if (route) {
-		navigate(route, {menuItem, menuBar});
-	}
+subscribe('menu-item-select').pipe(({ menuItem, menuBar }) => {
+  const routeValue = menuItem.getAttribute('route');
+  if (routeValue) navigate(routeValue, { menuItem, menuBar });
 });

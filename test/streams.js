@@ -1,223 +1,307 @@
-import {Promise} from 'es6-promise';
+/* global describe it */
+
 import assert from 'assert';
 
 import {
-	noop,
-	plusOne,
-	plusFive,
-	iterator,
+  noop,
+  plusOne,
+  plusFive,
+  iterator,
 } from './utils';
 
 import Stream from '../src/pipelines/stream';
 import Pipeline from '../src/pipelines/pipeline';
 
 describe('Streams', () => {
-	it('creation', () => {
-		const stream = new Stream();
+  it('creation', () => {
+    const stream = new Stream();
 
-		assert.ok(stream instanceof Stream, 'stream should be instance of Stream class');
-		assert.throws(() => stream.pipe(), TypeError, 'stream should not allow creating pipes without handlers');
+    assert.ok(
+      stream instanceof Stream,
+      'stream should be instance of Stream class',
+    );
 
-		const fork1 = stream.pipe(noop());
+    assert.throws(
+      () => stream.pipe(),
+      TypeError,
+      'stream should not allow creating pipes without handlers',
+    );
 
-		assert.ok(fork1 instanceof Stream, 'fork should be instance of Stream class');
-		assert.notEqual(stream, fork1, 'fork should not be equal to parent stream');
+    const fork1 = stream.pipe(noop());
 
-		const fork2 = stream.pipe(noop());
+    assert.ok(
+      fork1 instanceof Stream,
+      'fork should be instance of Stream class',
+    );
 
-		assert.notEqual(fork1, fork2, 'forks should not be equal');
-	});
+    assert.notEqual(stream, fork1, 'fork should not be equal to parent stream');
 
-	it('data flow', () => {
-		const head = new Stream();
+    const fork2 = stream.pipe(noop());
 
-		const body = head.pipe(value => {
-			assert.equal(value, 1, 'initial value should not be changed');
-			return value + 1;
-		});
+    assert.notEqual(fork1, fork2, 'forks should not be equal');
+  });
 
-		const body2 = head.pipe(value => {
-			assert.equal(value, 1, 'initial value should not be changed');
-			return value;
-		});
+  it('data flow', () => {
+    const head = new Stream();
 
-		const tail = body.pipe(value => {
-			assert.equal(value, 2, 'passed value should be changed as supposed');
-			return value;
-		});
+    const body = head.pipe((value) => {
+      assert.equal(value, 1, 'initial value should not be changed');
+      return value + 1;
+    });
 
-		const tail2 = body2.pipe(value => {
-			assert.equal(value, 1, 'value should be equal to passed one');
-			return value;
-		});
+    const body2 = head.pipe((value) => {
+      assert.equal(value, 1, 'initial value should not be changed');
+      return value;
+    });
 
-		const promise = head.sink(1);
+    body.pipe((value) => {
+      assert.equal(value, 2, 'passed value should be changed as supposed');
+      return value;
+    });
 
-		assert.ok(promise instanceof Promise, 'sink should return promise');
+    body2.pipe((value) => {
+      assert.equal(value, 1, 'value should be equal to passed one');
+      return value;
+    });
 
-		return promise;
-	});
+    const promise = head.sink(1);
 
-	it('subsink', () => {
-		const stream = new Stream();
+    assert.ok(promise instanceof Promise, 'sink should return promise');
 
-		const head = stream.pipe(value => {
-			throw 'should not execute this part';
-		});
+    return promise;
+  });
 
-		const tail = head.pipe(value => {
-			assert.equal(value, 1, 'value should be equal to passed one');
-			return value;
-		});
+  it('subsink', () => {
+    const stream = new Stream();
 
-		return tail.sink(1);
-	});
+    const head = stream.pipe(() => {
+      throw new Error('should not execute this part');
+    });
 
-	it('merge', () => {
-		const mainValues = [];
-		const secondaryValues = [];
+    const tail = head.pipe((value) => {
+      assert.equal(value, 1, 'value should be equal to passed one');
+      return value;
+    });
 
-		const main = new Stream();
-		const secondary = new Stream();
+    return tail.sink(1);
+  });
 
-		secondary
-			.pipe(iterator(secondaryValues, plusFive))
-			.pipe(iterator(secondaryValues, plusFive));
+  it('merge', () => {
+    const mainValues = [];
+    const secondaryValues = [];
 
-		main
-			.pipe(iterator(mainValues, plusOne))
-			.pipe(secondary)
-			.pipe(iterator(mainValues, plusOne));
+    const main = new Stream();
+    const secondary = new Stream();
 
-		return main
-			.sink(1)
-			.then(() => {
-				assert.deepEqual(mainValues, [2, 3], '"mainValues" should be equal to expected ones');
-				assert.deepEqual(secondaryValues, [7, 12], '"secondaryValues" should be equal to expected ones');
-			});
-	});
+    secondary
+      .pipe(iterator(secondaryValues, plusFive))
+      .pipe(iterator(secondaryValues, plusFive));
 
-	it('extend', () => {
-		const obj = {};
+    main
+      .pipe(iterator(mainValues, plusOne))
+      .pipe(secondary)
+      .pipe(iterator(mainValues, plusOne));
 
-		const stream = new Stream();
-		const extended = new Stream({extend: {foo: 'bar', obj}});
+    return main
+      .sink(1)
+      .then(() => {
+        assert.deepEqual(
+          mainValues,
+          [2, 3],
+          '"mainValues" should be equal to expected ones',
+        );
 
-		assert.ok(!('foo' in stream), '"foo" property should not be in common stream');
-		assert.equal(extended.foo, 'bar', 'value of "foo" property should be equal to passed in options');
+        assert.deepEqual(
+          secondaryValues,
+          [7, 12],
+          '"secondaryValues" should be equal to expected ones',
+        );
+      });
+  });
 
-		const fork1 = stream.pipe(noop());
-		const fork2 = extended.pipe(noop());
+  it('extend', () => {
+    const obj = {};
 
-		assert.ok(!('foo' in fork1), '"foo" property should not be in fork of the common stream');
-		assert.equal(fork2.foo, extended.foo, '"foo" property should be in all extended stream forks');
-		assert.equal(fork2.obj, extended.obj, '"obj" property should be in all extended stream forks');
-		assert.equal(fork2.obj, obj, '"obj" object should be link to original object');
-	});
+    const stream = new Stream();
+    const extended = new Stream({ extend: { foo: 'bar', obj } });
 
-	it('onSinkStep', () => {
-		const values = [];
-		const queue = [];
+    assert.ok(
+      !('foo' in stream),
+      '"foo" property should not be in common stream',
+    );
 
-		const stream = new Stream({
-			onSinkStep(step, value) {
-				values[step] = value;
-				queue.push(value);
-				return value;
-			}
-		});
+    assert.equal(
+      extended.foo,
+      'bar',
+      'value of "foo" property should be equal to passed in options',
+    );
 
-		stream
-			.pipe(value => value + 1)
-			.pipe(value => value + 1)
-			.pipe(noop());
+    const fork1 = stream.pipe(noop());
+    const fork2 = extended.pipe(noop());
 
-		return stream
-			.sink(1)
-			.then(() => {
-				assert.deepEqual(values, [1, 2, 3], 'values should be equal to expected ones');
-				assert.deepEqual(queue, [1, 2, 3], 'queue should be equal to expected ones');
-			});
-	});
+    assert.ok(
+      !('foo' in fork1),
+      '"foo" property should not be in fork of the common stream',
+    );
 
-	it('onSinkStepEnd', () => {
-		const values = [];
-		const queue = [];
+    assert.equal(
+      fork2.foo,
+      extended.foo,
+      '"foo" property should be in all extended stream forks',
+    );
 
-		const stream = new Stream({
-			onSinkStepEnd(step, value) {
-				values[step] = value;
-				queue.push(value);
-				return value;
-			}
-		});
+    assert.equal(
+      fork2.obj,
+      extended.obj,
+      '"obj" property should be in all extended stream forks',
+    );
 
-		stream
-			.pipe(value => value + 1)
-			.pipe(value => value + 1)
-			.pipe(noop());
+    assert.equal(
+      fork2.obj,
+      obj,
+      '"obj" object should be link to original object',
+    );
+  });
 
-		return stream
-			.sink(1)
-			.then(() => {
-				assert.deepEqual(values, [2, 3, undefined], 'values should be equal to expected ones');
-				assert.deepEqual(queue, [undefined, 3, 2], 'queue should be equal to expected ones');
-			});
-	});
+  it('onSinkStep', () => {
+    const values = [];
+    const queue = [];
 
-	it('onSinkComplete', () => {
-		let complete = null;
-		const values = [];
+    const stream = new Stream({
+      onSinkStep(step, value) {
+        values[step] = value;
+        queue.push(value);
+        return value;
+      },
+    });
 
-		const stream = new Stream({
-			onSinkStep(step, value) {
-				values[step] = value;
-				return value;
-			},
+    stream
+      .pipe(value => value + 1)
+      .pipe(value => value + 1)
+      .pipe(noop());
 
-			onSinkComplete(value) {
-				complete = value;
-				values.push(4);
-				return value * 10;
-			},
-		});
+    return stream
+      .sink(1)
+      .then(() => {
+        assert.deepEqual(
+          values,
+          [1, 2, 3],
+          'values should be equal to expected ones',
+        );
 
-		stream
-			.pipe(value => value + 1)
-			.pipe(value => value + 1)
-			.pipe(noop());
+        assert.deepEqual(
+          queue,
+          [1, 2, 3],
+          'queue should be equal to expected ones',
+        );
+      });
+  });
 
-		return stream
-			.sink(1)
-			.then(result => {
-				assert.deepEqual(values, [1, 2, 3, 4], 'values should be equal to expected ones');
-				assert.deepEqual(result, 10, 'result value should be equal to expected ones');
-				assert.deepEqual(complete, 1, 'complete value should be equal to expected ones');
-			});
-	});
+  it('onSinkStepEnd', () => {
+    const values = [];
+    const queue = [];
 
-	it('pipelines interoperability', () => {
-		const values = [];
+    const stream = new Stream({
+      onSinkStepEnd(step, value) {
+        values[step] = value;
+        queue.push(value);
+        return value;
+      },
+    });
 
-		const stream = new Stream();
-		const pipeline = new Pipeline();
+    stream
+      .pipe(value => value + 1)
+      .pipe(value => value + 1)
+      .pipe(noop());
 
-		const pipelineTail = pipeline
-			.pipe(iterator(values, plusFive))
-			.pipe(iterator(values, plusFive));
+    return stream
+      .sink(1)
+      .then(() => {
+        assert.deepEqual(
+          values,
+          [2, 3, undefined],
+          'values should be equal to expected ones',
+        );
 
-		const streamTail = stream
-			.pipe(iterator(values, plusOne))
-			.pipe(pipelineTail);
+        assert.deepEqual(
+          queue,
+          [undefined, 3, 2],
+          'queue should be equal to expected ones',
+        );
+      });
+  });
+
+  it('onSinkComplete', () => {
+    let complete = null;
+    const values = [];
+
+    const stream = new Stream({
+      onSinkStep(step, value) {
+        values[step] = value;
+        return value;
+      },
+
+      onSinkComplete(value) {
+        complete = value;
+        values.push(4);
+        return value * 10;
+      },
+    });
+
+    stream
+      .pipe(value => value + 1)
+      .pipe(value => value + 1)
+      .pipe(noop());
+
+    return stream
+      .sink(1)
+      .then((result) => {
+        assert.deepEqual(
+          values,
+          [1, 2, 3, 4],
+          'values should be equal to expected ones',
+        );
+
+        assert.deepEqual(
+          result,
+          10,
+          'result value should be equal to expected ones',
+        );
+
+        assert.deepEqual(
+          complete,
+          1,
+          'complete value should be equal to expected ones',
+        );
+      });
+  });
+
+  it('pipelines interoperability', () => {
+    const values = [];
+
+    const stream = new Stream();
+    const pipeline = new Pipeline();
+
+    const pipelineTail = pipeline
+      .pipe(iterator(values, plusFive))
+      .pipe(iterator(values, plusFive));
+
+    const streamTail = stream
+      .pipe(iterator(values, plusOne))
+      .pipe(pipelineTail);
 
 
-		streamTail.pipe(iterator(values, plusOne));
-		streamTail.pipe(iterator(values, plusOne));
+    streamTail.pipe(iterator(values, plusOne));
+    streamTail.pipe(iterator(values, plusOne));
 
-		return stream
-			.sink(1)
-			.then(() => {
-				assert.deepEqual(values, [2, 7, 12, 13, 13], '"values" should be equal to expected ones');
-			});
-	});
+    return stream
+      .sink(1)
+      .then(() => {
+        assert.deepEqual(
+          values,
+          [2, 7, 12, 13, 13],
+          '"values" should be equal to expected ones',
+        );
+      });
+  });
 });

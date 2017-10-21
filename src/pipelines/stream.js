@@ -1,89 +1,98 @@
-import assign from 'object-assign';
-import {Promise} from 'es6-promise';
+/* eslint-disable no-underscore-dangle */
 
 export default class Stream {
-	constructor(options = {}) {
-		assign(this, options.extend);
-		this.options = options;
-		this.forks = [];
-	}
+  constructor(options = {}) {
+    Object.assign(this, options.extend);
+    this.options = options;
+    this.forks = [];
+  }
 
-	pipe(handler) {
-		if (!this.isHandlerValid(handler)) {
-			const error = new TypeError(`Unsupported handler type`);
-			error.code = 'EUNSUPPORTEDHANDLER';
-			throw error;
-		}
+  pipe(handler) {
+    if (!this.isHandlerValid(handler)) {
+      const error = new TypeError('Unsupported handler type');
+      error.code = 'EUNSUPPORTEDHANDLER';
+      throw error;
+    }
 
-		const {stream, resolver} = this.createTransform(handler);
-		resolver && this.forks.push(resolver);
-		return stream;
-	}
+    const { stream, resolver } = this.createTransform(handler);
 
-	isHandlerValid(handler) {
-		return handler instanceof this.constructor || typeof(handler) === 'function';
-	}
+    if (resolver) {
+      this.forks.push(resolver);
+    }
+    return stream;
+  }
 
-	createTransform(handler) {
-		if (handler instanceof this.constructor) {
-			return {stream: this.pipe(handler.sink.bind(handler))};
-		} else {
-			const stream = new this.constructor(this.options);
-			const resolver = (step, ctx, payload) => {
-				return Promise
-					.resolve(payload)
-					.then(handler)
-					.then(stream._sink.bind(stream, step + 1, ctx));
-			};
+  isHandlerValid(handler) {
+    return handler instanceof this.constructor || typeof handler === 'function';
+  }
 
-			return {stream, resolver};
-		}
-	}
+  createTransform(handler) {
+    if (handler instanceof this.constructor) {
+      return {
+        stream: this.pipe(handler.sink.bind(handler)),
+      };
+    }
 
-	sink(payload) {
-		const ctx = {};
+    const stream = new this.constructor(this.options);
+    const resolver = (step, ctx, payload) => Promise
+      .resolve(payload)
+      .then(handler)
+      .then(stream._sink.bind(stream, step + 1, ctx));
 
-		return this._sink(0, ctx, payload)
-			.then(this.handleSinkComplete(ctx))
-			.catch(error => {
-				console.error(error);
-				return Promise.reject(error);
-			});
-	}
+    return { stream, resolver };
+  }
 
-	_sink(step = 0, ctx, payload) {
-		return Promise
-			.all(this.forks.map(resolver => {
-				return Promise
-					.resolve(payload)
-					.then(this.handleSinkByStep(step, ctx))
-					.then(resolver.bind(resolver, step, ctx))
-					.then(this.handleSinkByStepEnd(step, ctx));
-			}))
-			.then(forks => payload);
-	}
+  sink(payload) {
+    const ctx = {};
 
-	handleSinkByStep(step, ctx) {
-		return payload => {
-			const {onSinkStep} = this.options;
-			if (typeof(onSinkStep) === 'function') return onSinkStep(step, payload, ctx);
-			return payload;
-		};
-	}
+    return this._sink(0, ctx, payload)
+      .then(this.handleSinkComplete(ctx))
+      .catch((error) => {
+        console.error(error);
+        return Promise.reject(error);
+      });
+  }
 
-	handleSinkByStepEnd(step, ctx) {
-		return payload => {
-			const {onSinkStepEnd} = this.options;
-			if (typeof(onSinkStepEnd) === 'function') return onSinkStepEnd(step, payload, ctx);
-			return payload;
-		};
-	}
+  _sink(step = 0, ctx, payload) {
+    return Promise
+      .all(this.forks.map(resolver => Promise
+        .resolve(payload)
+        .then(this.handleSinkByStep(step, ctx))
+        .then(resolver.bind(resolver, step, ctx))
+        .then(this.handleSinkByStepEnd(step, ctx))))
+      .then(() => payload);
+  }
 
-	handleSinkComplete(ctx) {
-		return payload => {
-			const {onSinkComplete} = this.options;
-			if (typeof(onSinkComplete) === 'function') return onSinkComplete(payload, ctx);
-			return payload;
-		};
-	}
+  handleSinkByStep(step, ctx) {
+    return (payload) => {
+      const { onSinkStep } = this.options;
+
+      if (typeof onSinkStep === 'function') {
+        return onSinkStep(step, payload, ctx);
+      }
+      return payload;
+    };
+  }
+
+  handleSinkByStepEnd(step, ctx) {
+    return (payload) => {
+      const { onSinkStepEnd } = this.options;
+
+      if (typeof onSinkStepEnd === 'function') {
+        return onSinkStepEnd(step, payload, ctx);
+      }
+      return payload;
+    };
+  }
+
+  handleSinkComplete(ctx) {
+    return (payload) => {
+      const { onSinkComplete } = this.options;
+
+      if (typeof onSinkComplete === 'function') {
+        return onSinkComplete(payload, ctx);
+      }
+      return payload;
+    };
+  }
 }

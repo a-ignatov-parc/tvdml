@@ -1,122 +1,133 @@
-import createElement from 'virtual-dom/create-element';
+/* global DOMImplementationRegistry */
+
+import createElement from '@a-ignatov-parc/virtual-dom/create-element';
 
 import CustomNode from './custom-node';
-import {Component} from './component';
-import {broadcast} from '../event-bus';
-import {noop} from '../utils';
+import { Component } from './component';
+import { broadcast } from '../event-bus';
+import { noop } from '../utils';
 
 const DEFAULT_HANDLER = 'default';
 
+function createDefaultHandler(handlerName) {
+  return function defaultHandler(event, ...args) {
+    const { events = {} } = event.target;
+    const handler = events[handlerName];
+
+    if (typeof handler === 'function') {
+      handler(event, ...args);
+    }
+  };
+}
+
 const handlers = {
-	play: {
-		[DEFAULT_HANDLER]: createDefaultHandler('onPlay'),
-	},
+  play: {
+    [DEFAULT_HANDLER]: createDefaultHandler('onPlay'),
+  },
 
-	select: {
-		[DEFAULT_HANDLER]: createDefaultHandler('onSelect'),
+  select: {
+    [DEFAULT_HANDLER]: createDefaultHandler('onSelect'),
 
-		menuItem({target: menuItem}) {
-			let menuBar = menuItem.parentNode;
-			let feature = menuBar.getFeature('MenuBarDocument');
+    menuItem({ target: menuItem }) {
+      const menuBar = menuItem.parentNode;
+      const feature = menuBar.getFeature('MenuBarDocument');
 
-			broadcast('menu-item-select', {
-				menuItem,
-				menuBar: feature,
-			});
-		},
-	},
+      broadcast('menu-item-select', {
+        menuItem,
+        menuBar: feature,
+      });
+    },
+  },
 
-	change: {
-		[DEFAULT_HANDLER]: createDefaultHandler('onChange'),
-	},
+  change: {
+    [DEFAULT_HANDLER]: createDefaultHandler('onChange'),
+  },
 
-	highlight: {
-		[DEFAULT_HANDLER]: createDefaultHandler('onHighlight'),
-	},
+  highlight: {
+    [DEFAULT_HANDLER]: createDefaultHandler('onHighlight'),
+  },
 
-	holdselect: {
-		[DEFAULT_HANDLER]: createDefaultHandler('onHoldselect'),
-	},
+  holdselect: {
+    [DEFAULT_HANDLER]: createDefaultHandler('onHoldselect'),
+  },
 };
 
 const eventsList = [
-	'play',
-	'select',
-	'change',
-	'highlight',
-	'holdselect',
+  'play',
+  'select',
+  'change',
+  'highlight',
+  'holdselect',
 ];
 
-export function vdomToDocument(vdom, payload) {
-	const {menuBar, menuItem} = payload && payload.navigation || {};
-
-	let vnode;
-
-	if (vdom instanceof CustomNode) {
-		vnode = vdom.toNode(payload);
-	} else {
-		vnode = vdom;
-	}
-
-	if (menuItem) {
-		const menuItemDocument = menuBar.getDocument(menuItem);
-
-		if (menuItemDocument && menuItemDocument.updateComponent) {
-			menuItemDocument.updateComponent(payload);
-			return menuItemDocument;
-		}
-	}
-
-	const document = createEmptyDocument();
-
-	const childNode = createElement(vnode, {document});
-	const menuBars = childNode.getElementsByTagName('menuBar');
-
-	if (menuBars.length) {
-		document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
-	} else if (vnode instanceof Component) {
-		document.updateComponent = vnode.updateProps.bind(vnode);
-		document.destroyComponent = vnode.destroy.bind(vnode, childNode);
-	}
-
-	document.appendChild(childNode);
-	eventsList.forEach(eventName => {
-		document.addEventListener(eventName, createEventHandler(handlers[eventName]))
-	});
-
-	return document;
-}
-
 export function createEmptyDocument() {
-	const document = DOMImplementationRegistry
-		.getDOMImplementation()
-		.createDocument();
+  const document = DOMImplementationRegistry
+    .getDOMImplementation()
+    .createDocument();
 
-	document.extra = {};
+  document.extra = {};
 
-	for (let i = document.childNodes.length; i; i--) {
-		document.removeChild(document.childNodes.item(i - 1));
-	}
+  // eslint-disable-next-line no-plusplus
+  for (let i = document.childNodes.length; i; i--) {
+    document.removeChild(document.childNodes.item(i - 1));
+  }
 
-	return document;
+  return document;
 }
 
 function createEventHandler(handlersCollection = {}) {
-	return function(event, ...args) {
-		let {target} = event;
-		let {tagName} = target;
-		let handler = handlersCollection[tagName] || handlersCollection[DEFAULT_HANDLER] || noop();
-		return handler.call(this, event, ...args);
-	}
+  return function eventHandler(event, ...args) {
+    const { target } = event;
+    const { tagName } = target;
+
+    const handler = handlersCollection[tagName]
+      || handlersCollection[DEFAULT_HANDLER]
+      || noop();
+
+    return handler(event, ...args);
+  };
 }
 
-function createDefaultHandler(handlerName) {
-	return function({target}) {
-		let {events = {}} = target;
-		let handler = events[handlerName];
+export function vdomToDocument(vdom, payload) {
+  const { navigation } = payload || {};
+  const { menuBar, menuItem } = navigation || {};
 
-		if (typeof(handler) === 'function') {
-			handler.apply(this, arguments);
-		}
-	}
+  let vnode;
+
+  if (vdom instanceof CustomNode) {
+    vnode = vdom.toNode(payload);
+  } else {
+    vnode = vdom;
+  }
+
+  if (menuItem) {
+    const menuItemDocument = menuBar.getDocument(menuItem);
+
+    if (menuItemDocument && menuItemDocument.updateComponent) {
+      menuItemDocument.updateComponent(payload);
+      return menuItemDocument;
+    }
+  }
+
+  const document = createEmptyDocument();
+
+  const childNode = createElement(vnode, { document });
+  const menuBars = childNode.getElementsByTagName('menuBar');
+
+  if (menuBars.length) {
+    document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
+  } else if (vnode instanceof Component) {
+    document.updateComponent = vnode.updateProps.bind(vnode);
+    document.destroyComponent = vnode.destroy.bind(vnode, childNode);
+  }
+
+  document.appendChild(childNode);
+  eventsList.forEach((eventName) => {
+    document.addEventListener(
+      eventName,
+      createEventHandler(handlers[eventName]),
+    );
+  });
+
+  return document;
 }
