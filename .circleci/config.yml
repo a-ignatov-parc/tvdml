@@ -1,0 +1,222 @@
+version: 2
+
+job-configuration: &job-configuration
+  working_directory: ~/app
+  docker:
+    - image: circleci/node:6.10
+
+prepare-git: &prepare-git
+  name: Preparing git working directory
+  command: |
+    git clean -d -f
+    git checkout -- .
+    git config user.name "ci-bot"
+    git config user.email "ci-bot@circleci.com"
+    mkdir -p ~/.ssh/
+    echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+publish-to-git: &publish-to-git
+  name: Publish created version
+  command: |
+    git push origin $CIRCLE_BRANCH
+    git push --tags
+
+jobs:
+  install-deps:
+    <<: *job-configuration
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install local yarn
+          command: npm run yarn:install
+      - run:
+          name: Install dependencies using local yarn
+          command: npm run yarn:install-deps
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - .git
+            - .eslintrc
+            - node_modules
+            - src
+            - test
+            - package.json
+
+  lint:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Run linter
+          command: |
+            mkdir -p ~/reports
+            npm run lint -- --format junit --output-file ~/reports/eslint.xml
+      - store_test_results:
+          path: ~/reports
+      - store_artifacts:
+          path: ~/reports
+
+  test:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Run tests
+          command: |
+            mkdir -p ~/junit
+            npm run test -- --reporter mocha-junit-reporter
+            cp test-results.xml ~/junit
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit
+
+  build:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Build application
+          command: npm run dist
+      - store_artifacts:
+          path: ./dist
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - dist
+
+  publish:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Prepare .npmrc
+          command: |
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run:
+          name: Publish to npm
+          command: npm publish
+
+  release-major:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump major version
+          command: npm version major -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
+
+  release-minor:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump minor version
+          command: npm version minor -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
+
+  release-patch:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump patch version
+          command: npm version patch -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
+
+workflows:
+  version: 2
+
+  build-and-publish:
+    jobs:
+      - install-deps:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - build:
+          requires:
+            - install-deps
+          filters:
+            tags:
+              only: /.*/
+      - approve-publish:
+          type: approval
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+      - publish:
+          requires:
+            - approve-publish
+          filters:
+            tags:
+              only: /.*/
+
+  test-and-release:
+    jobs:
+      - install-deps
+      - test:
+          requires:
+            - install-deps
+      - lint:
+          requires:
+            - install-deps
+      - approve-major:
+          type: approval
+          requires:
+            - test
+            - lint
+          filters:
+            branches:
+              only: master
+      - approve-minor:
+          type: approval
+          requires:
+            - test
+            - lint
+          filters:
+            branches:
+              only: master
+      - approve-patch:
+          type: approval
+          requires:
+            - test
+            - lint
+          filters:
+            branches:
+              only: master
+      - release-major:
+          requires:
+            - approve-major
+      - release-minor:
+          requires:
+            - approve-minor
+      - release-patch:
+          requires:
+            - approve-patch

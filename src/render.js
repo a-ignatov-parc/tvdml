@@ -1,4 +1,3 @@
-import assign from 'object-assign';
 import {broadcast} from './event-bus';
 import {promisedTimeout} from './utils';
 import {passthrough, createPipeline} from './pipelines';

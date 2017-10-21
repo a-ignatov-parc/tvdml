@@ -1,9 +1,8 @@
-import assign from 'object-assign';
 import {Promise} from 'es6-promise';
 
 export default class Stream {
 	constructor(options = {}) {
-		assign(this, options.extend);
+		Object.assign(this, options.extend);
 		this.options = options;
 		this.forks = [];
 	}

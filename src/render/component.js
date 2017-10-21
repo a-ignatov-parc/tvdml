@@ -1,5 +1,3 @@
-import assign from 'object-assign';
-
 import diff from 'virtual-dom/diff';
 import patch from 'virtual-dom/patch';
 import createElement from 'virtual-dom/create-element';
@@ -29,15 +27,15 @@ export class Component {
 			})
 			.forEach(name => this[name] = spec[name].bind(this));
 
-		this._props = assign({}, props);
+		this._props = { ...props };
 		this.type = 'Widget';
 	}
 
 	init(options) {
 		this._queue = null;
 
-		this.props = assign({}, this._props, this.getDefaultProps());
-		this.state = assign({}, this.getInitialState());
+		this.props = { ...this._props, ...this.getDefaultProps() };
+		this.state = { ...this.getInitialState() };
 
 		this._vdom = render.call(this);
 		this._rootNode = createElement(this._vdom, options);
@@ -58,7 +56,7 @@ export class Component {
 		const {state} = this._queue;
 		this._queue = null;
 
-		update.call(this, props, assign({}, previous.state, state));
+		update.call(this, props, { ...previous.state, ...state });
 	}
 
 	updateProps(nextProps) {
@@ -74,7 +72,7 @@ export class Component {
 	}
 
 	setState(newState = {}) {
-		const nextState = assign({}, this.state, newState);
+		const nextState = { ...this.state, ...newState };
 
 		if (this._queue) {
 			this._queue.state = nextState;
