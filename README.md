@@ -18,7 +18,6 @@
 		- [Document styles and class names](#document-styles-and-class-names)
 	- [Working with `menuBar`](#working-with-menubar)
 	- [Complete rendering module api](#complete-rendering-module-api)
-- [Player](#player)
 - [Pipelines and Streams](#pipelines-and-streams)
 	- [Streams](#streams)
 		- [Streams' public api](#streams-public-api)
@@ -40,7 +39,6 @@ This is library that main goal is to greatly simplify app development for Apple 
 - Templating and updating data
 - Event binding
 - Detecting "Menu" button presses
-- Configuring player for seamless playing
 
 **What else is in the box?**
 
@@ -925,74 +923,6 @@ Views switching will be handled by TVDML. All you have to do is to create `menuI
 - `TVDML.createComponent(spec)` — You should provide a specification object that contains at least `render` method and can optionaly contains other lifecycle methods described [here](https://facebook.github.io/react/docs/component-specs.html). Please check for differences with react.js specification in [Creating interactive components](#creating-interactive-components) section.
 
 - `TVDML.jsx` — Transforms virtual DOM elements from JSX notation into [hyperscript](https://github.com/Matt-Esch/virtual-dom/tree/master/virtual-hyperscript) notation.
-
-## Player
-
-Configuring player in TVJS [isn't so easy as it could be](https://developer.apple.com/library/content/documentation/TVMLKitJS/Conceptual/TVMLProgrammingGuide/PlayingVideo.html) especially when you need to make some requests in order to get playback url.
-
-`TVDML.createPlayer(options)` were created to supercharge default player with useful utils. What options can it take?
-
-- `items` — Can be url to media file or array of urls. If function is passed then it will be treated as lazy resolver. You can return promise to make some async actions before return media file url. If you want to add additional information to media file you can return media item object instead url. If you return `null` as result then no `MediaItem` will be added to playlist. List of props recognized by TVJS Player:
-
-  - `url`
-  - `type` — Default value is `video`.
-  - `title`
-  - `subtitle`
-  - `resumeTime`
-  - `description`
-  - `artworkImageURL`
-  - `contentRatingDomain`
-  - `contentRatingRanking`
-
-  > You can add any additional properties if you want. They will be ignored by TVJS Player.
-
-  Check [`MediaItem` api](https://developer.apple.com/reference/tvmljs/mediaitem) for more information.
-
-- `uidResolver` — TVDML player tracks and provides `resumeTime` property by default. To do this it need to identify somehow media files. By default player uses `url` param but you can override `uidResolver` to specify your own id resolver.
-
-- `markAsStopped` — Invoked when user stops media file playback.
-
-- `markAsWatched` — Invoked when playback time reaches 90% (configured with `markAsWatchedPercent`) of overall medial file timeline.
-
-- `markAsWatchedPercent` — Default value is `90`. Max value is `100`.
-
-```javascript
-const resolvers = {
-	initial() {
-		return episodeNumber;
-	},
-
-	next({id}) {
-		...
-		return nextEpisode.episode || null;
-	},
-};
-
-TVDML
-	.createPlayer({
-		items(item, request) {
-			const episodeNumber = resolvers[request] && resolvers[request](item);
-			return getEpisodeItem(episodeNumber);
-		},
-
-		markAsStopped(item, elapsedTime) {
-			return saveElapsedTime(item, elapsedTime);
-		},
-
-		markAsWatched(item) {
-			return markAsWatched(item);
-		},
-
-		uidResolver(item) {
-			return item.id;
-		},
-	})
-	.then(player => player.play());
-```
-
-> Resolved `player` object is normal [`Player`](https://developer.apple.com/reference/tvmljs/player) instance. You can add event listeners or invoke methods.
-
-Complete example can be found [here](https://github.com/a-ignatov-parc/tvos-soap4.me/blob/5a4a7bce2bc617311a9a5c8314cc66d101121e75/src/routes/season.js#L299-L367).
 
 ## Pipelines and Streams
 
