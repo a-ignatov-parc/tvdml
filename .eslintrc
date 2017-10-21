@@ -1,0 +1,7 @@
+{
+  "extends": "airbnb",
+  "rules": {
+    "max-len": ["error", 80],
+    "no-console": ["error", { allow: ["info", "warn", "error"] }]
+  },
+}
