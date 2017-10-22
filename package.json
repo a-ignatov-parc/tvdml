@@ -58,6 +58,7 @@
     "@a-ignatov-parc/virtual-dom": "^2.2.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ]
 }
