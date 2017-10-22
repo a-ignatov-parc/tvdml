@@ -10,12 +10,13 @@ import { noop } from '../utils';
 const DEFAULT_HANDLER = 'default';
 
 function createDefaultHandler(handlerName) {
-  return function defaultHandler(event, ...args) {
+  return function defaultHandler(...args) {
+    const [event] = args;
     const { events = {} } = event.target;
     const handler = events[handlerName];
 
     if (typeof handler === 'function') {
-      handler(event, ...args);
+      handler.apply(this, args);
     }
   };
 }
@@ -76,7 +77,8 @@ export function createEmptyDocument() {
 }
 
 function createEventHandler(handlersCollection = {}) {
-  return function eventHandler(event, ...args) {
+  return function eventHandler(...args) {
+    const [event] = args;
     const { target } = event;
     const { tagName } = target;
 
@@ -84,7 +86,7 @@ function createEventHandler(handlersCollection = {}) {
       || handlersCollection[DEFAULT_HANDLER]
       || noop();
 
-    return handler(event, ...args);
+    return handler.apply(this, args);
   };
 }
 

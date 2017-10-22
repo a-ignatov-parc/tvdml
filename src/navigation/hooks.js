@@ -103,8 +103,8 @@ export function enable() {
 
   methodsToPatch.forEach((name) => {
     navigationDocument[name] = function TVDMLWrapper(...args) {
-      if (handlers[name]) handlers[name](...args);
-      return originalMethods[name](...args);
+      if (handlers[name]) handlers[name].apply(this, args);
+      return originalMethods[name].apply(this, args);
     };
   });
 
