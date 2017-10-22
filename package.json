@@ -3,7 +3,6 @@
   "version": "3.0.3",
   "description": "Small library for creating declarative apps for tvOS with TVML and TVJS",
   "main": "dist/tvdml.js",
-  "module": "src/index.js",
   "engine-strict": true,
   "engines": {
     "node": "^6.0.0",
@@ -58,7 +57,6 @@
     "@a-ignatov-parc/virtual-dom": "^2.2.0"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ]
 }
