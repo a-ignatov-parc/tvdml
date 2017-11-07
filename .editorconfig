@@ -1,7 +1,6 @@
 ; top-most EditorConfig file
 root = true
 
-; Unix-style newlines with a newline ending every file + tab indent style with 4 space indentation
 [*]
 end_of_line = lf
 insert_final_newline = true
@@ -9,7 +8,3 @@ trim_trailing_whitespace = true
 charset = utf-8
 indent_style = space
 indent_size = 2
-
-[*.md]
-indent_style = tab
-indent_size = 4

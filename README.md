@@ -70,10 +70,10 @@ import * as TVDML from 'tvdml';
 
 // You can use ES6 destructuring if you need only few
 // of the provided features.
-import {subscribe, handleRoute, navigate} from 'tvdml';
+import { subscribe, handleRoute, navigate } from 'tvdml';
 
 // Or even require modules from their sources.
-import {handleRoute, navigate} from 'tvdml/src/navigation';
+import { handleRoute, navigate } from 'tvdml/src/navigation';
 ```
 
 > Requiring modules from their sources can help you decrease app size if you are using [rollup](http://rollupjs.org/) for your builds.
@@ -128,7 +128,7 @@ TVDML
 
 So what we need to be able to write code as in second example? Well it's not that simple but this [tvdml-boilerplate](https://github.com/a-ignatov-parc/tvdml-app-boilerplate) repo will shed the light on basic build configuration.
 
-> To be able to properly transform JSX you need to specify JSX pragma for babel runtime. You can do this by adding `/** @jsx TVDML.jsx */` in the beggining of each module.
+Also to be able to properly transform JSX you need to specify JSX pragma for babel runtime. You can do this by adding `/** @jsx TVDML.jsx */` in the beggining of each module or you can configure `pragma` option in [`transform-react-jsx`](https://www.npmjs.com/package/babel-plugin-transform-react-jsx#pragma) plugin.
 
 Well! Now we know how to write apps using ES6 and JSX so let's start from the basic features!
 
@@ -190,7 +190,7 @@ import * as TVDML from 'tvdml';
 
 TVDML
   .subscribe(TVDML.event.LAUNCH)
-  .pipe(() => TVDML.navigate('start', {foo: 'bar'}));
+  .pipe(() => TVDML.navigate('start', { foo: 'bar' }));
 
 // To create route handler use `handleRoute` method.
 TVDML
@@ -204,7 +204,7 @@ TVDML
 
     console.log(route); // 'start'
     console.log(redirect); // false
-    console.log(navigation); // {foo: 'bar'}
+    console.log(navigation); // { foo: 'bar' }
   });
 
 // `dismissRoute` method will help you destroy route handler.
@@ -294,17 +294,17 @@ import * as TVDML from 'tvdml';
 TVDML
   .subscribe(TVDML.event.LAUNCH)
   .pipe(() => {
-    TVDML.navigate('start', {title: 'Hello everybody!'}); // Passing params to route pipeline
+    TVDML.navigate('start', { title: 'Hello everybody!' }); // Passing params to route pipeline
   });
 
 TVDML
   .handleRoute('start')
 
   // Extracting `title` param from `navigation` object.
-  .pipe(({navigation: {title}}) => ({title}))
+  .pipe(({ navigation: { title } }) => ({title}))
 
   // Rendering custom `title`
-  .pipe(TVDML.render(({title}) => {
+  .pipe(TVDML.render(({ title }) => {
     return (
       <document>
         <alertTemplate>
@@ -330,10 +330,6 @@ TVDML's pipelines support promises so you can pause them when you need it. For e
 /** @jsx TVDML.jsx */
 
 import * as TVDML from 'tvdml';
-
-// Starting from tvOS 10 TVJS supports ES6 out of the box and there is no need in using
-// Promise polyfill provided by TVDML.
-const {Promise} = TVDML;
 
 TVDML
   .subscribe(TVDML.event.LAUNCH)
@@ -703,8 +699,8 @@ TVDML.createComponent({
 So how is `<Loading />` looks from the inside.
 
 ```javascript
-function Loader({attrs = {}}) {
-  let {title} = attrs;
+function Loader({ attrs = {} }) {
+  const { title } = attrs;
 
   return (
     <document>
@@ -1144,7 +1140,7 @@ tvOS and TVJS aren't providing any way to detect Menu button activity on Apple T
 TVDML
   .subscribe('menu-button-press')
   .pipe(transition => {
-    console.log(transition); // {from: {route, document, modal}, to: {route, document, modal}}
+    console.log(transition); // { from: { route, document, modal }, to: { route, document, modal } }
   });
 ```
 
@@ -1155,7 +1151,7 @@ TVDML
   .createPipeline()
   .pipe(TVDML.render(TVDML.createComponent({
     componentDidMount() {
-      let currentDocument = this._rootNode.ownerDocument;
+      const currentDocument = this._rootNode.ownerDocument;
 
       this.menuButtonPressStream = TVDML.subscribe('menu-button-press');
       this.menuButtonPressStream
@@ -1173,8 +1169,8 @@ TVDML
   })));
 
 function isMenuButtonPressNavigatedTo(targetDocument) {
-  return ({to: {document}}) => {
-    let {menuBarDocument} = document;
+  return ({ to: { document } }) => {
+    const { menuBarDocument } = document;
 
     if (menuBarDocument) {
       document = menuBarDocument.getDocument(menuBarDocument.getSelectedItem());
