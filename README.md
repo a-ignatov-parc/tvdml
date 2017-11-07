@@ -4,28 +4,28 @@
 - [Getting started](#getting-started)
 - [Routing](#routing)
 - [Templating and styling](#templating-and-styling)
-	- [Rendering static document](#rendering-static-document)
-	- [Rendering custom data using factory approach](#rendering-custom-data-using-factory-approach)
-	- [Requesting and rendering data](#requesting-and-rendering-data)
-		- [Important note](#important-note)
-	- [Events](#events)
-	- [Modals](#modals)
-	- [Working with rendered elements](#working-with-rendered-elements)
-	- [Creating interactive components](#creating-interactive-components)
-	- [Partials](#partials)
-	- [Styling elements](#styling-elements)
-		- [Inline styles](#inline-styles)
-		- [Document styles and class names](#document-styles-and-class-names)
-	- [Working with `menuBar`](#working-with-menubar)
-	- [Complete rendering module api](#complete-rendering-module-api)
+  - [Rendering static document](#rendering-static-document)
+  - [Rendering custom data using factory approach](#rendering-custom-data-using-factory-approach)
+  - [Requesting and rendering data](#requesting-and-rendering-data)
+    - [Important note](#important-note)
+  - [Events](#events)
+  - [Modals](#modals)
+  - [Working with rendered elements](#working-with-rendered-elements)
+  - [Creating interactive components](#creating-interactive-components)
+  - [Partials](#partials)
+  - [Styling elements](#styling-elements)
+    - [Inline styles](#inline-styles)
+    - [Document styles and class names](#document-styles-and-class-names)
+  - [Working with `menuBar`](#working-with-menubar)
+  - [Complete rendering module api](#complete-rendering-module-api)
 - [Pipelines and Streams](#pipelines-and-streams)
-	- [Streams](#streams)
-		- [Streams' public api](#streams-public-api)
-	- [Pipelines](#pipelines)
-		- [Pipelines' public api](#pipelines-public-api)
-	- [Rules of combining streams and pipelines](#rules-of-combining-streams-and-pipelines)
+  - [Streams](#streams)
+    - [Streams' public api](#streams-public-api)
+  - [Pipelines](#pipelines)
+    - [Pipelines' public api](#pipelines-public-api)
+  - [Rules of combining streams and pipelines](#rules-of-combining-streams-and-pipelines)
 - [Additional tools](#additional-tools)
-	- [Detecting Menu button press](#detecting-menu-button-press)
+  - [Detecting Menu button press](#detecting-menu-button-press)
 - [Sample code](#sample-code)
 - [Useful Links](#useful-links)
 - [Contributions](#contributions)
@@ -59,7 +59,7 @@ TVDML is written in ES6 and built using UMD wrapper so it can be used in any env
 ```javascript
 // Directly from global scope.
 App.onLaunch = function() {
-	console.log(TVDML);
+  console.log(TVDML);
 }
 
 // Or with CommonJS if you are using bundlers like browserify.
@@ -68,7 +68,7 @@ var TVDML = require('tvdml');
 // Or with ES6 imports.
 import * as TVDML from 'tvdml';
 
-// You can use ES6 destructuring if you need only few 
+// You can use ES6 destructuring if you need only few
 // of the provided features.
 import {subscribe, handleRoute, navigate} from 'tvdml';
 
@@ -78,33 +78,33 @@ import {handleRoute, navigate} from 'tvdml/src/navigation';
 
 > Requiring modules from their sources can help you decrease app size if you are using [rollup](http://rollupjs.org/) for your builds.
 
-Despite being written totally in ES6 TVDML is not forcing you to use it. 
+Despite being written totally in ES6 TVDML is not forcing you to use it.
 
 But you should agree that this...
 
 ```javascript
 App.onLaunch = function(options) {
-	evaluateScripts([
-		options.BASEURL + 'libs/tvdml.js'
-	], function(success) {
-		if (success) {
-			TVDML
-				.render(TVDML.jsx(
-					'document', 
-					null,
-					TVDML.jsx(
-						'alertTemplate',
-						null,
-						TVDML.jsx(
-							'title',
-							null,
-							'Hello world'
-						)
-					)
-				))
-				.sink();
-		}
-	});
+  evaluateScripts([
+    options.BASEURL + 'libs/tvdml.js'
+  ], function(success) {
+    if (success) {
+      TVDML
+        .render(TVDML.jsx(
+          'document',
+          null,
+          TVDML.jsx(
+            'alertTemplate',
+            null,
+            TVDML.jsx(
+              'title',
+              null,
+              'Hello world'
+            )
+          )
+        ))
+        .sink();
+    }
+  });
 }
 ```
 
@@ -116,14 +116,14 @@ Doesn't look as nice as this
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(TVDML.render(
-		<document>
-			<alertTemplate>
-				<title>Hello world</title>
-			</alertTemplate>
-		</document>
-	));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(TVDML.render(
+    <document>
+      <alertTemplate>
+        <title>Hello world</title>
+      </alertTemplate>
+    </document>
+  ));
 ```
 
 So what we need to be able to write code as in second example? Well it's not that simple but this [tvdml-boilerplate](https://github.com/a-ignatov-parc/tvdml-app-boilerplate) repo will shed the light on basic build configuration.
@@ -144,33 +144,33 @@ To help you solving this issues TVDML provides navigation module.
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('start'));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('start'));
 
 TVDML
-	.handleRoute('start')
-	.pipe(TVDML.render(
-		<document>
-			<alertTemplate>
-				<title>This is initial view</title>
-				<description>You can now navigate to another view</description>
-				<button onSelect={event => TVDML.navigate('next')}>
-					<text>Go to next page</text>
-				</button>
-			</alertTemplate>
-		</document>
-	));
+  .handleRoute('start')
+  .pipe(TVDML.render(
+    <document>
+      <alertTemplate>
+        <title>This is initial view</title>
+        <description>You can now navigate to another view</description>
+        <button onSelect={event => TVDML.navigate('next')}>
+          <text>Go to next page</text>
+        </button>
+      </alertTemplate>
+    </document>
+  ));
 
 TVDML
-	.handleRoute('next')
-	.pipe(TVDML.render(
-		<document>
-			<alertTemplate>
-				<title>This is next view</title>
-				<description>Now you know how to use routes!</description>
-			</alertTemplate>
-		</document>
-	));
+  .handleRoute('next')
+  .pipe(TVDML.render(
+    <document>
+      <alertTemplate>
+        <title>This is next view</title>
+        <description>Now you know how to use routes!</description>
+      </alertTemplate>
+    </document>
+  ));
 ```
 
 > This is small example of using navigation and rendering modules to handle routes and show them to user.
@@ -189,24 +189,24 @@ Here is a complete api of navigation module:
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('start', {foo: 'bar'}));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('start', {foo: 'bar'}));
 
 // To create route handler use `handleRoute` method.
 TVDML
-	.handleRoute('start')
-	.pipe(payload => {
-		const {
-			route,
-			redirect,
-			navigation,
-		} = payload;
-		
-		console.log(route); // 'start'
-		console.log(redirect); // false
-		console.log(navigation); // {foo: 'bar'}
-	});
-	
+  .handleRoute('start')
+  .pipe(payload => {
+    const {
+      route,
+      redirect,
+      navigation,
+    } = payload;
+
+    console.log(route); // 'start'
+    console.log(redirect); // false
+    console.log(navigation); // {foo: 'bar'}
+  });
+
 // `dismissRoute` method will help you destroy route handler.
 TVDML.dismissRoute('start');
 ```
@@ -220,7 +220,7 @@ Here is a list of predefined constants for system events:
 - `TVDML.event.RESUME`
 - `TVDML.event.SUSPEND`
 
-> This events are related to system handlers: `App.onLaunch`, `App.onExit` etc. 
+> This events are related to system handlers: `App.onLaunch`, `App.onExit` etc.
 
 Why would you use this events and not system handlers directly? Handlers can be assigned only once and events can be attached multiple times. But no one force you to use them.
 
@@ -230,12 +230,12 @@ You can add event listeners like this:
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(eventSymbol => console.log('App is launched!'));
-	
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(eventSymbol => console.log('App is launched!'));
+
 const suspendEventPipeline = TVDML
-	.subscribe(TVDML.event.SUSPEND)
-	.pipe(eventSymbol => console.log('App is sent to background'));
+  .subscribe(TVDML.event.SUSPEND)
+  .pipe(eventSymbol => console.log('App is sent to background'));
 
 // To destroy event pipeline use `unsubscribe` method.
 suspendEventPipeline.unsubscribe();
@@ -258,28 +258,28 @@ Using TVDML you have multiple ways to create documents for TVML depending on you
 ### Rendering static document
 
 The simples way to create view:
-	
+
 ```javascript
 /** @jsx TVDML.jsx */
 
 import * as TVDML from 'tvdml';
-	
+
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('start'));
-	
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('start'));
+
 TVDML
-	.handleRoute('start')
-	.pipe(TVDML.render(
-		<document>
-			<alertTemplate>
-				<title>Hello world</title>
-				<button>
-					<text>Ok</text>
-				</button>
-			</alertTemplate>
-		</document>
-	));
+  .handleRoute('start')
+  .pipe(TVDML.render(
+    <document>
+      <alertTemplate>
+        <title>Hello world</title>
+        <button>
+          <text>Ok</text>
+        </button>
+      </alertTemplate>
+    </document>
+  ));
 ```
 
 > TVDML works only with templates created using JSX. Please check how to configure your build to be able to use it in [Getting started](#getting-started) section.
@@ -290,35 +290,35 @@ TVDML
 /** @jsx TVDML.jsx */
 
 import * as TVDML from 'tvdml';
-	
-TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => {
-		TVDML.navigate('start', {title: 'Hello everybody!'}); // Passing params to route pipeline
-	});
-	
-TVDML
-	.handleRoute('start')
-	
-	// Extracting `title` param from `navigation` object.
-	.pipe(({navigation: {title}}) => ({title}))
 
-	// Rendering custom `title`
-	.pipe(TVDML.render(({title}) => {
-		return (
-			<document>
-				<alertTemplate>
-					<title>{title}</title>
-					<button>
-						<text>Ok</text>
-					</button>
-				</alertTemplate>
-			</document>
-		);
-	}));
+TVDML
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => {
+    TVDML.navigate('start', {title: 'Hello everybody!'}); // Passing params to route pipeline
+  });
+
+TVDML
+  .handleRoute('start')
+
+  // Extracting `title` param from `navigation` object.
+  .pipe(({navigation: {title}}) => ({title}))
+
+  // Rendering custom `title`
+  .pipe(TVDML.render(({title}) => {
+    return (
+      <document>
+        <alertTemplate>
+          <title>{title}</title>
+          <button>
+            <text>Ok</text>
+          </button>
+        </alertTemplate>
+      </document>
+    );
+  }));
 ```
-	
-Using this approach you can render any data that you need. But you may ask yourself how can we request data from remote server and then render it into document? 
+
+Using this approach you can render any data that you need. But you may ask yourself how can we request data from remote server and then render it into document?
 
 Easy!
 
@@ -331,61 +331,61 @@ TVDML's pipelines support promises so you can pause them when you need it. For e
 
 import * as TVDML from 'tvdml';
 
-// Starting from tvOS 10 TVJS supports ES6 out of the box and there is no need in using 
+// Starting from tvOS 10 TVJS supports ES6 out of the box and there is no need in using
 // Promise polyfill provided by TVDML.
 const {Promise} = TVDML;
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('start'));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('start'));
 
 TVDML
-	.handleRoute('start')
-	.pipe(downloadTVShows())
-	.pipe(TVDML.render(tvshows => {
-		return (
-			<document>
-				<stackTemplate>
-					<banner>
-						<title>TV Shows</title>
-					</banner>
-					<collectionList>
-						<grid>
-							{tvshows.map(tvshow => {
-								return (
-									<lockup>
-										<img src={tvshow.cover} width="250" height="250" />
-										<title>{tvshow.title}</title>
-									</lockup>
-								);
-							})}
-						</grid>
-					</collectionList>
-				</stackTemplate>
-			</document>
-		);
-	}));
-	
+  .handleRoute('start')
+  .pipe(downloadTVShows())
+  .pipe(TVDML.render(tvshows => {
+    return (
+      <document>
+        <stackTemplate>
+          <banner>
+            <title>TV Shows</title>
+          </banner>
+          <collectionList>
+            <grid>
+              {tvshows.map(tvshow => {
+                return (
+                  <lockup>
+                    <img src={tvshow.cover} width="250" height="250" />
+                    <title>{tvshow.title}</title>
+                  </lockup>
+                );
+              })}
+            </grid>
+          </collectionList>
+        </stackTemplate>
+      </document>
+    );
+  }));
+
 function downloadTVShows() {
-	return payload => {
-		// Creating and returning promise to pause current pipeline from executing next 
-		// step until we load data.
-		return new Promise((resolve) => {
-			const XHR = new XMLHttpRequest();
+  return payload => {
+    // Creating and returning promise to pause current pipeline from executing next
+    // step until we load data.
+    return new Promise((resolve) => {
+      const XHR = new XMLHttpRequest();
 
-			// Configuring XHR instance to load data that we need.
-			XHR.open('GET', '/tvshows/all');
+      // Configuring XHR instance to load data that we need.
+      XHR.open('GET', '/tvshows/all');
 
-			// Adding event listener to retreive data when it will be loaded.
-			XHR.addEventListener('load', event => {
-				// Parsing request response to JSON and resolving promise
-				resolve(JSON.parse(event.target.responseText));
-			});
+      // Adding event listener to retreive data when it will be loaded.
+      XHR.addEventListener('load', event => {
+        // Parsing request response to JSON and resolving promise
+        resolve(JSON.parse(event.target.responseText));
+      });
 
-			// Initiating request.
-			XHR.send();
-		});
-	};
+      // Initiating request.
+      XHR.send();
+    });
+  };
 }
 ```
 
@@ -401,36 +401,36 @@ Explanation:
 /** @jsx TVDML.jsx */
 
 TVDML
-	.handleRoute('start')
-	.pipe(payload => {
-		console.log(payload.document); // At the begining there is no document rendered for handled route.
-		return payload; // If we wont return `payload` here `TVDML.render()` won't be able to get information about route and will throw error later.
-	})
-	.pipe(TVDML.render(
-		<document>
-			<loadingTemplate>
-				<activityIndicator />
-			</loadingTemplate>
-		</document>
-	))
-	.pipe(payload => {
-		console.log(payload.document); // Loading template created in previous pipe by `TVDML.render()`.
-		return payload; // If we wont return `payload` here `TVDML.render()` will create new document record. This isn't what you usualy want.
-	})
-	.pipe(TVDML.render(
-		<document>
-			<alertTemplate>
-				<title>Hello world</title>
-				<button>
-					<text>Ok</text>
-				</button>
-			</alertTemplate>
-		</document>
-	))
-	.pipe(payload => {
-		console.log(payload.document); // Updated document with "Hello world".
-		return payload; // As if this is the last pipe we don't need to return anything but it's a good practice to return current payload.
-	});
+  .handleRoute('start')
+  .pipe(payload => {
+    console.log(payload.document); // At the begining there is no document rendered for handled route.
+    return payload; // If we wont return `payload` here `TVDML.render()` won't be able to get information about route and will throw error later.
+  })
+  .pipe(TVDML.render(
+    <document>
+      <loadingTemplate>
+        <activityIndicator />
+      </loadingTemplate>
+    </document>
+  ))
+  .pipe(payload => {
+    console.log(payload.document); // Loading template created in previous pipe by `TVDML.render()`.
+    return payload; // If we wont return `payload` here `TVDML.render()` will create new document record. This isn't what you usualy want.
+  })
+  .pipe(TVDML.render(
+    <document>
+      <alertTemplate>
+        <title>Hello world</title>
+        <button>
+          <text>Ok</text>
+        </button>
+      </alertTemplate>
+    </document>
+  ))
+  .pipe(payload => {
+    console.log(payload.document); // Updated document with "Hello world".
+    return payload; // As if this is the last pipe we don't need to return anything but it's a good practice to return current payload.
+  });
 ```
 
 ### Events
@@ -453,13 +453,13 @@ List of available handlers:
 
 ```javascript
 <button onSelect={event => console.log(event.target)}>
-	<text>Press Me</text>
+  <text>Press Me</text>
 </button>
 ```
 
 ### Modals
 
-Modals are perfect when you need to show some useful information but don't want to interupt opened view context. You can use `TVDML.renderModal()` method to render any document you want in overlay. `TVDML.renderModal()` behaviour is similar to `TVDML.render()`. 
+Modals are perfect when you need to show some useful information but don't want to interupt opened view context. You can use `TVDML.renderModal()` method to render any document you want in overlay. `TVDML.renderModal()` behaviour is similar to `TVDML.render()`.
 
 There is also `TVDML.removeModal()` method that removes any presented modal document.
 
@@ -469,51 +469,51 @@ There is also `TVDML.removeModal()` method that removes any presented modal docu
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('start'));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('start'));
 
 TVDML
-	.handleRoute('start')
-	.pipe(downloadTVShows())
-	.pipe(TVDML.render(tvshows => {
-		return (
-			<document>
-				<stackTemplate>
-					<banner>
-						<title>TV Shows</title>
-					</banner>
-					<collectionList>
-						<grid>
-							{tvshows.map(tvshow => {
-								return (
-									<lockup onSelect={showTVShowDescription.bind(this, tvshow)}>
-										<img src={tvshow.cover} width="250" height="250" />
-										<title>{tvshow.title}</title>
-									</lockup>
-								);
-							})}
-						</grid>
-					</collectionList>
-				</stackTemplate>
-			</document>
-		);
-	}));
+  .handleRoute('start')
+  .pipe(downloadTVShows())
+  .pipe(TVDML.render(tvshows => {
+    return (
+      <document>
+        <stackTemplate>
+          <banner>
+            <title>TV Shows</title>
+          </banner>
+          <collectionList>
+            <grid>
+              {tvshows.map(tvshow => {
+                return (
+                  <lockup onSelect={showTVShowDescription.bind(this, tvshow)}>
+                    <img src={tvshow.cover} width="250" height="250" />
+                    <title>{tvshow.title}</title>
+                  </lockup>
+                );
+              })}
+            </grid>
+          </collectionList>
+        </stackTemplate>
+      </document>
+    );
+  }));
 
 function showTVShowDescription(tvshow) {
-	TVDML
-	
-		// Creating modal document rendering pipeline.
-		.renderModal(
-			<document>
-				<descriptiveAlertTemplate>
-					<title>{tvshow.title}</title>
-					<description>{tvshow.description}</description>
-				</descriptiveAlertTemplate>
-			</document>
-		)
-		
-		// Invoking created pipeline.
-		.sink();
+  TVDML
+
+    // Creating modal document rendering pipeline.
+    .renderModal(
+      <document>
+        <descriptiveAlertTemplate>
+          <title>{tvshow.title}</title>
+          <description>{tvshow.description}</description>
+        </descriptiveAlertTemplate>
+      </document>
+    )
+
+    // Invoking created pipeline.
+    .sink();
 }
 ```
 
@@ -523,15 +523,15 @@ TVDML provides you with `ref` mechanism to help with access to rendered document
 
 ```javascript
 <document>
-	<searchTemplate>
-		<searchField ref={node => {
-			console.log(node.getFeature('Keyboard').text);
-		}} />
-	</searchTemplate>
+  <searchTemplate>
+    <searchField ref={node => {
+      console.log(node.getFeature('Keyboard').text);
+    }} />
+  </searchTemplate>
 </document>
 ```
 
-That was easy! Right? But how can we update views depending on user activity? 
+That was easy! Right? But how can we update views depending on user activity?
 
 That is a good question and that is where TVDML components comes to the rescue!
 
@@ -559,37 +559,37 @@ Lets see how previous example will look like if it were written using TVDML comp
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('start'));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('start'));
 
 TVDML
-	.handleRoute('start')
-	.pipe(downloadTVShows())
-	.pipe(TVDML.render(TVDML.createComponent({
-		render() {
-			return (
-				<document>
-					<stackTemplate>
-						<banner>
-							<title>TV Shows</title>
-						</banner>
-						<collectionList>
-							<grid>
-								{this.props.tvshows.map(tvshow => {
-									return (
-										<lockup key={tvshow.id}>
-											<img src={tvshow.cover} width="250" height="250" />
-											<title>{tvshow.title}</title>
-										</lockup>
-									);
-								})}
-							</grid>
-						</collectionList>
-					</stackTemplate>
-				</document>
-			);
-		},
-	})));
+  .handleRoute('start')
+  .pipe(downloadTVShows())
+  .pipe(TVDML.render(TVDML.createComponent({
+    render() {
+      return (
+        <document>
+          <stackTemplate>
+            <banner>
+              <title>TV Shows</title>
+            </banner>
+            <collectionList>
+              <grid>
+                {this.props.tvshows.map(tvshow => {
+                  return (
+                    <lockup key={tvshow.id}>
+                      <img src={tvshow.cover} width="250" height="250" />
+                      <title>{tvshow.title}</title>
+                    </lockup>
+                  );
+                })}
+              </grid>
+            </collectionList>
+          </stackTemplate>
+        </document>
+      );
+    },
+  })));
 ```
 
 As you can see the main diference is that we need to specify `render` method and `tvshows` are now retrieved from `this.props` object.
@@ -604,83 +604,83 @@ Now lets implement "Load more" button with pagination and spinner for initial lo
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('start'));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('start'));
 
 TVDML
-	.handleRoute('start')
-	.pipe(TVDML.render(TVDML.createComponent({
-		getInitialState() {
-			return {
-				page: 1,
-				tvshows: [],
-				loading: true,
-			};
-		},
+  .handleRoute('start')
+  .pipe(TVDML.render(TVDML.createComponent({
+    getInitialState() {
+      return {
+        page: 1,
+        tvshows: [],
+        loading: true,
+      };
+    },
 
-		componentDidMount() {
-			// Loading initial tv shows list when component is mounted
-			downloadTVShows(this.state.page).then(tvshows => {
-				this.setState({
-					tvshows,
-					loading: false,
-				});
-			});
-		},
+    componentDidMount() {
+      // Loading initial tv shows list when component is mounted
+      downloadTVShows(this.state.page).then(tvshows => {
+        this.setState({
+          tvshows,
+          loading: false,
+        });
+      });
+    },
 
-		render() {
-			// Showing spinner while initial data is loading
-			if (this.state.loading) {
-				return (
-					<document>
-						<loadingTemplate>
-							<activityIndicator />
-						</loadingTemplate>
-					</document>
-				);
-			}
+    render() {
+      // Showing spinner while initial data is loading
+      if (this.state.loading) {
+        return (
+          <document>
+            <loadingTemplate>
+              <activityIndicator />
+            </loadingTemplate>
+          </document>
+        );
+      }
 
-			return (
-				<document>
-					<stackTemplate>
-						<banner>
-							<title>TV Shows</title>
-						</banner>
-						<collectionList>
-							<grid>
-								{this.state.tvshows.map(tvshow => {
-									return (
-										<lockup key={tvshow.id}>
-											<img src={tvshow.cover} width="250" height="250" />
-											<title>{tvshow.title}</title>
-										</lockup>
-									);
-								})}
-							</grid>
-							<separator>
-								<button onSelect={this.onLoadNextPage}>
-									<text>Load page #{this.state.page + 1}</text>
-								</button>
-							</separator>
-						</collectionList>
-					</stackTemplate>
-				</document>
-			);
-		},
+      return (
+        <document>
+          <stackTemplate>
+            <banner>
+              <title>TV Shows</title>
+            </banner>
+            <collectionList>
+              <grid>
+                {this.state.tvshows.map(tvshow => {
+                  return (
+                    <lockup key={tvshow.id}>
+                      <img src={tvshow.cover} width="250" height="250" />
+                      <title>{tvshow.title}</title>
+                    </lockup>
+                  );
+                })}
+              </grid>
+              <separator>
+                <button onSelect={this.onLoadNextPage}>
+                  <text>Load page #{this.state.page + 1}</text>
+                </button>
+              </separator>
+            </collectionList>
+          </stackTemplate>
+        </document>
+      );
+    },
 
-		onLoadNextPage() {
-			const nextPage = this.state.page + 1;
+    onLoadNextPage() {
+      const nextPage = this.state.page + 1;
 
-			// Loading next page and merging new data with existing.
-			// Document update will be immediately invoked on state change.
-			downloadTVShows(nextPage).then(tvshows => {
-				this.setState({
-					page: nextPage,
-					tvshows: this.state.tvshows.concat(tvshows),
-				});
-			});
-		},
-	})));
+      // Loading next page and merging new data with existing.
+      // Document update will be immediately invoked on state change.
+      downloadTVShows(nextPage).then(tvshows => {
+        this.setState({
+          page: nextPage,
+          tvshows: this.state.tvshows.concat(tvshows),
+        });
+      });
+    },
+  })));
 ```
 
 Looks nice! But what can we do with document parts that are need to be reused in other places? Please welcome partials!
@@ -691,12 +691,12 @@ Partials are elements that can encapsulate complex markup and logic. They can be
 
 ```javascript
 TVDML.createComponent({
-	render() {
-		// Showing spinner while initial data is loading
-		if (this.state.loading) {
-			return <Loader title="Loading..." />;
-		}
-	},
+  render() {
+    // Showing spinner while initial data is loading
+    if (this.state.loading) {
+      return <Loader title="Loading..." />;
+    }
+  },
 })
 ```
 
@@ -704,17 +704,17 @@ So how is `<Loading />` looks from the inside.
 
 ```javascript
 function Loader({attrs = {}}) {
-	let {title} = attrs;
+  let {title} = attrs;
 
-	return (
-		<document>
-			<loadingTemplate>
-				<activityIndicator>
-					<title>{title}</title>
-				</activityIndicator>
-			</loadingTemplate>
-		</document>
-	);
+  return (
+    <document>
+      <loadingTemplate>
+        <activityIndicator>
+          <title>{title}</title>
+        </activityIndicator>
+      </loadingTemplate>
+    </document>
+  );
 }
 ```
 
@@ -724,10 +724,10 @@ Partials will receive `node` object in [UVDOM notation](https://github.com/gcant
 
 ```javascript
 {
-	tag: function Loader() {...},
-	attrs: {
-		title: 'Loading...'
-	}
+  tag: function Loader() {...},
+  attrs: {
+    title: 'Loading...'
+  }
 }
 ```
 
@@ -735,18 +735,18 @@ Full `node` specification:
 
 ```javascript
 {
-	tag: string | function,
-	attrs: {
-		key: string,
-		...
-	},
-	events: {
-		eventName: function,
-		...
-	},
-	key: string,
-	ref: function,
-	children: string | node | array<string | node>
+  tag: string | function,
+  attrs: {
+    key: string,
+    ...
+  },
+  events: {
+    eventName: function,
+    ...
+  },
+  key: string,
+  ref: function,
+  children: string | node | array<string | node>
 }
 ```
 
@@ -762,7 +762,7 @@ You can write styles directly on elements using `style` attribute.
 
 ```javascript
 <title style="tv-text-highlight-style: marquee-on-highlight; color: rgb(84, 82, 80)">
-	Hello world
+  Hello world
 </title>
 ```
 
@@ -770,16 +770,16 @@ If you need to set multiple of styles on one element you can use ES6 template li
 
 ```javascript
 <textBadge
-	type="fill"
-	style={`
-		font-size: 20;
-		border-radius: 30;
-		margin: 0 10 12 0;
-		padding: 1 8;
-		tv-align: right;
-		tv-position: bottom;
-		tv-tint-color: rgb(255, 255, 255);
-	`}
+  type="fill"
+  style={`
+    font-size: 20;
+    border-radius: 30;
+    margin: 0 10 12 0;
+    padding: 1 8;
+    tv-align: right;
+    tv-position: bottom;
+    tv-tint-color: rgb(255, 255, 255);
+  `}
 >{counter}</textBadge>
 ```
 
@@ -789,35 +789,35 @@ If you have repeated styles or want to keep all styles in one place then you sho
 
 ```javascript
 <document>
-	<head>
-		<style content={`
-			.controls_container {
-				margin: 40 0 0;
-				tv-align: center;
-				tv-content-align: top;
-			}
+  <head>
+    <style content={`
+      .controls_container {
+        margin: 40 0 0;
+        tv-align: center;
+        tv-content-align: top;
+      }
 
-			.control {
-				margin: 0 24;
-			}
+      .control {
+        margin: 0 24;
+      }
 
-			.item {
-				background-color: rgba(255, 255, 255, 0.05);
-				tv-highlight-color: rgba(255, 255, 255, 0.9);
-			}
+      .item {
+        background-color: rgba(255, 255, 255, 0.05);
+        tv-highlight-color: rgba(255, 255, 255, 0.9);
+      }
 
-			.item--disabled {
-				color: rgba(0, 0, 0, 0.3);
-			}
+      .item--disabled {
+        color: rgba(0, 0, 0, 0.3);
+      }
 
-			.title {
-				tv-text-highlight-style: marquee-on-highlight;
-			}
-		`} />
-	</head>
-	<compilationTemplate>
-		...
-	</compilationTemplate>
+      .title {
+        tv-text-highlight-style: marquee-on-highlight;
+      }
+    `} />
+  </head>
+  <compilationTemplate>
+    ...
+  </compilationTemplate>
 <document>
 ```
 
@@ -827,20 +827,20 @@ After defining class names you can attach them to elements using `class` attribu
 
 ```javascript
 <buttonLockup class="control">
-	<badge src="resource://button-remove" />
-	<title>Mark as Unwatched</title>
+  <badge src="resource://button-remove" />
+  <title>Mark as Unwatched</title>
 </buttonLockup>
 
 <listItemLockup class="item item--disabled">
-	<ordinal minLength="3">
-		{episodeNumber}
-	</ordinal>
-	<title class="title">
-		{episode.title}
-	</title>
-	<decorationLabel>
-		{dateTitle}
-	</decorationLabel>
+  <ordinal minLength="3">
+    {episodeNumber}
+  </ordinal>
+  <title class="title">
+    {episode.title}
+  </title>
+  <decorationLabel>
+    {dateTitle}
+  </decorationLabel>
 </listItemLockup>
 ```
 
@@ -856,47 +856,47 @@ TVDML provides easy to use solution for this issue.
 import * as TVDML from 'tvdml';
 
 TVDML
-	.subscribe(TVDML.event.LAUNCH)
-	.pipe(() => TVDML.navigate('main'));
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(() => TVDML.navigate('main'));
 
 TVDML
-	.handleRoute('main')
-	.pipe(TVDML.render(
-		<document>
-			<menuBarTemplate>
-				<menuBar>
-					<menuItem route="search">
-						<title>Search</title>
-					</menuItem>
-					<menuItem autoHighlight="true" route="my">
-						<title>My</title>
-					</menuItem>
-					<menuItem route="all">
-						<title>TV Shows</title>
-					</menuItem>
-					<menuItem route="settings">
-						<title>Settings</title>
-					</menuItem>
-				</menuBar>
-			</menuBarTemplate>
-		</document>
-	));
+  .handleRoute('main')
+  .pipe(TVDML.render(
+    <document>
+      <menuBarTemplate>
+        <menuBar>
+          <menuItem route="search">
+            <title>Search</title>
+          </menuItem>
+          <menuItem autoHighlight="true" route="my">
+            <title>My</title>
+          </menuItem>
+          <menuItem route="all">
+            <title>TV Shows</title>
+          </menuItem>
+          <menuItem route="settings">
+            <title>Settings</title>
+          </menuItem>
+        </menuBar>
+      </menuBarTemplate>
+    </document>
+  ));
 
 TVDML
-	.handleRoute('my')
-	.pipe(...);
+  .handleRoute('my')
+  .pipe(...);
 
 TVDML
-	.handleRoute('all')
-	.pipe(...);
+  .handleRoute('all')
+  .pipe(...);
 
 TVDML
-	.handleRoute('search')
-	.pipe(...);
+  .handleRoute('search')
+  .pipe(...);
 
 TVDML
-	.handleRoute('settings')
-	.pipe(...);
+  .handleRoute('settings')
+  .pipe(...);
 ```
 
 Views switching will be handled by TVDML. All you have to do is to create `menuItem` elements with defined `route` attribute which must point to defined routes.
@@ -962,8 +962,8 @@ head.sink(1);
 tail.sink(1);
 
 function log(value) {
-	console.log(value);
-	return value;
+  console.log(value);
+  return value;
 }
 ```
 
@@ -986,19 +986,19 @@ const head1 = TVDML.createStream();
 const head2 = TVDML.createStream();
 
 head1
-	.pipe(value => log(value + 1))
-	.pipe(head2)
-	.pipe(value => log(value + 2))
+  .pipe(value => log(value + 1))
+  .pipe(head2)
+  .pipe(value => log(value + 2))
 
 head2
-	.pipe(value => log(value + 3))
-	.pipe(value => log(value + 4))
+  .pipe(value => log(value + 3))
+  .pipe(value => log(value + 4))
 
 head1.sink(1);
 
 function log(value) {
-	console.log(value);
-	return value;
+  console.log(value);
+  return value;
 }
 ```
 
@@ -1017,17 +1017,17 @@ Pipe transformations supports promised operations:
 const head = TVDML.createPipeline();
 
 head
-	.pipe(value => {
-		return new Promise(resolve => {
-			setTimeout(() => resolve(log(value + 1)), 100);
-		});
-	})
-	.pipe(value => log(value + 2))
-	.sink(1);
+  .pipe(value => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(log(value + 1)), 100);
+    });
+  })
+  .pipe(value => log(value + 2))
+  .sink(1);
 
 function log(value) {
-	console.log(value);
-	return value;
+  console.log(value);
+  return value;
 }
 ```
 
@@ -1055,8 +1055,8 @@ const head = TVDML.createPipeline();
 
 head.pipe(value => console.log(value));
 head
-	.pipe(value => console.log(value))
-	.sink(1);
+  .pipe(value => console.log(value))
+  .sink(1);
 ```
 
 Console:
@@ -1075,12 +1075,12 @@ const tail = head.pipe(value => log(value + 1));
 
 tail.sink(1);
 tail
-	.pipe(value => log(value * 3))
-	.sink(1);
+  .pipe(value => log(value * 3))
+  .sink(1);
 
 function log(value) {
-	console.log(value);
-	return value;
+  console.log(value);
+  return value;
 }
 ```
 
@@ -1099,18 +1099,18 @@ const head1 = TVDML.createPipeline();
 const head2 = TVDML.createPipeline();
 
 const tail2 = head2
-	.pipe(value => log(value + 3))
-	.pipe(value => log(value + 4));
+  .pipe(value => log(value + 3))
+  .pipe(value => log(value + 4));
 
 head1
-	.pipe(value => log(value + 1))
-	.pipe(tail2)
-	.pipe(value => log(value + 2))
-	.sink(1);
+  .pipe(value => log(value + 1))
+  .pipe(tail2)
+  .pipe(value => log(value + 2))
+  .sink(1);
 
 function log(value) {
-	console.log(value);
-	return value;
+  console.log(value);
+  return value;
 }
 ```
 
@@ -1142,46 +1142,46 @@ tvOS and TVJS aren't providing any way to detect Menu button activity on Apple T
 
 ```javascript
 TVDML
-	.subscribe('menu-button-press')
-	.pipe(transition => {
-		console.log(transition); // {from: {route, document, modal}, to: {route, document, modal}}
-	});
+  .subscribe('menu-button-press')
+  .pipe(transition => {
+    console.log(transition); // {from: {route, document, modal}, to: {route, document, modal}}
+  });
 ```
 
 With this snippet you can detect when user returned to specific screen and perform some activity like update results etc.
 
 ```javascript
 TVDML
-	.createPipeline()
-	.pipe(TVDML.render(TVDML.createComponent({
-		componentDidMount() {
-			let currentDocument = this._rootNode.ownerDocument;
+  .createPipeline()
+  .pipe(TVDML.render(TVDML.createComponent({
+    componentDidMount() {
+      let currentDocument = this._rootNode.ownerDocument;
 
-			this.menuButtonPressStream = TVDML.subscribe('menu-button-press');
-			this.menuButtonPressStream
-				.pipe(isMenuButtonPressNavigatedTo(currentDocument))
-				.pipe(isNavigated => isNavigated && this.loadData().then(this.setState.bind(this)));
-		},
+      this.menuButtonPressStream = TVDML.subscribe('menu-button-press');
+      this.menuButtonPressStream
+        .pipe(isMenuButtonPressNavigatedTo(currentDocument))
+        .pipe(isNavigated => isNavigated && this.loadData().then(this.setState.bind(this)));
+    },
 
-		componentWillUnmount() {
-			this.menuButtonPressStream.unsubscribe();
-		},
+    componentWillUnmount() {
+      this.menuButtonPressStream.unsubscribe();
+    },
 
-		loadData() {...},
+    loadData() {...},
 
-		render() {...},
-	})));
+    render() {...},
+  })));
 
 function isMenuButtonPressNavigatedTo(targetDocument) {
-	return ({to: {document}}) => {
-		let {menuBarDocument} = document;
+  return ({to: {document}}) => {
+    let {menuBarDocument} = document;
 
-		if (menuBarDocument) {
-			document = menuBarDocument.getDocument(menuBarDocument.getSelectedItem());
-		}
+    if (menuBarDocument) {
+      document = menuBarDocument.getDocument(menuBarDocument.getSelectedItem());
+    }
 
-		return targetDocument === document;
-	}
+    return targetDocument === document;
+  }
 }
 ```
 
