@@ -128,7 +128,10 @@ TVDML
 
 So what we need to be able to write code as in second example? Well it's not that simple but this [tvdml-boilerplate](https://github.com/a-ignatov-parc/tvdml-app-boilerplate) repo will shed the light on basic build configuration.
 
-Also to be able to properly transform JSX you need to specify JSX pragma for babel runtime. You can do this by adding `/** @jsx TVDML.jsx */` in the beggining of each module or you can configure `pragma` option in [`transform-react-jsx`](https://www.npmjs.com/package/babel-plugin-transform-react-jsx#pragma) plugin.
+Also to be able to properly transform JSX you need to specify JSX pragma for babel runtime. You can do this:
+
+1. By adding `/** @jsx TVDML.jsx */` in the beggining of each module.
+1. Or by configuring `pragma` option in [`transform-react-jsx`](https://www.npmjs.com/package/babel-plugin-transform-react-jsx#pragma) plugin.
 
 Well! Now we know how to write apps using ES6 and JSX so let's start from the basic features!
 
