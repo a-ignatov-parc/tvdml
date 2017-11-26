@@ -1,3 +1,5 @@
+/* global DataItem */
+
 import h from '@a-ignatov-parc/virtual-dom/h';
 
 import CustomNode from './render/custom-node';
@@ -27,6 +29,19 @@ export default function createElement(tag, attrs, ...children) {
           node.ref = new Ref(attrs[name]);
         } else if (name === 'content' && tag === 'style') {
           node.content = attrs[name];
+        } else if (name === 'dataItem') {
+          const value = attrs[name];
+
+          if (value instanceof DataItem) {
+            node.dataItem = value;
+          } else {
+            node.dataItem = new DataItem();
+            Object
+              .keys(value)
+              .forEach(propName => {
+                node.dataItem.setPropertyPath(propName, value[propName]);
+              });
+          }
         } else if (typeof attrs[name] === 'function') {
           if (!node.events) node.events = {};
           node.events[name] = attrs[name];
@@ -56,6 +71,7 @@ export default function createElement(tag, attrs, ...children) {
     ref: node.ref,
     events: node.events,
     attributes: node.attrs,
+    dataItem: node.dataItem,
   };
 
   if (node.content) {

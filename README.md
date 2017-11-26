@@ -902,6 +902,20 @@ Views switching will be handled by TVDML. All you have to do is to create `menuI
 
 > If you want to select specific menu item use `autoHighlight` attribute for this purpose.
 
+### Working with `DataItem`
+
+In tvOS 11 [`DataItem`](https://developer.apple.com/documentation/tvmljs/dataitem) binding api was presented to fix performance issues with large documents that may ended up with very long parsing and rendering.
+
+Here is a [short example](https://developer.apple.com/library/content/documentation/TVMLKitJS/Conceptual/TVMLProgrammingGuide/GeneratingContentForYourApp.html) how apple suggests to use it.
+
+So now you may wondering how we can use this cool feature in JSX?
+
+We got you covered! Here is an example:
+
+```javascript
+
+```
+
 ### Complete rendering module api
 
 - `TVDML.render(template)` — Main rendering factory that transforms JSX templates to TVML documents and responsible for rendering them to screen. Uses `TVDML.parseDocument` to parse and evaluate `template` object into TVML document before applying to `NavigationDocument`.
