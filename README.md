@@ -1,6 +1,7 @@
 # TVDML [![CircleCI](https://circleci.com/gh/a-ignatov-parc/tvdml.svg?style=svg)](https://circleci.com/gh/a-ignatov-parc/tvdml)
 
 - [Intro](#intro)
+- [Requirements](#requirements)
 - [Getting started](#getting-started)
 - [Routing](#routing)
 - [Templating and styling](#templating-and-styling)
@@ -17,6 +18,7 @@
     - [Inline styles](#inline-styles)
     - [Document styles and class names](#document-styles-and-class-names)
   - [Working with `menuBar`](#working-with-menubar)
+  - [Working with `DataItem`](#working-with-dataitem)
   - [Complete rendering module api](#complete-rendering-module-api)
 - [Pipelines and Streams](#pipelines-and-streams)
   - [Streams](#streams)
@@ -45,6 +47,10 @@ This is library that main goal is to greatly simplify app development for Apple 
 TVDML tries to be as simple as possible and not include more than it needs to provide functionality for its core features. But yeah we've got something inside:
 
 - [`virtual-dom`](https://www.npmjs.com/package/virtual-dom) library to provide you easy to use update mechanism. [Patched](https://github.com/Matt-Esch/virtual-dom/compare/master...a-ignatov-parc:tvml) and ready to be used with TVML.
+
+## Requirements
+
+Starting from `v4.X.X` TVDML drops support for tvOS < 10. If you need that support please consider using [`v3.X.X`](https://github.com/a-ignatov-parc/tvdml/tree/v3.0.4).
 
 ## Getting started
 
@@ -901,6 +907,102 @@ TVDML
 Views switching will be handled by TVDML. All you have to do is to create `menuItem` elements with defined `route` attribute which must point to defined routes.
 
 > If you want to select specific menu item use `autoHighlight` attribute for this purpose.
+
+### Working with `DataItem`
+
+In tvOS 11 [`DataItem`](https://developer.apple.com/documentation/tvmljs/dataitem) binding api was presented to fix performance issues with large documents that may ended up with very long parsing and rendering.
+
+Here is a [short example](https://developer.apple.com/library/content/documentation/TVMLKitJS/Conceptual/TVMLProgrammingGuide/GeneratingContentForYourApp.html) how apple suggests to use it.
+
+So now you may wondering how we can use this cool feature in JSX?
+
+We got you covered! Here is an updated example from "[Requesting and rendering data](#requesting-and-rendering-data)" section:
+
+```javascript
+TVDML
+  .handleRoute('start')
+  .pipe(downloadTVShows())
+  .pipe(TVDML.render(tvshows => {
+    return (
+      <document>
+        <stackTemplate>
+          <banner>
+            <title>TV Shows</title>
+          </banner>
+          <collectionList>
+            <grid>
+              <prototypes>
+                <lockup prototype="tvshow">
+                  <img binding="@src:{cover}" width="250" height="250" />
+                  <title binding="textContent:{title}" />
+                </lockup>
+              </prototypes>
+              <section
+                binding="items:{tvshows}"
+                dataItem={{
+                  tvshows: tvshows.map(tvshow => {
+                    const item = new DataItem('tvshow', tvshow.id);
+
+                    item.cover = tvshow.cover;
+                    item.title = tvshow.title;
+
+                    return item;
+                  }),
+                }}
+              />
+            </grid>
+          </collectionList>
+        </stackTemplate>
+      </document>
+    );
+  }));
+```
+
+The key difference from the example provided by Apple is `dataItem` attribute. It's responsible to apply `DataItems` to final document and this:
+
+```javascript
+<section
+  binding="items:{tvshows}"
+  dataItem={{
+    tvshows: tvshows.map(tvshow => {
+      const item = new DataItem('tvshow', tvshow.id);
+
+      item.cover = tvshow.cover;
+      item.title = tvshow.title;
+
+      return item;
+    }),
+  }}
+/>
+```
+
+Is same as:
+
+```javascript
+<section binding="items:{tvshows}" />
+
+function parseJson(information) {
+  const results = JSON.parse(information);
+
+  const parsedTemplate = templateDocument();
+
+  navigationDocument.pushDocument(parsedTemplate);
+
+  const shelf = parsedTemplate.getElementsByTagName('shelf').item(0);
+  const section = shelf.getElementsByTagName('section').item(0);
+
+  section.dataItem = new DataItem();
+
+  const newItems = results.map((result) => {
+      const objectItem = new DataItem(result.type, result.ID);
+      objectItem.cover = result.cover;
+      objectItem.title = result.title;
+      return objectItem;
+  });
+
+  section.dataItem.setPropertyPath('tvshows', newItems);
+}
+```
 
 ### Complete rendering module api
 

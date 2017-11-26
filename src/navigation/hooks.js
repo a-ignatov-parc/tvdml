@@ -6,6 +6,12 @@ let enabled = false;
 let modalDocument = null;
 
 function destroyComponents(document) {
+  /**
+   * Mark document as removed by menu button press.
+   * This is just a guess but still can be handy.
+   */
+  // eslint-disable-next-line no-param-reassign
+  document.possiblyDismissedByUser = true;
   if (document.destroyComponent) document.destroyComponent();
 }
 
