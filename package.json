@@ -16,7 +16,7 @@
     "watch": "webpack --watch --progress",
     "dist": "NODE_ENV=production webpack --progress",
     "lint": "eslint webpack.config.js src test",
-    "test": "mocha --reporter spec --timeout 4000 --require babel-register"
+    "test": "NODE_ENV=test mocha --reporter spec --timeout 4000 --require babel-register"
   },
   "repository": {
     "type": "git",
@@ -40,6 +40,8 @@
   "devDependencies": {
     "babel-core": "^6.22.1",
     "babel-loader": "^7.1.2",
+    "babel-minify-webpack-plugin": "^0.2.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-register": "^6.26.0",
     "eslint": "^4.9.0",
