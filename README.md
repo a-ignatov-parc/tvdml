@@ -1,6 +1,7 @@
 # TVDML [![CircleCI](https://circleci.com/gh/a-ignatov-parc/tvdml.svg?style=svg)](https://circleci.com/gh/a-ignatov-parc/tvdml)
 
 - [Intro](#intro)
+- [Requirements](#requirements)
 - [Getting started](#getting-started)
 - [Routing](#routing)
 - [Templating and styling](#templating-and-styling)
@@ -46,6 +47,10 @@ This is library that main goal is to greatly simplify app development for Apple 
 TVDML tries to be as simple as possible and not include more than it needs to provide functionality for its core features. But yeah we've got something inside:
 
 - [`virtual-dom`](https://www.npmjs.com/package/virtual-dom) library to provide you easy to use update mechanism. [Patched](https://github.com/Matt-Esch/virtual-dom/compare/master...a-ignatov-parc:tvml) and ready to be used with TVML.
+
+## Requirements
+
+Starting from `v4.X.X` TVDML drops support for tvOS < 10. If you need that support please consider using [`v3.X.X`](https://github.com/a-ignatov-parc/tvdml/tree/v3.0.4).
 
 ## Getting started
 
