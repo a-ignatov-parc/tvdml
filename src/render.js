@@ -67,10 +67,12 @@ export function render(template) {
         route,
         redirect,
         navigation = {},
-        parsedDocument: document,
       } = payload;
 
-      let { document: renderedDocument } = payload;
+      let {
+        parsedDocument: document,
+        document: renderedDocument,
+      } = payload;
 
       const { menuBar, menuItem } = navigation;
       const { possiblyDismissedByUser } = renderedDocument || {};
@@ -101,6 +103,12 @@ export function render(template) {
           }, RENDERING_ANIMATION);
         }
       } else if (possiblyDismissedByUser) {
+        /**
+         * Because this stage should be noop we need to restore last
+         * rendered document.
+         */
+        document = payload.renderedDocument;
+
         // eslint-disable-next-line max-len
         console.warn('Rendering pipeline was terminated by user. Skipping further renders...');
       } else if (renderedDocument) {
@@ -109,7 +117,10 @@ export function render(template) {
         navigationDocument.pushDocument(document);
       }
 
-      return { document, redirect: false };
+      return {
+        document,
+        redirect: false,
+      };
     }))
     .pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
 }
