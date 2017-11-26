@@ -17,6 +17,7 @@
     - [Inline styles](#inline-styles)
     - [Document styles and class names](#document-styles-and-class-names)
   - [Working with `menuBar`](#working-with-menubar)
+  - [Working with `DataItem`](#working-with-dataitem)
   - [Complete rendering module api](#complete-rendering-module-api)
 - [Pipelines and Streams](#pipelines-and-streams)
   - [Streams](#streams)
