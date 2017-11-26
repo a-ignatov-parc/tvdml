@@ -73,6 +73,7 @@ export function render(template) {
       let { document: renderedDocument } = payload;
 
       const { menuBar, menuItem } = navigation;
+      const { possiblyDismissedByUser } = renderedDocument || {};
 
       const prevRouteDocument = renderedDocument
         ? renderedDocument.prevRouteDocument
@@ -99,6 +100,9 @@ export function render(template) {
             menuBar.setDocument(document, menuItem);
           }, RENDERING_ANIMATION);
         }
+      } else if (possiblyDismissedByUser) {
+        // eslint-disable-next-line max-len
+        console.warn('Rendering pipeline was terminated by user. Skipping further renders...');
       } else if (renderedDocument) {
         navigationDocument.replaceDocument(document, renderedDocument);
       } else {

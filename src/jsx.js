@@ -38,7 +38,7 @@ export default function createElement(tag, attrs, ...children) {
             node.dataItem = new DataItem();
             Object
               .keys(value)
-              .forEach(propName => {
+              .forEach((propName) => {
                 node.dataItem.setPropertyPath(propName, value[propName]);
               });
           }

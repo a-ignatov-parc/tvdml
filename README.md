@@ -910,10 +910,92 @@ Here is a [short example](https://developer.apple.com/library/content/documentat
 
 So now you may wondering how we can use this cool feature in JSX?
 
-We got you covered! Here is an example:
+We got you covered! Here is an updated example from "[Requesting and rendering data](#requesting-and-rendering-data)" section:
 
 ```javascript
+TVDML
+  .handleRoute('start')
+  .pipe(downloadTVShows())
+  .pipe(TVDML.render(tvshows => {
+    return (
+      <document>
+        <stackTemplate>
+          <banner>
+            <title>TV Shows</title>
+          </banner>
+          <collectionList>
+            <grid>
+              <prototypes>
+                <lockup prototype="tvshow">
+                  <img binding="@src:{cover}" width="250" height="250" />
+                  <title binding="textContent:{title}" />
+                </lockup>
+              </prototypes>
+              <section
+                binding="items:{tvshows}"
+                dataItem={{
+                  tvshows: tvshows.map(tvshow => {
+                    const item = new DataItem('tvshow', tvshow.id);
 
+                    item.cover = tvshow.cover;
+                    item.title = tvshow.title;
+
+                    return item;
+                  }),
+                }}
+              />
+            </grid>
+          </collectionList>
+        </stackTemplate>
+      </document>
+    );
+  }));
+```
+
+The key difference from the example provided by Apple is `dataItem` attribute. It's responsible to apply `DataItems` to final document and this:
+
+```javascript
+<section
+  binding="items:{tvshows}"
+  dataItem={{
+    tvshows: tvshows.map(tvshow => {
+      const item = new DataItem('tvshow', tvshow.id);
+
+      item.cover = tvshow.cover;
+      item.title = tvshow.title;
+
+      return item;
+    }),
+  }}
+/>
+```
+
+Is same as:
+
+```javascript
+<section binding="items:{tvshows}" />
+
+function parseJson(information) {
+  const results = JSON.parse(information);
+
+  const parsedTemplate = templateDocument();
+
+  navigationDocument.pushDocument(parsedTemplate);
+
+  const shelf = parsedTemplate.getElementsByTagName('shelf').item(0);
+  const section = shelf.getElementsByTagName('section').item(0);
+
+  section.dataItem = new DataItem();
+
+  const newItems = results.map((result) => {
+      const objectItem = new DataItem(result.type, result.ID);
+      objectItem.cover = result.cover;
+      objectItem.title = result.title;
+      return objectItem;
+  });
+
+  section.dataItem.setPropertyPath('tvshows', newItems);
+}
 ```
 
 ### Complete rendering module api
