@@ -26,9 +26,18 @@ function createDocument(template, payload) {
 }
 
 export function parseDocument(template) {
-  return createPipeline().pipe(passthrough(payload => ({
-    parsedDocument: createDocument(template, payload),
-  })));
+  return createPipeline().pipe(passthrough((payload) => {
+    const { possiblyDismissedByUser } = (payload || {}).renderedDocument || {};
+
+    let parsedDocument = null;
+
+    // We don't want to process documents in canceled pipeline.
+    if (!possiblyDismissedByUser) {
+      parsedDocument = createDocument(template, payload);
+    }
+
+    return { parsedDocument };
+  }));
 }
 
 export function removeModal() {
@@ -75,6 +84,17 @@ export function render(template) {
       const { menuBar, menuItem } = navigation;
       const { possiblyDismissedByUser } = renderedDocument || {};
 
+      /**
+       * If we received dismissed document it means that user pressed menu
+       * button and our pipeline is canceled. Now we must silently succeed
+       * the rest of the pipeline without rendering anything.
+       */
+      if (possiblyDismissedByUser) {
+        // eslint-disable-next-line max-len
+        console.warn('Rendering pipeline was canceled by user. Skipping further renders...');
+        return null;
+      }
+
       const prevRouteDocument = renderedDocument
         ? renderedDocument.prevRouteDocument
         : navigationDocument.documents.slice(-1)[0];
@@ -100,9 +120,6 @@ export function render(template) {
             menuBar.setDocument(document, menuItem);
           }, RENDERING_ANIMATION);
         }
-      } else if (possiblyDismissedByUser) {
-        // eslint-disable-next-line max-len
-        console.warn('Rendering pipeline was terminated by user. Skipping further renders...');
       } else if (renderedDocument) {
         navigationDocument.replaceDocument(document, renderedDocument);
       } else {
