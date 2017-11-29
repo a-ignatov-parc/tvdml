@@ -11,7 +11,7 @@
   "scripts": {
     "install-deps": "npm run yarn:install && npm run yarn:install-deps",
     "yarn:install": "npm i --no-save --no-package-lock yarn@$npm_package_engines_yarn",
-    "yarn:install-deps": "yarn install --frozen-lockfile",
+    "yarn:install-deps": "yarn install --frozen-lockfile --check-files",
     "build": "webpack --progress",
     "watch": "webpack --watch --progress",
     "dist": "NODE_ENV=production webpack --progress",
