@@ -116,15 +116,8 @@ export function render(template) {
         const menuItemDocument = menuBar.getDocument(menuItem);
 
         if (menuItemDocument !== document) {
+          menuBar.setDocument(document, menuItem);
           if (document.didMount) document.didMount();
-
-          /**
-           * Setting new document to `menuBar` only after timeout for smooth
-           * switching with fade animation.
-           */
-          setTimeout(() => {
-            menuBar.setDocument(document, menuItem);
-          }, RENDERING_ANIMATION);
         }
       } else if (renderedDocument) {
         navigationDocument.replaceDocument(document, renderedDocument);
@@ -135,6 +128,5 @@ export function render(template) {
       }
 
       return { document, redirect: false };
-    }))
-    .pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
+    }));
 }
