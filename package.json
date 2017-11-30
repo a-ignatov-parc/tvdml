@@ -49,6 +49,7 @@
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.4.0",
+    "jsdom": "^11.5.1",
     "mocha": "^3.1.2",
     "mocha-junit-reporter": "^1.15.0",
     "webpack": "^3.8.1"
