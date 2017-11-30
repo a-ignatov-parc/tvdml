@@ -4,6 +4,8 @@ import diff from '@a-ignatov-parc/virtual-dom/diff';
 import patch from '@a-ignatov-parc/virtual-dom/patch';
 import createElement from '@a-ignatov-parc/virtual-dom/create-element';
 
+import Text from '@a-ignatov-parc/virtual-dom/vnode/vtext';
+
 import CustomNode from './custom-node';
 
 const excludeList = [
@@ -30,6 +32,15 @@ function render() {
   }
 
   this._queue = null;
+
+  if (typeof result === 'boolean' || result === null) {
+    return new Text('');
+  }
+
+  if (typeof result === 'string' || typeof result === 'number') {
+    return new Text(result);
+  }
+
   return result;
 }
 
@@ -88,11 +99,10 @@ export class Component {
     this.props = { ...this._props, ...this.getDefaultProps() };
     this.state = { ...this.getInitialState() };
 
+    this.componentWillMount();
     this._vdom = render.call(this);
     this._rootNode = createElement(this._vdom, options);
-    this.componentWillMount();
 
-    setTimeout(this.componentDidMount.bind(this), 0);
     return this._rootNode;
   }
 

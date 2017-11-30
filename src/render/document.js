@@ -90,7 +90,7 @@ function createEventHandler(handlersCollection = {}) {
   };
 }
 
-export function vdomToDocument(vdom, payload) {
+export function vdomToDocument(vdom, payload, targetDocument) {
   const { navigation } = payload || {};
   const { menuBar, menuItem } = navigation || {};
 
@@ -111,10 +111,13 @@ export function vdomToDocument(vdom, payload) {
     }
   }
 
-  const document = createEmptyDocument();
+  const document = targetDocument || createEmptyDocument();
 
   const childNode = createElement(vnode, { document });
-  const menuBars = childNode.getElementsByTagName('menuBar');
+
+  const menuBars = childNode.nodeType === document.ELEMENT_NODE
+    ? childNode.getElementsByTagName('menuBar')
+    : [];
 
   if (menuBars.length) {
     document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
@@ -124,12 +127,17 @@ export function vdomToDocument(vdom, payload) {
   }
 
   document.appendChild(childNode);
+
   eventsList.forEach((eventName) => {
     document.addEventListener(
       eventName,
       createEventHandler(handlers[eventName]),
     );
   });
+
+  if (vnode instanceof Component) {
+    vnode.componentDidMount();
+  }
 
   return document;
 }

@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 import createElement from '@a-ignatov-parc/virtual-dom/create-element';
 
 import createComponent from '../src/render/component';
+import { vdomToDocument } from '../src/render/document';
 
 const GET_DEFAULT_PROPS = 'getDefaultProps';
 const GET_INITIAL_STATE = 'getInitialState';
@@ -19,13 +20,11 @@ const COMPONENT_DID_UPDATE = 'componentDidUpdate';
 const COMPONENT_WILL_UNMOUNT = 'componentWillUnmount';
 
 describe('Component', () => {
-  it('lifecycle', () => {
+  it('initial render lifecycle', () => {
     const dom = new JSDOM('');
-    const { document } = dom.window;
-
     const lifecycleCallOrder = [];
 
-    const element = createComponent({
+    const vdom = createComponent({
       getDefaultProps() {
         lifecycleCallOrder.push(GET_DEFAULT_PROPS);
       },
@@ -42,16 +41,36 @@ describe('Component', () => {
         lifecycleCallOrder.push(COMPONENT_DID_MOUNT);
       },
 
+      componentWillReceiveProps() {
+        lifecycleCallOrder.push(COMPONENT_WILL_RECEIVE_PROPS);
+      },
+
+      shouldComponentUpdate() {
+        lifecycleCallOrder.push(SHOULD_COMPONENT_UPDATE);
+        return true;
+      },
+
+      componentWillUpdate() {
+        lifecycleCallOrder.push(COMPONENT_WILL_UPDATE);
+      },
+
+      componentDidUpdate() {
+        lifecycleCallOrder.push(COMPONENT_DID_UPDATE);
+      },
+
+      componentWillUnmount() {
+        lifecycleCallOrder.push(COMPONENT_WILL_UNMOUNT);
+      },
+
       render() {
         lifecycleCallOrder.push(RENDER);
         return null;
       },
     });
 
-    const vdom = element.toNode();
-    const childNode = createElement(vdom, { document });
+    const renderedDocument = vdomToDocument(vdom, null, dom.window.document);
 
-    assert.equal(
+    assert.deepEqual(
       lifecycleCallOrder,
       [
         GET_DEFAULT_PROPS,
