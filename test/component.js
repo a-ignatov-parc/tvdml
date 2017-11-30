@@ -119,7 +119,7 @@ describe('Component', () => {
     ], 'lifecycle order should be as expected');
   });
 
-  it('rerender lifecycle', () => {
+  it('update lifecycle', () => {
     const dom = new JSDOM();
     const lifecycleCallOrder = [];
 
@@ -244,6 +244,72 @@ describe('Component', () => {
       COMPONENT_WILL_UPDATE,
       RENDER,
       COMPONENT_DID_UPDATE,
+    ], 'lifecycle order should be as expected');
+  });
+
+  it('unmount lifecycle', () => {
+    const dom = new JSDOM();
+    const lifecycleCallOrder = [];
+
+    const vdom = createComponent({
+      getDefaultProps() {
+        lifecycleCallOrder.push(GET_DEFAULT_PROPS);
+      },
+
+      getInitialState() {
+        lifecycleCallOrder.push(GET_INITIAL_STATE);
+      },
+
+      componentWillMount() {
+        lifecycleCallOrder.push(COMPONENT_WILL_MOUNT);
+      },
+
+      componentDidMount() {
+        lifecycleCallOrder.push(COMPONENT_DID_MOUNT);
+      },
+
+      componentWillReceiveProps() {
+        lifecycleCallOrder.push(COMPONENT_WILL_RECEIVE_PROPS);
+      },
+
+      shouldComponentUpdate() {
+        lifecycleCallOrder.push(SHOULD_COMPONENT_UPDATE);
+        return true;
+      },
+
+      componentWillUpdate() {
+        lifecycleCallOrder.push(COMPONENT_WILL_UPDATE);
+      },
+
+      componentDidUpdate() {
+        lifecycleCallOrder.push(COMPONENT_DID_UPDATE);
+      },
+
+      componentWillUnmount() {
+        lifecycleCallOrder.push(COMPONENT_WILL_UNMOUNT);
+      },
+
+      render() {
+        lifecycleCallOrder.push(RENDER);
+        return null;
+      },
+    });
+
+    const resolvedDocument = vdomToDocument(vdom, null, dom.window.document);
+
+    assert.equal(typeof resolvedDocument.destroyComponent, 'function', `
+      "resolvedDocument" should have update handler.
+    `);
+
+    resolvedDocument.destroyComponent();
+
+    assert.deepEqual(lifecycleCallOrder, [
+      GET_DEFAULT_PROPS,
+      GET_INITIAL_STATE,
+      COMPONENT_WILL_MOUNT,
+      RENDER,
+      COMPONENT_DID_MOUNT,
+      COMPONENT_WILL_UNMOUNT,
     ], 'lifecycle order should be as expected');
   });
 });
