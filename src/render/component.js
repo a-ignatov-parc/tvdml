@@ -17,9 +17,11 @@ const excludeList = [
 ];
 
 function render() {
+  const hasOuterQueue = !!this._queue;
+
   let result;
 
-  this._queue = {};
+  if (!hasOuterQueue) this._queue = {};
 
   try {
     result = this.render();
@@ -31,7 +33,7 @@ function render() {
     throw new Error('You can\'t use setState during rendering phase');
   }
 
-  this._queue = null;
+  if (!hasOuterQueue) this._queue = null;
 
   if (typeof result === 'boolean' || result === null) {
     return new Text('');
@@ -60,14 +62,19 @@ function update(nextProps, nextState) {
   this.state = nextState;
 
   if (shouldUpdate) {
+    this._queue = {};
+
     const prev = this._vdom;
+
+    this.componentWillUpdate(nextProps, nextState);
+
     const next = render.call(this);
     const updateTree = diff(prev, next);
 
     this._vdom = next;
-    this.componentWillUpdate(nextProps, nextState);
-
     this._rootNode = patch(this._rootNode, updateTree);
+    this._queue = null;
+
     this.componentDidUpdate(prevProps, prevState);
   }
 }

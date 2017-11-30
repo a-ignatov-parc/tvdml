@@ -19,7 +19,7 @@ const COMPONENT_WILL_UNMOUNT = 'componentWillUnmount';
 
 describe('Component', () => {
   it('initial render lifecycle', () => {
-    const dom = new JSDOM('');
+    const dom = new JSDOM();
     const lifecycleCallOrder = [];
 
     const vdom = createComponent({
@@ -116,6 +116,134 @@ describe('Component', () => {
       COMPONENT_WILL_MOUNT,
       RENDER,
       COMPONENT_DID_MOUNT,
+    ], 'lifecycle order should be as expected');
+  });
+
+  it('rerender lifecycle', () => {
+    const dom = new JSDOM();
+    const lifecycleCallOrder = [];
+
+    let counter = 1;
+
+    const vdom = createComponent({
+      getDefaultProps() {
+        lifecycleCallOrder.push(GET_DEFAULT_PROPS);
+      },
+
+      getInitialState() {
+        lifecycleCallOrder.push(GET_INITIAL_STATE);
+      },
+
+      componentWillMount() {
+        lifecycleCallOrder.push(COMPONENT_WILL_MOUNT);
+      },
+
+      componentDidMount() {
+        lifecycleCallOrder.push(COMPONENT_DID_MOUNT);
+      },
+
+      componentWillReceiveProps(nextProps) {
+        lifecycleCallOrder.push(COMPONENT_WILL_RECEIVE_PROPS);
+
+        assert.deepEqual(this.props, {}, `
+          "this.props" in "componentWillReceiveProps" should be unchanged.
+        `);
+
+        assert.deepEqual(this.state, {}, `
+          "this.state" in "componentWillReceiveProps" should be unchanged.
+        `);
+
+        assert.deepEqual(nextProps, { a: 1, b: 1 }, `
+          "componentWillReceiveProps" should receive updated payload.
+        `);
+      },
+
+      shouldComponentUpdate() {
+        lifecycleCallOrder.push(SHOULD_COMPONENT_UPDATE);
+        return true;
+      },
+
+      componentWillUpdate() {
+        lifecycleCallOrder.push(COMPONENT_WILL_UPDATE);
+      },
+
+      componentDidUpdate() {
+        lifecycleCallOrder.push(COMPONENT_DID_UPDATE);
+
+        if (this.props.a && !this.state.didUpdated) {
+          // eslint-disable-next-line react/no-did-update-set-state
+          this.setState({ didUpdated: true });
+        }
+      },
+
+      componentWillUnmount() {
+        lifecycleCallOrder.push(COMPONENT_WILL_UNMOUNT);
+      },
+
+      render() {
+        lifecycleCallOrder.push(RENDER);
+
+        switch (counter) {
+          case 1:
+            assert.deepEqual(this.props, {}, `
+              "this.props" on first render should be empty.
+            `);
+
+            assert.deepEqual(this.state, {}, `
+              "this.state" on first render should be empty.
+            `);
+            break;
+          case 2:
+            assert.deepEqual(this.props, { a: 1, b: 1 }, `
+              "this.props" on second render should be updated to new ones.
+            `);
+
+            assert.deepEqual(this.state, {}, `
+              "this.state" on second render should be empty.
+            `);
+            break;
+          case 3:
+            assert.deepEqual(this.props, { a: 1, b: 1 }, `
+              "this.props" on third render should not changed.
+            `);
+
+            assert.deepEqual(this.state, { didUpdated: true }, `
+              "this.state" on third render should be set to new one.
+            `);
+            break;
+          default:
+            assert.ok(false, 'should not reach this statement');
+        }
+
+        counter += 1;
+
+        return null;
+      },
+    });
+
+    const resolvedDocument = vdomToDocument(vdom, null, dom.window.document);
+
+    assert.equal(typeof resolvedDocument.updateComponent, 'function', `
+      "resolvedDocument" should have update handler.
+    `);
+
+    resolvedDocument.updateComponent({ a: 1, b: 1 });
+
+    assert.deepEqual(lifecycleCallOrder, [
+      GET_DEFAULT_PROPS,
+      GET_INITIAL_STATE,
+      COMPONENT_WILL_MOUNT,
+      RENDER,
+      COMPONENT_DID_MOUNT,
+      COMPONENT_WILL_RECEIVE_PROPS,
+      SHOULD_COMPONENT_UPDATE,
+      COMPONENT_WILL_UPDATE,
+      RENDER,
+      COMPONENT_DID_UPDATE,
+      SHOULD_COMPONENT_UPDATE,
+      COMPONENT_WILL_UPDATE,
+      RENDER,
+      COMPONENT_DID_UPDATE,
     ], 'lifecycle order should be as expected');
   });
 });
