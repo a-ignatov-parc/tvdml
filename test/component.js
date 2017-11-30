@@ -3,8 +3,6 @@
 import assert from 'assert';
 import { JSDOM } from 'jsdom';
 
-import createElement from '@a-ignatov-parc/virtual-dom/create-element';
-
 import createComponent from '../src/render/component';
 import { vdomToDocument } from '../src/render/document';
 
@@ -68,7 +66,7 @@ describe('Component', () => {
       },
     });
 
-    const renderedDocument = vdomToDocument(vdom, null, dom.window.document);
+    vdomToDocument(vdom, null, dom.window.document);
 
     assert.deepEqual(
       lifecycleCallOrder,
