@@ -108,7 +108,17 @@ describe('Component', () => {
       },
     });
 
-    vdomToDocument(vdom, { a: 1, b: 2 }, dom.window.document);
+    const resolvedDocument = vdomToDocument(vdom, {
+      a: 1,
+      b: 2,
+    }, dom.window.document);
+
+    assert.equal(typeof resolvedDocument.didMount, 'function', `
+      "resolvedDocument" should have "didMount" handler.
+    `);
+
+    // Explicitly calling mount event on resolved document.
+    resolvedDocument.didMount();
 
     assert.deepEqual(lifecycleCallOrder, [
       GET_DEFAULT_PROPS,
@@ -223,8 +233,11 @@ describe('Component', () => {
 
     const resolvedDocument = vdomToDocument(vdom, null, dom.window.document);
 
+    // Explicitly calling mount event on resolved document.
+    resolvedDocument.didMount();
+
     assert.equal(typeof resolvedDocument.updateComponent, 'function', `
-      "resolvedDocument" should have update handler.
+      "resolvedDocument" should have "updateComponent" handler.
     `);
 
     resolvedDocument.updateComponent({ a: 1, b: 1 });
@@ -297,8 +310,11 @@ describe('Component', () => {
 
     const resolvedDocument = vdomToDocument(vdom, null, dom.window.document);
 
+    // Explicitly calling mount event on resolved document.
+    resolvedDocument.didMount();
+
     assert.equal(typeof resolvedDocument.destroyComponent, 'function', `
-      "resolvedDocument" should have update handler.
+      "resolvedDocument" should have "destroyComponent" handler.
     `);
 
     resolvedDocument.destroyComponent();

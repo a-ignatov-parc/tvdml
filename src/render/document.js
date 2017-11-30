@@ -9,6 +9,20 @@ import { noop } from '../utils';
 
 const DEFAULT_HANDLER = 'default';
 
+/**
+ * Because TVJS doesn't expose node types we need to hardcode them.
+ *
+ * Node types taken from MDN:
+ * https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
+ */
+const ELEMENT_NODE = 1;
+// const TEXT_NODE = 3;
+// const PROCESSING_INSTRUCTION_NODE = 7;
+// const COMMENT_NODE = 8;
+// const DOCUMENT_NODE = 9;
+// const DOCUMENT_TYPE_NODE = 10;
+// const DOCUMENT_FRAGMENT_NODE = 11;
+
 function createDefaultHandler(handlerName) {
   return function defaultHandler(...args) {
     const [event] = args;
@@ -112,16 +126,16 @@ export function vdomToDocument(vdom, payload, targetDocument) {
   }
 
   const document = targetDocument || createEmptyDocument();
-
   const childNode = createElement(vnode, { document });
 
-  const menuBars = childNode.nodeType === document.ELEMENT_NODE
+  const menuBars = childNode.nodeType === ELEMENT_NODE
     ? childNode.getElementsByTagName('menuBar')
     : [];
 
   if (menuBars.length) {
     document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
   } else if (vnode instanceof Component) {
+    document.didMount = vnode.componentDidMount.bind(vnode);
     document.updateComponent = vnode.updateProps.bind(vnode);
     document.destroyComponent = vnode.destroy.bind(vnode, childNode);
   }
@@ -134,10 +148,6 @@ export function vdomToDocument(vdom, payload, targetDocument) {
       createEventHandler(handlers[eventName]),
     );
   });
-
-  if (vnode instanceof Component) {
-    vnode.componentDidMount();
-  }
 
   return document;
 }
