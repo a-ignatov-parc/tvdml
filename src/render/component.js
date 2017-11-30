@@ -96,7 +96,7 @@ export class Component {
   init(options) {
     this._queue = null;
 
-    this.props = { ...this._props, ...this.getDefaultProps() };
+    this.props = { ...this.getDefaultProps.call(null), ...this._props };
     this.state = { ...this.getInitialState() };
 
     this.componentWillMount();

@@ -25,18 +25,60 @@ describe('Component', () => {
     const vdom = createComponent({
       getDefaultProps() {
         lifecycleCallOrder.push(GET_DEFAULT_PROPS);
+
+        assert.equal(this.props, undefined, `
+          "this.props" in "getDefaultProps" lifecycle hook should be undefined.
+        `);
+
+        assert.equal(this.state, undefined, `
+          "this.state" in "getDefaultProps" lifecycle hook should be undefined.
+        `);
+
+        return { b: 1, c: 1 };
       },
 
       getInitialState() {
         lifecycleCallOrder.push(GET_INITIAL_STATE);
+
+        assert.equal(this.state, undefined, `
+          "this.state" in "getInitialState" lifecycle hook should be undefined.
+        `);
+
+        assert.deepEqual(this.props, { a: 1, b: 2, c: 1 }, `
+          "this.props" in "getInitialState" lifecycle hook should result
+          in combination of the incoming props and props resolved
+          in "getDefaultProps".
+        `);
+
+        return { d: 1 };
       },
 
       componentWillMount() {
         lifecycleCallOrder.push(COMPONENT_WILL_MOUNT);
+
+        assert.deepEqual(this.props, { a: 1, b: 2, c: 1 }, `
+          "this.props" in "componentWillMount" lifecycle hook should be same
+          as in "getInitialState" hook.
+        `);
+
+        assert.deepEqual(this.state, { d: 1 }, `
+          "this.state" in "componentWillMount" lifecycle hook should
+          be same as resolved in "getInitialState".
+        `);
       },
 
       componentDidMount() {
         lifecycleCallOrder.push(COMPONENT_DID_MOUNT);
+
+        assert.deepEqual(this.props, { a: 1, b: 2, c: 1 }, `
+          "this.props" in "componentDidMount" lifecycle hook should be same
+          as in "componentWillMount" hook.
+        `);
+
+        assert.deepEqual(this.state, { d: 1 }, `
+          "this.state" in "componentDidMount" lifecycle hook should be same
+          as in "componentWillMount" hook.
+        `);
       },
 
       componentWillReceiveProps() {
@@ -66,18 +108,14 @@ describe('Component', () => {
       },
     });
 
-    vdomToDocument(vdom, null, dom.window.document);
+    vdomToDocument(vdom, { a: 1, b: 2 }, dom.window.document);
 
-    assert.deepEqual(
-      lifecycleCallOrder,
-      [
-        GET_DEFAULT_PROPS,
-        GET_INITIAL_STATE,
-        COMPONENT_WILL_MOUNT,
-        RENDER,
-        COMPONENT_DID_MOUNT,
-      ],
-      'lifecycle order should be as expected',
-    );
+    assert.deepEqual(lifecycleCallOrder, [
+      GET_DEFAULT_PROPS,
+      GET_INITIAL_STATE,
+      COMPONENT_WILL_MOUNT,
+      RENDER,
+      COMPONENT_DID_MOUNT,
+    ], 'lifecycle order should be as expected');
   });
 });
