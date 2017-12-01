@@ -137,8 +137,23 @@ export function vdomToDocument(vdom, payload, targetDocument) {
   }
 
   if (vnode instanceof Component) {
+    /**
+     * `didMount` handler invokes in `navigation/hooks.js` because
+     * this is the best to not to forget to notify component about mounting.
+     */
     document.didMount = vnode.componentDidMount.bind(vnode);
     document.updateComponent = vnode.updateProps.bind(vnode);
+
+    /**
+     * `destroyComponent` handler invokes in `navigation/hooks.js` because
+     * we are not always in control of documents dismissal process.
+     *
+     * It's a little magic but we don't have any other options to detect:
+     * 1. When document was removed by user's activity like pressing "Menu"
+     *    button.
+     * 2. When modal document was closed. `dismissModal` isn't fires `unload`
+     *    event on document.
+     */
     document.destroyComponent = vnode.destroy.bind(vnode, childNode);
   }
 

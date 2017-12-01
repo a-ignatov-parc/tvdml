@@ -116,6 +116,13 @@ export function render(template) {
         const menuItemDocument = menuBar.getDocument(menuItem);
 
         if (menuItemDocument !== document) {
+          /**
+           * Documents rendered by `menuBar` should be mounted here manualy
+           * because they are not invoking any system hooks on `setDocument`.
+           *
+           * P.S. Documents in other cases are mounted implicitly
+           * in `navigation/hooks.js`.
+           */
           if (document.didMount) document.didMount();
 
           /**
@@ -128,10 +135,8 @@ export function render(template) {
         }
       } else if (renderedDocument) {
         navigationDocument.replaceDocument(document, renderedDocument);
-        if (document.didMount) document.didMount();
       } else {
         navigationDocument.pushDocument(document);
-        if (document.didMount) document.didMount();
       }
 
       return { document, redirect: false };
