@@ -116,6 +116,19 @@ export function render(template) {
         const menuItemDocument = menuBar.getDocument(menuItem);
 
         if (menuItemDocument !== document) {
+          /**
+           * Documents rendered by `menuBar` should be mounted here manualy
+           * because they are not invoking any system hooks on `setDocument`.
+           *
+           * P.S. Documents in other cases are mounted implicitly
+           * in `navigation/hooks.js`.
+           */
+          if (document.didMount) document.didMount();
+
+          /**
+           * Setting new document to `menuBar` only after timeout for smooth
+           * switching with fade animation.
+           */
           setTimeout(() => {
             menuBar.setDocument(document, menuItem);
           }, RENDERING_ANIMATION);

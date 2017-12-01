@@ -9,6 +9,20 @@ import { noop } from '../utils';
 
 const DEFAULT_HANDLER = 'default';
 
+/**
+ * Because TVJS doesn't expose node types we need to hardcode them.
+ *
+ * Node types taken from MDN:
+ * https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
+ */
+const ELEMENT_NODE = 1;
+// const TEXT_NODE = 3;
+// const PROCESSING_INSTRUCTION_NODE = 7;
+// const COMMENT_NODE = 8;
+// const DOCUMENT_NODE = 9;
+// const DOCUMENT_TYPE_NODE = 10;
+// const DOCUMENT_FRAGMENT_NODE = 11;
+
 function createDefaultHandler(handlerName) {
   return function defaultHandler(...args) {
     const [event] = args;
@@ -90,7 +104,7 @@ function createEventHandler(handlersCollection = {}) {
   };
 }
 
-export function vdomToDocument(vdom, payload) {
+export function vdomToDocument(vdom, payload, targetDocument) {
   const { navigation } = payload || {};
   const { menuBar, menuItem } = navigation || {};
 
@@ -111,19 +125,40 @@ export function vdomToDocument(vdom, payload) {
     }
   }
 
-  const document = createEmptyDocument();
-
+  const document = targetDocument || createEmptyDocument();
   const childNode = createElement(vnode, { document });
-  const menuBars = childNode.getElementsByTagName('menuBar');
+
+  const menuBars = childNode.nodeType === ELEMENT_NODE
+    ? childNode.getElementsByTagName('menuBar')
+    : [];
 
   if (menuBars.length) {
     document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
-  } else if (vnode instanceof Component) {
+  }
+
+  if (vnode instanceof Component) {
+    /**
+     * `didMount` handler invokes in `navigation/hooks.js` because
+     * this is the best to not to forget to notify component about mounting.
+     */
+    document.didMount = vnode.componentDidMount.bind(vnode);
     document.updateComponent = vnode.updateProps.bind(vnode);
+
+    /**
+     * `destroyComponent` handler invokes in `navigation/hooks.js` because
+     * we are not always in control of documents dismissal process.
+     *
+     * It's a little magic but we don't have any other options to detect:
+     * 1. When document was removed by user's activity like pressing "Menu"
+     *    button.
+     * 2. When modal document was closed. `dismissModal` isn't fires `unload`
+     *    event on document.
+     */
     document.destroyComponent = vnode.destroy.bind(vnode, childNode);
   }
 
   document.appendChild(childNode);
+
   eventsList.forEach((eventName) => {
     document.addEventListener(
       eventName,

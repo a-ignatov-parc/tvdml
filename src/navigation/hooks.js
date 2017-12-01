@@ -107,10 +107,25 @@ export function enable() {
     throw new Error('Hooks already enabled');
   }
 
+  const shouldMountComponentFor = {
+    presentModal: true,
+    pushDocument: true,
+    replaceDocument: true,
+    insertBeforeDocument: true,
+  };
+
   methodsToPatch.forEach((name) => {
     navigationDocument[name] = function TVDMLWrapper(...args) {
       if (handlers[name]) handlers[name].apply(this, args);
-      return originalMethods[name].apply(this, args);
+
+      const result = originalMethods[name].apply(this, args);
+      const [document] = args;
+
+      if (shouldMountComponentFor[name] && document.didMount) {
+        document.didMount();
+      }
+
+      return result;
     };
   });
 
