@@ -134,7 +134,9 @@ export function vdomToDocument(vdom, payload, targetDocument) {
 
   if (menuBars.length) {
     document.menuBarDocument = menuBars.item(0).getFeature('MenuBarDocument');
-  } else if (vnode instanceof Component) {
+  }
+
+  if (vnode instanceof Component) {
     document.didMount = vnode.componentDidMount.bind(vnode);
     document.updateComponent = vnode.updateProps.bind(vnode);
     document.destroyComponent = vnode.destroy.bind(vnode, childNode);
