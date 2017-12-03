@@ -1008,14 +1008,14 @@ function parseJson(information) {
 
 - `TVDML.render(template)` — Main rendering factory that transforms JSX templates to TVML documents and responsible for rendering them to screen. Uses `TVDML.parseDocument` to parse and evaluate `template` object into TVML document before applying to `NavigationDocument`.
 
-- `TVDML.parseDocument(template)` — Responsible for transforming JSX templates to TVML documents. In most cases you are not supposed to use this method.
+- `TVDML.parseDocument(template)` — Responsible for transforming JSX templates to TVML documents. In most cases you are not supposed to use this method but it may be useful to create documents for `player.overlayDocument` or `player.interactiveOverlayDocument`.
 
   `template` can be:
 
   - JSX template.
   - function that will return JSX template on execution.
 
-  > String templates are prohibited to use.
+  Remember that you need to manualy mount/unmount documents created with `TVDML.createComponent`. This can be done with `document.didMount` and `document.destroyComponent`. Also there is `document.updateComponent` for updating mounted component.
 
 - `TVDML.renderModal(template)` — Same as `TVDML.render(template)` but will render passed document in modal overlay.
 
