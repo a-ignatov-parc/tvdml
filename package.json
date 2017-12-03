@@ -1,6 +1,6 @@
 {
   "name": "tvdml",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Small library for creating declarative apps for tvOS with TVML and TVJS",
   "main": "dist/tvdml.js",
   "engine-strict": true,
