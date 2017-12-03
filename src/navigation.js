@@ -1,4 +1,4 @@
-/* global App sessionStorage */
+/* global App */
 
 import { createStream } from './pipelines';
 import { broadcast, subscribe } from './event-bus';
@@ -116,12 +116,8 @@ Object
 
     App[name] = (options) => {
       console.info('Fired handler for app lifecycle', name, options);
-
-      if (name === 'onLaunch') {
-        sessionStorage.setItem('startParams', JSON.stringify(options));
-        launched = true;
-      }
-      broadcast(symbol);
+      if (name === 'onLaunch') launched = true;
+      broadcast(symbol, options);
     };
   });
 
