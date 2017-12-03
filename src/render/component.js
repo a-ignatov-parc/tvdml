@@ -30,7 +30,7 @@ function render() {
   }
 
   if (this._queue.state) {
-    throw new Error('You can\'t use setState during rendering phase');
+    console.error('You can\'t use setState during rendering phase');
   }
 
   if (!hasOuterQueue) this._queue = null;
@@ -88,7 +88,7 @@ export class Component {
         const isExcluded = !!~excludeList.indexOf(name);
 
         if (isExcluded) {
-          throw new Error(`Can't override system method "${name}"`);
+          throw new Error(`Can't override base method "${name}"`);
         }
         return !isExcluded;
       })
