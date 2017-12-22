@@ -1,7 +1,7 @@
 const path = require('path');
 
 const webpack = require('webpack');
-const MinifyPlugin = require('babel-minify-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 function resolveFromRoot(dir) {
   return path.resolve(__dirname, dir);
@@ -41,10 +41,22 @@ const plugins = [
 
 if (isProd) {
   plugins.push(...[
+    new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
-    new MinifyPlugin({
-      keepFnName: true,
-      keepClassName: true,
+    new UglifyJsPlugin({
+      uglifyOptions: {
+        compress: {
+          keep_fnames: true,
+          warnings: false,
+        },
+        output: {
+          comments: false,
+        },
+        mangle: {
+          keep_fnames: true,
+        },
+      },
+      sourceMap: true,
     }),
   ]);
 }
