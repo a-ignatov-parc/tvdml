@@ -3,6 +3,7 @@ import { subscribe, broadcast } from './event-bus';
 
 export { subscribe };
 export * from './render';
+export * from './renderReact';
 export * from './pipelines';
 export * from './navigation';
 export { default as jsx } from './jsx';
