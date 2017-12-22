@@ -3,7 +3,7 @@ version: 2
 job-configuration: &job-configuration
   working_directory: ~/app
   docker:
-    - image: circleci/node:6.10
+    - image: circleci/node:8.9.1
 
 prepare-git: &prepare-git
   name: Preparing git working directory
@@ -29,11 +29,8 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
       - run:
-          name: Install local yarn
-          command: npm run yarn:install
-      - run:
           name: Install dependencies using local yarn
-          command: npm run yarn:install-deps
+          command: npm run install-deps
       - save_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:

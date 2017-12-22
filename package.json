@@ -5,13 +5,11 @@
   "main": "dist/tvdml.js",
   "engine-strict": true,
   "engines": {
-    "node": ">=6.10.0",
-    "yarn": ">=1.3.0"
+    "node": "^8.9.0",
+    "yarn": "^1.3.0"
   },
   "scripts": {
-    "install-deps": "npm run yarn:install && npm run yarn:install-deps",
-    "yarn:install": "npm i --no-save --no-package-lock yarn@$npm_package_engines_yarn",
-    "yarn:install-deps": "yarn install --frozen-lockfile --check-files",
+    "install-deps": "npx yarn@$npm_package_engines_yarn install --frozen-lockfile --check-files",
     "build": "webpack --progress",
     "watch": "webpack --watch --progress",
     "dist": "NODE_ENV=production webpack --progress",
@@ -52,7 +50,7 @@
     "jsdom": "^11.5.1",
     "mocha": "^3.1.2",
     "mocha-junit-reporter": "^1.15.0",
-    "webpack": "^3.8.1"
+    "webpack": "^3.10.0"
   },
   "dependencies": {
     "@a-ignatov-parc/virtual-dom": "^2.2.0"
