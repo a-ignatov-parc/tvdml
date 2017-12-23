@@ -357,6 +357,8 @@ class ReactRoot {
 };
 
 function createRoot(container) {
+  let rootSibling;
+
   while ((rootSibling = container.lastChild)) {
     container.removeChild(rootSibling);
   }
@@ -373,7 +375,7 @@ const ReactTVML = {
       root = container._reactRootContainer = createRoot(container);
 
       TVMLRenderer.unbatchedUpdates(() => {
-        root.render(children, () => {
+        root.render(element, () => {
           if (typeof callback === 'function') {
             const instance = TVMLRenderer.getPublicRootInstance(
               root._internalRoot,
@@ -385,7 +387,7 @@ const ReactTVML = {
       });
     } else {
       // Update
-      root.render(children, () => {
+      root.render(element, () => {
         if (typeof callback === 'function') {
           const instance = TVMLRenderer.getPublicRootInstance(
             root._internalRoot,
