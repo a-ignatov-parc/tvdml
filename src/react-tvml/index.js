@@ -27,7 +27,7 @@ function getOwnerDocumentFromRootContainer(rootContainerElement) {
     : rootContainerElement.ownerDocument;
 }
 
-function createElement(type, props, rootContainerElement, parentNamespace) {
+function createElement(type, props, rootContainerElement) {
   const ownerDocument = getOwnerDocumentFromRootContainer(rootContainerElement);
   const domElement = ownerDocument.createElement(type);
   return domElement;
@@ -40,11 +40,17 @@ function createTextNode(text, rootContainerElement) {
 }
 
 function setInitialProperties(domElement, type, props, rootContainerElement) {
-  console.log('setInitialProperties', domElement, type, props);
+  console.info(
+    'setInitialProperties',
+    domElement,
+    type,
+    props,
+    rootContainerElement,
+  );
 
   Object
     .keys(props)
-    .forEach(propName => {
+    .forEach((propName) => {
       const propValue = props[propName];
 
       if (propName === CHILDREN) {
@@ -84,17 +90,17 @@ function diffProperties(
   type,
   oldProps,
   newProps,
-  rootContainerInstance,
+  // rootContainerInstance,
 ) {
   let updatePayload = null;
 
   Object
     .keys(oldProps)
-    .forEach(propName => {
+    .forEach((propName) => {
       const propValue = oldProps[propName];
       const shouldSkip = newProps.hasOwnProperty(propName)
         || !oldProps.hasOwnProperty(propName)
-        || oldProps[propName] == null;
+        || propValue == null;
 
       if (shouldSkip) return;
       (updatePayload = updatePayload || []).push(propName, null);
@@ -102,7 +108,7 @@ function diffProperties(
 
   Object
     .keys(newProps)
-    .forEach(propName => {
+    .forEach((propName) => {
       const propValue = newProps[propName];
       const oldPropValue = oldProps != null ? oldProps[propName] : undefined;
 
@@ -119,7 +125,7 @@ function diffProperties(
           );
 
         if (shouldUpdate) {
-          (updatePayload = updatePayload || []).push(propName, '' + propValue);
+          (updatePayload = updatePayload || []).push(propName, `${propValue}`);
         }
       } else {
         (updatePayload = updatePayload || []).push(propName, propValue);
@@ -127,7 +133,7 @@ function diffProperties(
     });
 
   if (updatePayload) {
-    console.log(
+    console.info(
       'diffProperties',
       domElement,
       type,
@@ -145,7 +151,7 @@ function updateProperties(domElement, updatePayload, type, oldProps, newProps) {
     const propName = updatePayload[i];
     const propValue = updatePayload[i + 1];
 
-    console.log(
+    console.info(
       'updateProperties',
       domElement,
       type,
@@ -173,26 +179,23 @@ function updateProperties(domElement, updatePayload, type, oldProps, newProps) {
           domElement.addEventListener(eventName, propValue);
         }
       }
+    } else if (propValue === null || typeof propValue === 'undefined') {
+      domElement.removeAttribute(propName);
     } else {
-      if (propValue === null || typeof propValue === 'undefined') {
-        domElement.removeAttribute(propName);
-      } else {
-        domElement.setAttribute(propName, propValue);
-      }
+      domElement.setAttribute(propName, propValue);
     }
   }
 }
 
 const TVMLRenderer = ReactFiberReconciler({
   getRootHostContext(rootContainerInstance) {
-    const nodeType = rootContainerInstance.nodeType;
-
+    const { nodeType } = rootContainerInstance;
     let namespace;
 
     switch (nodeType) {
       case DOCUMENT_NODE:
       case DOCUMENT_FRAGMENT_NODE: {
-        let root = rootContainerInstance.documentElement;
+        const root = rootContainerInstance.documentElement;
         namespace = root ? root.namespaceURI : NAMESPACE;
         break;
       }
@@ -204,7 +207,7 @@ const TVMLRenderer = ReactFiberReconciler({
     return namespace;
   },
 
-  getChildHostContext(parentHostContext, type) {
+  getChildHostContext(/* parentHostContext, type */) {
     return NAMESPACE;
   },
 
@@ -246,7 +249,6 @@ const TVMLRenderer = ReactFiberReconciler({
     oldProps,
     newProps,
     rootContainerInstance,
-    hostContext,
   ) {
     return diffProperties(
       domElement,
@@ -257,15 +259,15 @@ const TVMLRenderer = ReactFiberReconciler({
     );
   },
 
-  shouldSetTextContent(type, props) {
+  shouldSetTextContent(/* type, props */) {
     return false;
   },
 
-  shouldDeprioritizeSubtree(type, props) {
+  shouldDeprioritizeSubtree(/* type, props */) {
     return false;
   },
 
-  createTextInstance(text, rootContainerInstance, hostContext) {
+  createTextInstance(text, rootContainerInstance) {
     const textNode = createTextNode(text, rootContainerInstance);
     return textNode;
   },
@@ -276,7 +278,7 @@ const TVMLRenderer = ReactFiberReconciler({
 
   mutation: {
     commitMount(domElement, type, newProps) {
-      console.log(
+      console.info(
         'commitMount',
         domElement,
         type,
@@ -354,13 +356,14 @@ class ReactRoot {
     const root = this._internalRoot;
     TVMLRenderer.updateContainer(null, root, null, callback);
   }
-};
+}
 
 function createRoot(container) {
-  let rootSibling;
+  let rootSibling = container.lastChild;
 
-  while ((rootSibling = container.lastChild)) {
+  while (rootSibling) {
     container.removeChild(rootSibling);
+    rootSibling = container.lastChild;
   }
 
   return new ReactRoot(container);
@@ -372,15 +375,14 @@ const ReactTVML = {
 
     if (!root) {
       // Initial mount
-      root = container._reactRootContainer = createRoot(container);
+      root = createRoot(container);
+      container._reactRootContainer = root;
 
       TVMLRenderer.unbatchedUpdates(() => {
         root.render(element, () => {
           if (typeof callback === 'function') {
-            const instance = TVMLRenderer.getPublicRootInstance(
-              root._internalRoot,
-            );
-
+            const { _internalRoot } = root;
+            const instance = TVMLRenderer.getPublicRootInstance(_internalRoot);
             callback.call(instance);
           }
         });
@@ -389,10 +391,8 @@ const ReactTVML = {
       // Update
       root.render(element, () => {
         if (typeof callback === 'function') {
-          const instance = TVMLRenderer.getPublicRootInstance(
-            root._internalRoot,
-          );
-
+          const { _internalRoot } = root;
+          const instance = TVMLRenderer.getPublicRootInstance(_internalRoot);
           callback.call(instance);
         }
       });
@@ -409,9 +409,8 @@ const ReactTVML = {
         });
       });
       return true;
-    } else {
-      return false;
     }
+    return false;
   },
 };
 

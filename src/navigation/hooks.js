@@ -97,7 +97,6 @@ const methodsToPatch = Object.keys(handlers);
 const originalMethods = methodsToPatch
   .map(name => ({ name, method: navigationDocument[name] }))
   .reduce((result, { name, method }) => {
-    // eslint-disable-next-line no-param-reassign
     result[name] = method;
     return result;
   }, {});

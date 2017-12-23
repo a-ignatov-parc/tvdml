@@ -9,7 +9,7 @@ import { passthrough, createPipeline } from './pipelines';
 const RENDERING_ANIMATION = 600;
 
 export function renderModalReact(Component) {
-  console.log('renderModalReact', Component);
+  console.info('renderModalReact', Component);
 }
 
 export function render(Component) {
@@ -22,6 +22,8 @@ export function render(Component) {
       } = payload;
 
       const { menuBar, menuItem } = navigation;
+
+      console.info(1, menuBar, menuItem);
 
       let { document } = payload;
 
