@@ -8,13 +8,47 @@ import { passthrough, createPipeline } from './pipelines';
 
 const RENDERING_ANIMATION = 600;
 
-export function renderModalReact(Component) {
-  console.info('renderModalReact', Component);
+let hasModal = false;
+
+function createDocument() {
+  return DOMImplementationRegistry.getDOMImplementation().createDocument();
+}
+
+export function removeModal() {
+  hasModal = false;
+  navigationDocument.dismissModal(true);
+}
+
+export function renderModal(Component) {
+  return createPipeline()
+    .pipe(passthrough(() => {
+      if (!hasModal) return null;
+      removeModal();
+      return promisedTimeout(RENDERING_ANIMATION);
+    }))
+    .pipe(passthrough((payload = {}) => {
+      const { route } = payload;
+      const document = createDocument();
+      const lastDocument = navigationDocument.documents.pop() || {};
+
+      document.modal = true;
+      document.route = route || lastDocument.route;
+
+      const element = React.createElement(Component, payload);
+
+      ReactTVML.render(element, document);
+
+      hasModal = true;
+
+      navigationDocument.presentModal(document);
+
+      document.isAttached = true;
+    }));
 }
 
 export function render(Component) {
   return createPipeline()
-    .pipe(passthrough((payload) => {
+    .pipe(passthrough((payload = {}) => {
       const {
         route,
         redirect,
@@ -28,10 +62,7 @@ export function render(Component) {
       let { document } = payload;
 
       if (!document) {
-        document = DOMImplementationRegistry
-          .getDOMImplementation()
-          .createDocument();
-
+        document = createDocument();
         document.route = route;
       }
 
