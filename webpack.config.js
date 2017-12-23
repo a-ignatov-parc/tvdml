@@ -70,6 +70,7 @@ module.exports = {
     path: resolveFromRoot('./dist'),
   },
   devtool: isProd ? 'source-map' : 'eval-source-map',
+  externals: ['react'], // peerDependencies
   module: { rules },
   plugins,
   stats,
