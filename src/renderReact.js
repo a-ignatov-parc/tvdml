@@ -4,8 +4,9 @@ import React from 'react';
 import ReactFiberReconciler from 'react-reconciler';
 
 import { broadcast } from './event-bus';
-import { createPipeline } from './pipelines';
+import { promisedTimeout } from './utils';
 import { createEmptyDocument } from './render/document';
+import { passthrough, createPipeline } from './pipelines';
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
@@ -19,7 +20,7 @@ const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
 const CHILDREN = 'children';
 
-const emptyObject = {};
+const RENDERING_ANIMATION = 600;
 
 const isEventNameRegex = /^on[A-Z]/;
 
@@ -350,15 +351,59 @@ export function renderModalReact(Component) {
 
 export function renderReact(Component) {
   return createPipeline()
-    .pipe(payload => {
-      const document = createEmptyDocument();
-      const root = TVMLRenderer.createContainer(document, false, false);
+    .pipe(passthrough((payload) => {
+      const {
+        route,
+        redirect,
+        navigation = {},
+      } = payload;
+
+      const { menuBar, menuItem } = navigation;
+
+      let { reactRenderRoot } = payload;
+
+      if (!reactRenderRoot) {
+        const target = createEmptyDocument();
+        target.route = route;
+
+        reactRenderRoot = TVMLRenderer.createContainer(
+          target, // container
+          false, // isAsync
+          false, // hydrate
+        );
+      }
+
+      const document = reactRenderRoot.containerInfo;
+      const { possiblyDismissedByUser } = document;
+
+      /**
+       * If we received dismissed document it means that user pressed menu
+       * button and our pipeline is canceled. Now we must silently succeed
+       * the rest of the pipeline without rendering anything.
+       */
+      if (possiblyDismissedByUser) return null;
+
       const children = React.createElement(Component, payload);
 
-      console.log('renderReact', payload, document, root, children);
+      TVMLRenderer.updateContainer(children, reactRenderRoot, null);
 
-      TVMLRenderer.updateContainer(children, root, null, () => {
+      if (redirect) {
+        const index = navigationDocument.documents.indexOf(document);
+        const prevDocument = navigationDocument.documents[index - 1];
+
+        if (prevDocument) {
+          navigationDocument.replaceDocument(document, prevDocument);
+        }
+      } else if (!document.isAttached) {
         navigationDocument.pushDocument(document);
-      });
-    });
+      }
+
+      document.isAttached = true;
+
+      return {
+        reactRenderRoot,
+        redirect: false,
+      };
+    }))
+    .pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
 }
