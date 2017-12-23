@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactFiberReconciler from 'react-reconciler';
 
 import { broadcast } from '../event-bus';

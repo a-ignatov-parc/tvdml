@@ -1,5 +1,6 @@
 /* global navigationDocument */
 
+import ReactTVML from '../react-tvml';
 import { broadcast } from '../event-bus';
 
 let enabled = false;
@@ -10,9 +11,8 @@ function destroyComponents(document) {
    * Mark document as removed by menu button press.
    * This is just a guess but still can be handy.
    */
-  // eslint-disable-next-line no-param-reassign
   document.possiblyDismissedByUser = true;
-  if (document.unmount) document.unmount();
+  ReactTVML.unmountComponentAtNode(document);
 }
 
 function handleUnload({ target: { ownerDocument: document } }) {

@@ -1,7 +1,8 @@
 /* global navigationDocument, DOMImplementationRegistry */
 
-import ReactTVML from './react-tvml';
+import React from 'react';
 
+import ReactTVML from './react-tvml';
 import { promisedTimeout } from './utils';
 import { passthrough, createPipeline } from './pipelines';
 
@@ -29,24 +30,7 @@ export function render(Component) {
           .getDOMImplementation()
           .createDocument();
 
-        const root = TVMLRenderer.createContainer(
-          document, // container
-          false, // isAsync
-          false, // hydrate
-        );
-
-        Object.assign(document, {
-          route,
-          reactRoot: root,
-
-          render(children, callback) {
-            TVMLRenderer.updateContainer(children, root, null, callback);
-          },
-
-          unmount(callback) {
-            TVMLRenderer.updateContainer(null, root, null, callback);
-          },
-        });
+        document.route = route;
       }
 
       /**
@@ -56,7 +40,9 @@ export function render(Component) {
        */
       if (document.possiblyDismissedByUser) return null;
 
-      document.render(React.createElement(Component, payload));
+      const element = React.createElement(Component, payload);
+
+      ReactTVML.render(element, document);
 
       if (!document.isAttached) {
         if (redirect) {

@@ -21,12 +21,11 @@
     "url": "git+https://github.com/a-ignatov-parc/tvdml.git"
   },
   "keywords": [
-    "virtual",
+    "react",
     "apple",
     "tvos",
     "tvjs",
     "tvml",
-    "dom",
     "tv"
   ],
   "author": "Anton Ignatov <abietis@gmail.com>",
