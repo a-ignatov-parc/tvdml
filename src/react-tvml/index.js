@@ -1,28 +1,18 @@
-/* global navigationDocument */
-
 import React from 'react';
 import ReactFiberReconciler from 'react-reconciler';
 
-import { broadcast } from './event-bus';
-import { promisedTimeout } from './utils';
-import { createEmptyDocument } from './render/document';
-import { passthrough, createPipeline } from './pipelines';
+import { broadcast } from '../event-bus';
 
-const ELEMENT_NODE = 1;
-const TEXT_NODE = 3;
-const PROCESSING_INSTRUCTION_NODE = 7;
-const COMMENT_NODE = 8;
-const DOCUMENT_NODE = 9;
-const DOCUMENT_TYPE_NODE = 10;
-const DOCUMENT_FRAGMENT_NODE = 11;
+import {
+  COMMENT_NODE,
+  DOCUMENT_NODE,
+  DOCUMENT_FRAGMENT_NODE,
+} from './node-types';
 
-const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-
+const NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const CHILDREN = 'children';
 
-const RENDERING_ANIMATION = 600;
-
-const isEventNameRegex = /^on[A-Z]/;
+const eventNameRegex = /^on[A-Z]/;
 
 const supportedEventMapping = {
   onPlay: 'play',
@@ -66,7 +56,7 @@ function setInitialProperties(domElement, type, props, rootContainerElement) {
         } else if (typeof propValue === 'number') {
           domElement.textContent = `${propValue}`;
         }
-      } else if (isEventNameRegex.test(propName)) {
+      } else if (eventNameRegex.test(propName)) {
         const eventName = supportedEventMapping[propName];
 
         if (eventName && typeof propValue === 'function') {
@@ -172,7 +162,7 @@ function updateProperties(domElement, updatePayload, type, oldProps, newProps) {
       } else {
         domElement.textContent = propValue;
       }
-    } else if (isEventNameRegex.test(propName)) {
+    } else if (eventNameRegex.test(propName)) {
       const eventName = supportedEventMapping[propName];
 
       if (eventName) {
@@ -204,11 +194,11 @@ const TVMLRenderer = ReactFiberReconciler({
       case DOCUMENT_NODE:
       case DOCUMENT_FRAGMENT_NODE: {
         let root = rootContainerInstance.documentElement;
-        namespace = root ? root.namespaceURI : HTML_NAMESPACE;
+        namespace = root ? root.namespaceURI : NAMESPACE;
         break;
       }
       default: {
-        namespace = HTML_NAMESPACE;
+        namespace = NAMESPACE;
         break;
       }
     }
@@ -216,7 +206,7 @@ const TVMLRenderer = ReactFiberReconciler({
   },
 
   getChildHostContext(parentHostContext, type) {
-    return HTML_NAMESPACE;
+    return NAMESPACE;
   },
 
   getPublicInstance(instance) {
@@ -345,74 +335,83 @@ const TVMLRenderer = ReactFiberReconciler({
   },
 });
 
-export function renderModalReact(Component) {
-  console.log('renderModalReact', Component);
+class ReactRoot {
+  constructor(container) {
+    const root = TVMLRenderer.createContainer(
+      container,
+      false, // isAsync
+      false, // hydrate
+    );
+
+    this._internalRoot = root;
+  }
+
+  render(children, callback) {
+    const root = this._internalRoot;
+    TVMLRenderer.updateContainer(children, root, null, callback);
+  }
+
+  unmount(callback) {
+    const root = this._internalRoot;
+    TVMLRenderer.updateContainer(null, root, null, callback);
+  }
+};
+
+function createRoot(container) {
+  while ((rootSibling = container.lastChild)) {
+    container.removeChild(rootSibling);
+  }
+
+  return new ReactRoot(container);
 }
 
-export function renderReact(Component) {
-  return createPipeline()
-    .pipe(passthrough((payload) => {
-      const {
-        route,
-        redirect,
-        navigation = {},
-      } = payload;
+const ReactTVML = {
+  render(element, container, callback) {
+    let root = container._reactRootContainer;
 
-      const { menuBar, menuItem } = navigation;
+    if (!root) {
+      // Initial mount
+      root = container._reactRootContainer = createRoot(container);
 
-      let { document } = payload;
+      TVMLRenderer.unbatchedUpdates(() => {
+        root.render(children, () => {
+          if (typeof callback === 'function') {
+            const instance = TVMLRenderer.getPublicRootInstance(
+              root._internalRoot,
+            );
 
-      if (!document) {
-        document = createEmptyDocument();
-
-        const root = TVMLRenderer.createContainer(
-          document, // container
-          false, // isAsync
-          false, // hydrate
-        );
-
-        Object.assign(document, {
-          route,
-          reactRoot: root,
-
-          render(children, callback) {
-            TVMLRenderer.updateContainer(children, root, null, callback);
-          },
-
-          unmount(callback) {
-            TVMLRenderer.updateContainer(null, root, null, callback);
-          },
-        });
-      }
-
-      /**
-       * If we received dismissed document it means that user pressed menu
-       * button and our pipeline is canceled. Now we must silently succeed
-       * the rest of the pipeline without rendering anything.
-       */
-      if (document.possiblyDismissedByUser) return null;
-
-      document.render(React.createElement(Component, payload));
-
-      if (!document.isAttached) {
-        if (redirect) {
-          const index = navigationDocument.documents.indexOf(document);
-          const prevDocument = navigationDocument.documents[index - 1];
-
-          if (prevDocument) {
-            navigationDocument.replaceDocument(document, prevDocument);
+            callback.call(instance);
           }
-        } else {
-          navigationDocument.pushDocument(document);
+        });
+      });
+    } else {
+      // Update
+      root.render(children, () => {
+        if (typeof callback === 'function') {
+          const instance = TVMLRenderer.getPublicRootInstance(
+            root._internalRoot,
+          );
+
+          callback.call(instance);
         }
+      });
+    }
 
-        document.isAttached = true;
-      }
+    return TVMLRenderer.getPublicRootInstance(root._internalRoot);
+  },
 
-      return {
-        document,
-        redirect: false,
-      };
-    }))
-    .pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
-}
+  unmountComponentAtNode(container) {
+    if (container._reactRootContainer) {
+      TVMLRenderer.unbatchedUpdates(() => {
+        this.render(null, container, () => {
+          container._reactRootContainer = null;
+        });
+      });
+      return true;
+    } else {
+      return false;
+    }
+  },
+};
+
+export default ReactTVML;

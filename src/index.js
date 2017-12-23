@@ -3,11 +3,9 @@ import { subscribe, broadcast } from './event-bus';
 
 export { subscribe };
 export * from './render';
-export * from './renderReact';
 export * from './pipelines';
 export * from './navigation';
-export { default as jsx } from './jsx';
-export { default as createComponent } from './render/component';
+export { default as ReactTVML } from './react-tvml';
 
 subscribe('uncontrolled-document-pop').pipe(({ document }) => {
   const {
