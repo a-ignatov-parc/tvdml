@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactFiberReconciler from 'react-reconciler';
 
+import { broadcast } from './event-bus';
 import { createPipeline } from './pipelines';
 import { createEmptyDocument } from './render/document';
 
@@ -16,7 +17,19 @@ const DOCUMENT_FRAGMENT_NODE = 11;
 
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
+const CHILDREN = 'children';
+
 const emptyObject = {};
+
+const isEventNameRegex = /^on[A-Z]/;
+
+const supportedEventMapping = {
+  onPlay: 'play',
+  onSelect: 'select',
+  onChange: 'change',
+  onHighlight: 'highlight',
+  onHoldselect: 'holdselect',
+};
 
 function getOwnerDocumentFromRootContainer(rootContainerElement) {
   return rootContainerElement.nodeType === DOCUMENT_NODE
@@ -25,14 +38,6 @@ function getOwnerDocumentFromRootContainer(rootContainerElement) {
 }
 
 function createElement(type, props, rootContainerElement, parentNamespace) {
-  console.log(
-    'createElement',
-    type,
-    props,
-    rootContainerElement,
-    parentNamespace,
-  );
-
   const ownerDocument = getOwnerDocumentFromRootContainer(rootContainerElement);
   const domElement = ownerDocument.createElement(type);
   return domElement;
@@ -44,8 +49,148 @@ function createTextNode(text, rootContainerElement) {
   return textNode;
 }
 
-function setInitialProperties(domElement, tag, rawProps, rootContainerElement) {
-  console.log('setInitialProperties', domElement, tag, rawProps);
+function setInitialProperties(domElement, type, props, rootContainerElement) {
+  console.log('setInitialProperties', domElement, type, props);
+
+  Object
+    .keys(props)
+    .forEach(propName => {
+      const propValue = props[propName];
+
+      if (propName === CHILDREN) {
+        if (type === 'style') {
+          domElement.innerHTML = propValue;
+        } else if (typeof propValue === 'string') {
+          if (propValue !== '') domElement.textContent = propValue;
+        } else if (typeof propValue === 'number') {
+          domElement.textContent = `${propValue}`;
+        }
+      } else if (isEventNameRegex.test(propName)) {
+        const eventName = supportedEventMapping[propName];
+
+        if (eventName && typeof propValue === 'function') {
+          domElement.addEventListener(eventName, propValue);
+        }
+      } else if (propValue != null) {
+        domElement.setAttribute(propName, propValue);
+      }
+    });
+
+  if (type === 'menuItem') {
+    domElement.addEventListener('select', ({ target: menuItem }) => {
+      const menuBar = menuItem.parentNode;
+      const feature = menuBar.getFeature('MenuBarDocument');
+
+      broadcast('menu-item-select', {
+        menuItem,
+        menuBar: feature,
+      });
+    });
+  }
+}
+
+function diffProperties(
+  domElement,
+  type,
+  oldProps,
+  newProps,
+  rootContainerInstance,
+) {
+  let updatePayload = null;
+
+  Object
+    .keys(oldProps)
+    .forEach(propName => {
+      const propValue = oldProps[propName];
+      const shouldSkip = newProps.hasOwnProperty(propName)
+        || !oldProps.hasOwnProperty(propName)
+        || oldProps[propName] == null;
+
+      if (shouldSkip) return;
+      (updatePayload = updatePayload || []).push(propName, null);
+    });
+
+  Object
+    .keys(newProps)
+    .forEach(propName => {
+      const propValue = newProps[propName];
+      const oldPropValue = oldProps != null ? oldProps[propName] : undefined;
+
+      const shouldSkip = !newProps.hasOwnProperty(propName)
+        || propValue === oldPropValue
+        || (propValue == null && oldPropValue == null);
+
+      if (shouldSkip) return;
+      if (propName === CHILDREN) {
+        const shouldUpdate = oldPropValue !== propValue
+          && (
+            typeof propValue === 'string'
+            || typeof propValue === 'number'
+          );
+
+        if (shouldUpdate) {
+          (updatePayload = updatePayload || []).push(propName, '' + propValue);
+        }
+      } else {
+        (updatePayload = updatePayload || []).push(propName, propValue);
+      }
+    });
+
+  if (updatePayload) {
+    console.log(
+      'diffProperties',
+      domElement,
+      type,
+      oldProps,
+      newProps,
+      updatePayload,
+    );
+  }
+
+  return updatePayload;
+}
+
+function updateProperties(domElement, updatePayload, type, oldProps, newProps) {
+  for (let i = 0; i < updatePayload.length; i += 2) {
+    const propName = updatePayload[i];
+    const propValue = updatePayload[i + 1];
+
+    console.log(
+      'updateProperties',
+      domElement,
+      type,
+      propName,
+      propValue,
+      oldProps,
+      newProps,
+    );
+
+    if (propName === CHILDREN) {
+      if (type === 'style') {
+        domElement.innerHTML = propValue;
+      } else {
+        domElement.textContent = propValue;
+      }
+    } else if (isEventNameRegex.test(propName)) {
+      const eventName = supportedEventMapping[propName];
+
+      if (eventName) {
+        if (oldProps[propName] !== newProps[propName]) {
+          domElement.removeEventListener(eventName, oldProps[propName]);
+        }
+
+        if (typeof propValue === 'function') {
+          domElement.addEventListener(eventName, propValue);
+        }
+      }
+    } else {
+      if (propValue === null || typeof propValue === 'undefined') {
+        domElement.removeAttribute(propName);
+      } else {
+        domElement.setAttribute(propName, propValue);
+      }
+    }
+  }
 }
 
 const TVMLRenderer = ReactFiberReconciler({
@@ -97,7 +242,6 @@ const TVMLRenderer = ReactFiberReconciler({
   },
 
   appendInitialChild(parentInstance, child) {
-    console.log('appendInitialChild', parentInstance, child);
     parentInstance.appendChild(child);
   },
 
@@ -114,16 +258,13 @@ const TVMLRenderer = ReactFiberReconciler({
     rootContainerInstance,
     hostContext,
   ) {
-    console.log(
-      'prepareUpdate',
+    return diffProperties(
       domElement,
       type,
       oldProps,
       newProps,
       rootContainerInstance,
     );
-
-    return null;
   },
 
   shouldSetTextContent(type, props) {
@@ -154,14 +295,7 @@ const TVMLRenderer = ReactFiberReconciler({
     },
 
     commitUpdate(domElement, updatePayload, type, oldProps, newProps) {
-      console.log(
-        'commitUpdate',
-        domElement,
-        updatePayload,
-        type,
-        oldProps,
-        newProps,
-      );
+      updateProperties(domElement, updatePayload, type, oldProps, newProps);
     },
 
     resetTextContent(domElement) {
