@@ -12,7 +12,7 @@ function destroyComponents(document) {
    */
   // eslint-disable-next-line no-param-reassign
   document.possiblyDismissedByUser = true;
-  if (document.destroyComponent) document.destroyComponent();
+  if (document.unmount) document.unmount();
 }
 
 function handleUnload({ target: { ownerDocument: document } }) {

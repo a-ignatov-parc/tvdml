@@ -360,48 +360,57 @@ export function renderReact(Component) {
 
       const { menuBar, menuItem } = navigation;
 
-      let { reactRenderRoot } = payload;
+      let { document } = payload;
 
-      if (!reactRenderRoot) {
-        const target = createEmptyDocument();
-        target.route = route;
+      if (!document) {
+        document = createEmptyDocument();
 
-        reactRenderRoot = TVMLRenderer.createContainer(
-          target, // container
+        const root = TVMLRenderer.createContainer(
+          document, // container
           false, // isAsync
           false, // hydrate
         );
-      }
 
-      const document = reactRenderRoot.containerInfo;
-      const { possiblyDismissedByUser } = document;
+        Object.assign(document, {
+          route,
+          reactRoot: root,
+
+          render(children, callback) {
+            TVMLRenderer.updateContainer(children, root, null, callback);
+          },
+
+          unmount(callback) {
+            TVMLRenderer.updateContainer(null, root, null, callback);
+          },
+        });
+      }
 
       /**
        * If we received dismissed document it means that user pressed menu
        * button and our pipeline is canceled. Now we must silently succeed
        * the rest of the pipeline without rendering anything.
        */
-      if (possiblyDismissedByUser) return null;
+      if (document.possiblyDismissedByUser) return null;
 
-      const children = React.createElement(Component, payload);
+      document.render(React.createElement(Component, payload));
 
-      TVMLRenderer.updateContainer(children, reactRenderRoot, null);
+      if (!document.isAttached) {
+        if (redirect) {
+          const index = navigationDocument.documents.indexOf(document);
+          const prevDocument = navigationDocument.documents[index - 1];
 
-      if (redirect) {
-        const index = navigationDocument.documents.indexOf(document);
-        const prevDocument = navigationDocument.documents[index - 1];
-
-        if (prevDocument) {
-          navigationDocument.replaceDocument(document, prevDocument);
+          if (prevDocument) {
+            navigationDocument.replaceDocument(document, prevDocument);
+          }
+        } else {
+          navigationDocument.pushDocument(document);
         }
-      } else if (!document.isAttached) {
-        navigationDocument.pushDocument(document);
+
+        document.isAttached = true;
       }
 
-      document.isAttached = true;
-
       return {
-        reactRenderRoot,
+        document,
         redirect: false,
       };
     }))
