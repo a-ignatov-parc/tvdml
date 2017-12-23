@@ -6,7 +6,7 @@ import { broadcast } from '../event-bus';
 let enabled = false;
 let modalDocument = null;
 
-function destroyComponents(document) {
+function unmount(document) {
   /**
    * Mark document as removed by menu button press.
    * This is just a guess but still can be handy.
@@ -16,14 +16,14 @@ function destroyComponents(document) {
 }
 
 function handleUnload({ target: { ownerDocument: document } }) {
-  destroyComponents(document);
+  unmount(document);
   broadcast('uncontrolled-document-pop', { document });
 }
 
 const handlers = {
   presentModal(document) {
     if (modalDocument) {
-      destroyComponents(modalDocument);
+      unmount(modalDocument);
       modalDocument.removeEventListener('unload', handleUnload);
     }
     modalDocument = document;
@@ -32,7 +32,7 @@ const handlers = {
 
   dismissModal(custom) {
     if (modalDocument && custom) {
-      destroyComponents(modalDocument);
+      unmount(modalDocument);
       modalDocument.removeEventListener('unload', handleUnload);
     }
     modalDocument = null;
@@ -47,14 +47,14 @@ const handlers = {
   },
 
   replaceDocument(document, oldDocument) {
-    destroyComponents(oldDocument);
+    unmount(oldDocument);
     oldDocument.removeEventListener('unload', handleUnload);
     document.addEventListener('unload', handleUnload);
   },
 
   clear() {
     navigationDocument.documents.forEach((document) => {
-      destroyComponents(document);
+      unmount(document);
       document.removeEventListener('unload', handleUnload);
     });
   },
@@ -62,7 +62,7 @@ const handlers = {
   popDocument() {
     const document = navigationDocument.documents.pop();
 
-    destroyComponents(document);
+    unmount(document);
     document.removeEventListener('unload', handleUnload);
   },
 
@@ -72,7 +72,7 @@ const handlers = {
     navigationDocument.documents
       .slice(index + 1)
       .forEach((documentItem) => {
-        destroyComponents(documentItem);
+        unmount(documentItem);
         documentItem.removeEventListener('unload', handleUnload);
       });
   },
@@ -81,13 +81,13 @@ const handlers = {
     navigationDocument.documents
       .slice(1)
       .forEach((document) => {
-        destroyComponents(document);
+        unmount(document);
         document.removeEventListener('unload', handleUnload);
       });
   },
 
   removeDocument(document) {
-    destroyComponents(document);
+    unmount(document);
     document.removeEventListener('unload', handleUnload);
   },
 };
@@ -106,25 +106,10 @@ export function enable() {
     throw new Error('Hooks already enabled');
   }
 
-  const shouldMountComponentFor = {
-    presentModal: true,
-    pushDocument: true,
-    replaceDocument: true,
-    insertBeforeDocument: true,
-  };
-
   methodsToPatch.forEach((name) => {
     navigationDocument[name] = function TVDMLWrapper(...args) {
       if (handlers[name]) handlers[name].apply(this, args);
-
-      const result = originalMethods[name].apply(this, args);
-      const [document] = args;
-
-      if (shouldMountComponentFor[name] && document.didMount) {
-        document.didMount();
-      }
-
-      return result;
+      return originalMethods[name].apply(this, args);
     };
   });
 
