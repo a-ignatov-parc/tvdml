@@ -1,7 +1,7 @@
 # TVDML [![CircleCI](https://circleci.com/gh/a-ignatov-parc/tvdml.svg?style=svg)](https://circleci.com/gh/a-ignatov-parc/tvdml)
 
 - [Intro](#intro)
-- [Requirements](#requirements)
+- [System Requirements](#system-requirements)
 - [Getting started](#getting-started)
 - [Routing](#routing)
 - [Templating and styling](#templating-and-styling)
@@ -35,29 +35,23 @@
 
 ## Intro
 
-This is library that main goal is to greatly simplify app development for Apple TV using pure Javascript and [JSX](https://facebook.github.io/react/docs/jsx-in-depth.html) providing tools to solve problems like:
+This is a library that main goal is to greatly simplify app development for Apple TV using [React.js](https://reactjs.org/) and providing tools to solve problems like:
 
-- Routing
-- Templating and updating data
-- Event binding
-- Detecting "Menu" button presses
+- React.js integration with TVML and TVJS.
+- Routing.
+- Event binding.
+- Detecting "Menu" button.
 
-**What else is in the box?**
-
-TVDML tries to be as simple as possible and not include more than it needs to provide functionality for its core features. But yeah we've got something inside:
-
-- [`virtual-dom`](https://www.npmjs.com/package/virtual-dom) library to provide you easy to use update mechanism. [Patched](https://github.com/Matt-Esch/virtual-dom/compare/master...a-ignatov-parc:tvml) and ready to be used with TVML.
-
-## Requirements
+## System Requirements
 
 Starting from `v4.X.X` TVDML drops support for tvOS < 10. If you need that support please consider using [`v3.X.X`](https://github.com/a-ignatov-parc/tvdml/tree/v3.0.4).
 
 ## Getting started
 
-TVDML is shipping as [npm package](https://www.npmjs.com/package/tvdml) and can be installed with npm
+TVDML is shipping as [npm package](https://www.npmjs.com/package/tvdml) and can be installed with npm. In addition you need to install React.js.
 
 ```
-npm install --save tvdml
+npm install --save tvdml react
 ```
 
 TVDML is written in ES6 and built using UMD wrapper so it can be used in any environment with any of this ways:
@@ -95,13 +89,13 @@ App.onLaunch = function(options) {
   ], function(success) {
     if (success) {
       TVDML
-        .render(TVDML.jsx(
+        .render(React.createElement(
           'document',
           null,
-          TVDML.jsx(
+          React.createElement(
             'alertTemplate',
             null,
-            TVDML.jsx(
+            React.createElement(
               'title',
               null,
               'Hello world'
@@ -117,8 +111,7 @@ App.onLaunch = function(options) {
 Doesn't look as nice as this
 
 ```javascript
-/** @jsx TVDML.jsx */
-
+import React from 'react';
 import * as TVDML from 'tvdml';
 
 TVDML
@@ -134,11 +127,6 @@ TVDML
 
 So what we need to be able to write code as in second example? Well it's not that simple but this [tvdml-boilerplate](https://github.com/a-ignatov-parc/tvdml-app-boilerplate) repo will shed the light on basic build configuration.
 
-Also to be able to properly transform JSX you need to specify JSX pragma for babel runtime. You can do this:
-
-1. By adding `/** @jsx TVDML.jsx */` in the beggining of each module.
-1. Or by configuring `pragma` option in [`transform-react-jsx`](https://www.npmjs.com/package/babel-plugin-transform-react-jsx#pragma) plugin.
-
 Well! Now we know how to write apps using ES6 and JSX so let's start from the basic features!
 
 ## Routing
@@ -148,8 +136,7 @@ tvOS provided great foundation to write apps using [TVML](https://developer.appl
 To help you solving this issues TVDML provides navigation module.
 
 ```javascript
-/** @jsx TVDML.jsx */
-
+import React from 'react';
 import * as TVDML from 'tvdml';
 
 TVDML
@@ -158,7 +145,7 @@ TVDML
 
 TVDML
   .handleRoute('start')
-  .pipe(TVDML.render(
+  .pipe(TVDML.render(() => (
     <document>
       <alertTemplate>
         <title>This is initial view</title>
@@ -168,18 +155,18 @@ TVDML
         </button>
       </alertTemplate>
     </document>
-  ));
+  )));
 
 TVDML
   .handleRoute('next')
-  .pipe(TVDML.render(
+  .pipe(TVDML.render(() => (
     <document>
       <alertTemplate>
         <title>This is next view</title>
         <description>Now you know how to use routes!</description>
       </alertTemplate>
     </document>
-  ));
+  )));
 ```
 
 > This is small example of using navigation and rendering modules to handle routes and show them to user.
@@ -258,185 +245,110 @@ Also there are some predefined routes that may help you:
 
 The next big thing is...
 
-## Templating and styling
+## Using React.js
 
-Using TVDML you have multiple ways to create documents for TVML depending on your need.
+With TVDML your main way to create documents will be React.js.
 
-> Here is a [list of all possible documents](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TextboxTemplate.html) you can use in TVML.
+> Here is a [list of all available documents](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TextboxTemplate.html) in TVML.
 
-### Rendering static document
+To render any react component you need to provide rendering factory to `TVDML.render` pipeline.
 
-The simples way to create view:
+Pipeline's payload will be passed as first argument to rendering factory so you'll be able to map it's props to rendering tree.
 
 ```javascript
-/** @jsx TVDML.jsx */
-
+import React from 'react';
 import * as TVDML from 'tvdml';
 
 TVDML
   .subscribe(TVDML.event.LAUNCH)
-  .pipe(() => TVDML.navigate('start'));
-
-TVDML
-  .handleRoute('start')
-  .pipe(TVDML.render(
+  .pipe(TVDML.render(payload => (
     <document>
       <alertTemplate>
         <title>Hello world</title>
-        <button>
-          <text>Ok</text>
-        </button>
       </alertTemplate>
     </document>
-  ));
+  )));
 ```
 
-> TVDML works only with templates created using JSX. Please check how to configure your build to be able to use it in [Getting started](#getting-started) section.
-
-### Rendering custom data using factory approach
+Here is how to render any component you like:
 
 ```javascript
-/** @jsx TVDML.jsx */
-
+import React from 'react';
+import PropTypes from 'prop-types';
 import * as TVDML from 'tvdml';
 
-TVDML
-  .subscribe(TVDML.event.LAUNCH)
-  .pipe(() => {
-    TVDML.navigate('start', { title: 'Hello everybody!' }); // Passing params to route pipeline
-  });
-
-TVDML
-  .handleRoute('start')
-
-  // Extracting `title` param from `navigation` object.
-  .pipe(({ navigation: { title } }) => ({title}))
-
-  // Rendering custom `title`
-  .pipe(TVDML.render(({ title }) => {
-    return (
-      <document>
-        <alertTemplate>
-          <title>{title}</title>
-          <button>
-            <text>Ok</text>
-          </button>
-        </alertTemplate>
-      </document>
-    );
-  }));
-```
-
-Using this approach you can render any data that you need. But you may ask yourself how can we request data from remote server and then render it into document?
-
-Easy!
-
-### Requesting and rendering data
-
-TVDML's pipelines support promises so you can pause them when you need it. For example to retreive any data you need from remote server.
-
-```javascript
-/** @jsx TVDML.jsx */
-
-import * as TVDML from 'tvdml';
-
-TVDML
-  .subscribe(TVDML.event.LAUNCH)
-  .pipe(() => TVDML.navigate('start'));
-
-TVDML
-  .handleRoute('start')
-  .pipe(downloadTVShows())
-  .pipe(TVDML.render(tvshows => {
-    return (
-      <document>
-        <stackTemplate>
-          <banner>
-            <title>TV Shows</title>
-          </banner>
-          <collectionList>
-            <grid>
-              {tvshows.map(tvshow => {
-                return (
-                  <lockup>
-                    <img src={tvshow.cover} width="250" height="250" />
-                    <title>{tvshow.title}</title>
-                  </lockup>
-                );
-              })}
-            </grid>
-          </collectionList>
-        </stackTemplate>
-      </document>
-    );
-  }));
-
-function downloadTVShows() {
-  return payload => {
-    // Creating and returning promise to pause current pipeline from executing next
-    // step until we load data.
-    return new Promise((resolve) => {
-      const XHR = new XMLHttpRequest();
-
-      // Configuring XHR instance to load data that we need.
-      XHR.open('GET', '/tvshows/all');
-
-      // Adding event listener to retreive data when it will be loaded.
-      XHR.addEventListener('load', event => {
-        // Parsing request response to JSON and resolving promise
-        resolve(JSON.parse(event.target.responseText));
-      });
-
-      // Initiating request.
-      XHR.send();
-    });
-  };
+function Hello(props) {
+  return (
+    <document>
+      <alertTemplate>
+        <title>Hello {props.name}</title>
+      </alertTemplate>
+    </document>
+  );
 }
-```
 
-Now lets figure out how can we react to user activity.
+Hello.propTypes = {
+  name: PropTypes.string,
+};
 
-#### Important note
-
-It is important to remember that `TVDML.render()` uses `document` property in passed pipe's payload to update existing document. If there will be no `document` then new navigation record will be created.
-
-Explanation:
-
-```javascript
-/** @jsx TVDML.jsx */
+Hello.defaultProps = {
+  name: 'world',
+};
 
 TVDML
-  .handleRoute('start')
-  .pipe(payload => {
-    console.log(payload.document); // At the begining there is no document rendered for handled route.
-    return payload; // If we wont return `payload` here `TVDML.render()` won't be able to get information about route and will throw error later.
-  })
-  .pipe(TVDML.render(
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(TVDML.render(payload => (
+    <Hello name='user' />
+  )));
+```
+
+It's just plain old React.js.
+
+But there are some things you need to remember about TVML and React.js.
+
+Because TVML and TVJS are not your normal browser they have some limitations. And to be able to work with them as best as possible react's tvml renderer have some quirks:
+
+1. `style` prop is just simple string not an object.
+1. To set `class` attribute just use `class` prop. There is no `className`.
+1. Events are normal DOM events provided by TVML.
+
+Everythin else should be as you expected.
+
+So lets talk about styling.
+
+### Styling elements
+
+There are two ways to style elements:
+
+1. Using `style` prop.
+1. Using `<style>` element with `class` prop.
+
+```javascript
+import React from 'react';
+import * as TVDML from 'tvdml';
+
+TVDML
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(TVDML.render(payload => (
     <document>
-      <loadingTemplate>
-        <activityIndicator />
-      </loadingTemplate>
-    </document>
-  ))
-  .pipe(payload => {
-    console.log(payload.document); // Loading template created in previous pipe by `TVDML.render()`.
-    return payload; // If we wont return `payload` here `TVDML.render()` will create new document record. This isn't what you usualy want.
-  })
-  .pipe(TVDML.render(
-    <document>
+      <head>
+        <style>{`
+          .title {
+            tv-text-style: title1;
+          }
+        `}</style>
+      </head>
       <alertTemplate>
-        <title>Hello world</title>
-        <button>
-          <text>Ok</text>
-        </button>
+        <title class='title'>Hello user</title>
+        <description style='tv-text-style: title2'>
+          Nice to see you
+        </description>
       </alertTemplate>
     </document>
-  ))
-  .pipe(payload => {
-    console.log(payload.document); // Updated document with "Hello world".
-    return payload; // As if this is the last pipe we don't need to return anything but it's a good practice to return current payload.
-  });
+  )));
 ```
+
+All available styles can be found here: [TVML Styles](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/ITMLStyles.html).
 
 ### Events
 
