@@ -39,15 +39,12 @@ function createTextNode(text, rootContainerElement) {
   return textNode;
 }
 
-function setInitialProperties(domElement, type, props, rootContainerElement) {
-  console.info(
-    'setInitialProperties',
-    domElement,
-    type,
-    props,
-    rootContainerElement,
-  );
-
+function setInitialProperties(
+  domElement,
+  type,
+  props,
+  // rootContainerElement,
+) {
   Object
     .keys(props)
     .forEach((propName) => {
@@ -132,34 +129,19 @@ function diffProperties(
       }
     });
 
-  if (updatePayload) {
-    console.info(
-      'diffProperties',
-      domElement,
-      type,
-      oldProps,
-      newProps,
-      updatePayload,
-    );
-  }
-
   return updatePayload;
 }
 
-function updateProperties(domElement, updatePayload, type, oldProps, newProps) {
+function updateProperties(
+  domElement,
+  updatePayload,
+  type,
+  oldProps,
+  newProps,
+) {
   for (let i = 0; i < updatePayload.length; i += 2) {
     const propName = updatePayload[i];
     const propValue = updatePayload[i + 1];
-
-    console.info(
-      'updateProperties',
-      domElement,
-      type,
-      propName,
-      propValue,
-      oldProps,
-      newProps,
-    );
 
     if (propName === CHILDREN) {
       if (type === 'style') {

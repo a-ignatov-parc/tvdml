@@ -56,28 +56,34 @@ export function render(Component) {
       } = payload;
 
       const { menuBar, menuItem } = navigation;
+      const isMenuDocument = menuBar && menuItem;
+      const menuItemDocument = isMenuDocument && menuBar.getDocument(menuItem);
 
-      console.info(1, menuBar, menuItem);
+      const element = React.createElement(Component, payload);
 
       let { document } = payload;
 
-      if (!document) {
+      if (document) {
+        /**
+         * If we received dismissed document it means that user pressed menu
+         * button and our pipeline is canceled. Now we must silently succeed
+         * the rest of the pipeline without rendering anything.
+         */
+        if (document.possiblyDismissedByUser) return null;
+      } else if (menuItemDocument) {
+        document = menuItemDocument;
+      } else {
         document = createDocument();
         document.route = route;
       }
 
-      /**
-       * If we received dismissed document it means that user pressed menu
-       * button and our pipeline is canceled. Now we must silently succeed
-       * the rest of the pipeline without rendering anything.
-       */
-      if (document.possiblyDismissedByUser) return null;
-
-      const element = React.createElement(Component, payload);
-
       ReactTVML.render(element, document);
 
-      if (!document.isAttached) {
+      if (isMenuDocument) {
+        if (!menuItemDocument) {
+          menuBar.setDocument(document, menuItem);
+        }
+      } else if (!document.isAttached) {
         if (redirect) {
           const index = navigationDocument.documents.indexOf(document);
           const prevDocument = navigationDocument.documents[index - 1];
@@ -88,9 +94,9 @@ export function render(Component) {
         } else {
           navigationDocument.pushDocument(document);
         }
-
-        document.isAttached = true;
       }
+
+      document.isAttached = true;
 
       return {
         document,
