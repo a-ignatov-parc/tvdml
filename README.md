@@ -313,19 +313,19 @@ Because TVML and TVJS are not your normal browser they have some limitations. An
 
 1. `style` prop is just simple string not an object.
 1. To set `class` attribute just use `class` prop. There is no `className`.
-1. Attribute names should be written in props as they written in [docs](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TVJSAttributes.html).
+1. Attribute names should be written in props as they are written in [docs](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TVJSAttributes.html).
 1. Events are normal DOM events provided by TVML.
 
 Everythin else should be as you expected.
 
-So lets talk about styling.
+Now lets talk about styling.
 
 ### Styling elements
 
 There are two ways to style elements:
 
-1. Using `style` prop.
-1. Using `<style>` element with `class` prop.
+1. Using `style` prop to write inline styles.
+1. Using `<style>` element to define stylesheets  + `class` prop to bind them to elements.
 
 ```javascript
 import React from 'react';
@@ -353,6 +353,23 @@ TVDML
 ```
 
 All available styles can be found here: [TVML Styles](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/ITMLStyles.html).
+
+If you need to set multiple inline styles on one element you can use ES6 template literals (template strings) in JSX.
+
+```javascript
+<textBadge
+  type='fill'
+  style={`
+    font-size: 20;
+    border-radius: 30;
+    margin: 0 10 12 0;
+    padding: 1 8;
+    tv-align: right;
+    tv-position: bottom;
+    tv-tint-color: rgb(255, 255, 255);
+  `}
+/>
+```
 
 ### Events
 
