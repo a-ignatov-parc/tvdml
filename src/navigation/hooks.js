@@ -13,6 +13,7 @@ function unmount(document) {
    */
   document.possiblyDismissedByUser = true;
   ReactTVML.unmountComponentAtNode(document);
+  document.isAttached = false;
 }
 
 function handleUnload({ target: { ownerDocument: document } }) {

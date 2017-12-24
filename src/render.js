@@ -14,25 +14,31 @@ function createDocument() {
   return DOMImplementationRegistry.getDOMImplementation().createDocument();
 }
 
+export function dismissModal() {
+  return createPipeline()
+    .pipe(passthrough(() => {
+      if (!hasModal) return null;
+      hasModal = false;
+      navigationDocument.dismissModal(true);
+      return promisedTimeout(RENDERING_ANIMATION);
+    }));
+}
+
 export function removeModal() {
-  hasModal = false;
-  navigationDocument.dismissModal(true);
+  return dismissModal().sink();
 }
 
 export function renderModal(Component) {
   return createPipeline()
-    .pipe(passthrough(() => {
-      if (!hasModal) return null;
-      removeModal();
-      return promisedTimeout(RENDERING_ANIMATION);
-    }))
+    .pipe(dismissModal())
     .pipe(passthrough((payload = {}) => {
       const { route } = payload;
       const document = createDocument();
-      const lastDocument = navigationDocument.documents.pop() || {};
+      const lastDocument = navigationDocument.documents.pop();
 
       document.modal = true;
-      document.route = route || lastDocument.route;
+      document.prevRouteDocument = lastDocument;
+      document.route = `${route || (lastDocument || {}).route}-modal`;
 
       const element = React.createElement(Component, payload);
 
@@ -74,7 +80,13 @@ export function render(Component) {
         document = menuItemDocument;
       } else {
         document = createDocument();
-        document.route = route;
+
+        document.route = route
+          || (!navigationDocument.documents.length && 'main');
+
+        document.prevRouteDocument = menuBar
+          ? menuBar.ownerDocument
+          : navigationDocument.documents.pop();
       }
 
       ReactTVML.render(element, document);

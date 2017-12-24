@@ -14,14 +14,10 @@ subscribe('uncontrolled-document-pop').pipe(({ document }) => {
     prevRouteDocument,
   } = document;
 
-  const prevDocument = modal ? document : prevRouteDocument;
-  const { route: prevRoute } = prevDocument;
-
-  let { modal: prevModal } = prevDocument;
-
-  if (modal) {
-    prevModal = false;
-  }
+  const {
+    route: prevRoute,
+    modal: prevModal,
+  } = prevRouteDocument;
 
   broadcast('menu-button-press', {
     from: {
@@ -31,7 +27,7 @@ subscribe('uncontrolled-document-pop').pipe(({ document }) => {
     },
     to: {
       route: prevRoute,
-      document: prevDocument,
+      document: prevRouteDocument,
       modal: !!prevModal,
     },
   });
