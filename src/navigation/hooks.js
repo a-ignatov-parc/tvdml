@@ -18,7 +18,7 @@ function unmount(document) {
 
 function handleUnload({ target: { ownerDocument: document } }) {
   unmount(document);
-  broadcast('uncontrolled-document-dismiss', document);
+  broadcast('uncontrolled-document-dismissal', document);
 }
 
 const handlers = {

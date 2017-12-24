@@ -7,7 +7,7 @@ export * from './pipelines';
 export * from './navigation';
 export { default as ReactTVML } from './react-tvml';
 
-subscribe('uncontrolled-document-dismiss').pipe((document) => {
+subscribe('uncontrolled-document-dismissal').pipe((document) => {
   const {
     modal,
     route,
