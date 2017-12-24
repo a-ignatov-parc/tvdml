@@ -3,22 +3,29 @@
 import React from 'react';
 
 import ReactTVML from './react-tvml';
+import { subscribe } from './event-bus';
 import { promisedTimeout } from './utils';
 import { passthrough, createPipeline } from './pipelines';
 
 const RENDERING_ANIMATION = 600;
 
-let hasModal = false;
+let modalDocument = null;
 
 function createDocument() {
   return DOMImplementationRegistry.getDOMImplementation().createDocument();
 }
 
+subscribe('uncontrolled-document-pop').pipe(({ document }) => {
+  if (document === modalDocument) {
+    modalDocument = null;
+  }
+});
+
 export function dismissModal() {
   return createPipeline()
     .pipe(passthrough(() => {
-      if (!hasModal) return null;
-      hasModal = false;
+      if (!modalDocument) return null;
+      modalDocument = null;
       navigationDocument.dismissModal(true);
       return promisedTimeout(RENDERING_ANIMATION);
     }));
@@ -30,25 +37,26 @@ export function removeModal() {
 
 export function renderModal(Component) {
   return createPipeline()
-    .pipe(dismissModal())
     .pipe(passthrough((payload = {}) => {
-      const { route } = payload;
-      const document = createDocument();
-      const lastDocument = navigationDocument.documents.pop();
+      if (!modalDocument) {
+        const { route } = payload;
+        const document = createDocument();
+        const lastDocument = navigationDocument.documents.pop();
 
-      document.modal = true;
-      document.prevRouteDocument = lastDocument;
-      document.route = `${route || (lastDocument || {}).route}-modal`;
+        document.modal = true;
+        document.prevRouteDocument = lastDocument;
+        document.route = `${route || (lastDocument || {}).route}-modal`;
+
+        modalDocument = document;
+
+        navigationDocument.presentModal(document);
+
+        document.isAttached = true;
+      }
 
       const element = React.createElement(Component, payload);
 
-      ReactTVML.render(element, document);
-
-      hasModal = true;
-
-      navigationDocument.presentModal(document);
-
-      document.isAttached = true;
+      ReactTVML.render(element, modalDocument);
     }));
 }
 
