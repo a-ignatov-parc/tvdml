@@ -85,23 +85,26 @@ But you should agree that this...
 ```javascript
 App.onLaunch = function(options) {
   evaluateScripts([
-    options.BASEURL + 'libs/tvdml.js'
+    options.BASEURL + 'libs/tvdml.js',
+    options.BASEURL + 'libs/react.js',
   ], function(success) {
     if (success) {
       TVDML
-        .render(React.createElement(
-          'document',
-          null,
-          React.createElement(
-            'alertTemplate',
+        .render(function(payload) {
+          return React.createElement(
+            'document',
             null,
             React.createElement(
-              'title',
+              'alertTemplate',
               null,
-              'Hello world'
+              React.createElement(
+                'title',
+                null,
+                'Hello world'
+              )
             )
-          )
-        ))
+          );
+        })
         .sink();
     }
   });
@@ -116,13 +119,13 @@ import * as TVDML from 'tvdml';
 
 TVDML
   .subscribe(TVDML.event.LAUNCH)
-  .pipe(TVDML.render(
+  .pipe(TVDML.render(payload => (
     <document>
       <alertTemplate>
         <title>Hello world</title>
       </alertTemplate>
     </document>
-  ));
+  )));
 ```
 
 So what we need to be able to write code as in second example? Well it's not that simple but this [tvdml-boilerplate](https://github.com/a-ignatov-parc/tvdml-app-boilerplate) repo will shed the light on basic build configuration.
@@ -310,6 +313,7 @@ Because TVML and TVJS are not your normal browser they have some limitations. An
 
 1. `style` prop is just simple string not an object.
 1. To set `class` attribute just use `class` prop. There is no `className`.
+1. Attribute names should be written in props as they written in [docs](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TVJSAttributes.html).
 1. Events are normal DOM events provided by TVML.
 
 Everythin else should be as you expected.
