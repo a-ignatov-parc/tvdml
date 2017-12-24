@@ -15,7 +15,7 @@ function createDocument() {
   return DOMImplementationRegistry.getDOMImplementation().createDocument();
 }
 
-subscribe('uncontrolled-document-pop').pipe(({ document }) => {
+subscribe('uncontrolled-document-dismiss').pipe((document) => {
   if (document === modalDocument) {
     modalDocument = null;
   }
