@@ -94,6 +94,19 @@ jobs:
           paths:
             - dist
 
+  publish-next:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Prepare .npmrc
+          command: |
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run:
+          name: Publish to npm
+          command: npm publish --tag next
+
   publish:
     <<: *job-configuration
     steps:
@@ -106,6 +119,19 @@ jobs:
       - run:
           name: Publish to npm
           command: npm publish
+
+  release-premajor:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump pre major version
+          command: npm version premajor -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
 
   release-major:
     <<: *job-configuration
@@ -163,6 +189,19 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - approve-publish-next:
+          type: approval
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+      - publish-next:
+          requires:
+            - approve-publish-next
+          filters:
+            tags:
+              only: /.*/
       - approve-publish:
           type: approval
           requires:
@@ -186,6 +225,14 @@ workflows:
       - lint:
           requires:
             - install-deps
+      - approve-premajor:
+          type: approval
+          requires:
+            - test
+            - lint
+          filters:
+            branches:
+              only: master
       - approve-major:
           type: approval
           requires:
@@ -210,6 +257,9 @@ workflows:
           filters:
             branches:
               only: master
+      - release-premajor:
+          requires:
+            - approve-premajor
       - release-major:
           requires:
             - approve-major
