@@ -377,7 +377,7 @@ List of available handlers:
 
 Modals are perfect when you need to show some useful information but don't want to interupt opened view context. You can use `TVDML.renderModal()` method to render any document you want in overlay. `TVDML.renderModal()` behaviour is similar to `TVDML.render()`.
 
-There is also `TVDML.removeModal()` method that removes any presented modal document. Or `TVDML.dismissModal()` to pipe modal dismissal with other operations.
+There is also `TVDML.removeModal()` method that removes any presented modal document. Or `TVDML.dismissModal()` to compose modal dismissal with other operations.
 
 ```javascript
 import React from 'react';
