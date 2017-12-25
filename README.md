@@ -301,7 +301,7 @@ Hello.defaultProps = {
 TVDML
   .subscribe(TVDML.event.LAUNCH)
   .pipe(TVDML.render(payload => (
-    <Hello name='user' />
+    <Hello name="user" />
   )));
 ```
 
@@ -311,8 +311,7 @@ But there are some things you need to remember about TVML and React.js.
 
 Because TVML and TVJS are not your normal browser they have some limitations. And to be able to work with them as best as possible react's tvml renderer have some quirks:
 
-1. To set `class` attribute just use `class` prop. There is no `className`.
-1. Attribute names should be written in props as they are written in [docs](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TVJSAttributes.html).
+1. Attribute names should be written in props as they are written in [docs](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TVJSAttributes.html). There is no `className` to set `class` attribute.
 1. Events are normal DOM events provided by TVML.
 
 Everythin else should be as you expected.
@@ -323,7 +322,7 @@ Now lets talk about styling.
 
 There are two ways to style elements:
 
-1. Using `style` prop to write inline styles.
+1. Using `style` prop to write inline styles. `style` prop is key-value dictionary. Keys are style names written in camelCase.
 1. Using `<style>` element to define stylesheets  + `class` prop to bind them to elements.
 
 ```javascript
@@ -342,8 +341,8 @@ TVDML
         `}</style>
       </head>
       <alertTemplate>
-        <title class='title'>Hello user</title>
-        <description style='tv-text-style: title2'>
+        <title class="title">Hello user</title>
+        <description style={{ tvTextStyle: 'title2' }}>
           Nice to see you
         </description>
       </alertTemplate>
@@ -353,26 +352,9 @@ TVDML
 
 All available styles can be found here: [TVML Styles](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/ITMLStyles.html).
 
-If you need to set multiple inline styles on one element you can use ES6 template literals (template strings) in JSX.
-
-```javascript
-<textBadge
-  type='fill'
-  style={`
-    font-size: 20;
-    border-radius: 30;
-    margin: 0 10 12 0;
-    padding: 1 8;
-    tv-align: right;
-    tv-position: bottom;
-    tv-tint-color: rgb(255, 255, 255);
-  `}
-/>
-```
-
 ### Events
 
-It's easy to bind event handlers using JSX. All you need to do is add one of the available handlers as attribute on controllable element.
+Here is everything as in React.js except that all events are native TVML events.
 
 List of controllable elements:
 
@@ -398,11 +380,10 @@ List of available handlers:
 
 Modals are perfect when you need to show some useful information but don't want to interupt opened view context. You can use `TVDML.renderModal()` method to render any document you want in overlay. `TVDML.renderModal()` behaviour is similar to `TVDML.render()`.
 
-There is also `TVDML.removeModal()` method that removes any presented modal document.
+There is also `TVDML.removeModal()` method that removes any presented modal document. Or `TVDML.dismissModal()` to pipe modal dismissal with other operations.
 
 ```javascript
-/** @jsx TVDML.jsx */
-
+import React from 'react';
 import * as TVDML from 'tvdml';
 
 TVDML
@@ -412,373 +393,42 @@ TVDML
 TVDML
   .handleRoute('start')
   .pipe(downloadTVShows())
-  .pipe(TVDML.render(tvshows => {
-    return (
-      <document>
-        <stackTemplate>
-          <banner>
-            <title>TV Shows</title>
-          </banner>
-          <collectionList>
-            <grid>
-              {tvshows.map(tvshow => {
-                return (
-                  <lockup onSelect={showTVShowDescription.bind(this, tvshow)}>
-                    <img src={tvshow.cover} width="250" height="250" />
-                    <title>{tvshow.title}</title>
-                  </lockup>
-                );
-              })}
-            </grid>
-          </collectionList>
-        </stackTemplate>
-      </document>
-    );
-  }));
+  .pipe(TVDML.render(payload => (
+    <document>
+      <stackTemplate>
+        <banner>
+          <title>TV Shows</title>
+        </banner>
+        <collectionList>
+          <grid>
+            {payload.tvshows.map(tvshow => {
+              return (
+                <lockup onSelect={showTVShowDescription.bind(this, tvshow)}>
+                  <img src={tvshow.cover} width="250" height="250" />
+                  <title>{tvshow.title}</title>
+                </lockup>
+              );
+            })}
+          </grid>
+        </collectionList>
+      </stackTemplate>
+    </document>
+  )));
 
 function showTVShowDescription(tvshow) {
-  TVDML
-
-    // Creating modal document rendering pipeline.
-    .renderModal(
-      <document>
-        <descriptiveAlertTemplate>
-          <title>{tvshow.title}</title>
-          <description>{tvshow.description}</description>
-        </descriptiveAlertTemplate>
-      </document>
-    )
-
-    // Invoking created pipeline.
-    .sink();
-}
-```
-
-### Working with rendered elements
-
-TVDML provides you with `ref` mechanism to help with access to rendered document nodes. This is useful when you need to get features of elements like: `textField`, `searchField` and `menuBar`.
-
-```javascript
-<document>
-  <searchTemplate>
-    <searchField ref={node => {
-      console.log(node.getFeature('Keyboard').text);
-    }} />
-  </searchTemplate>
-</document>
-```
-
-That was easy! Right? But how can we update views depending on user activity?
-
-That is a good question and that is where TVDML components comes to the rescue!
-
-### Creating interactive components
-
-I think at least someone has notised that some approaches used in TVDML are similar to those that used is react.js and you will be right! No! There is no react.js inside TVDML but it's hard to argue that its ideas are greatly fit to app development for Apple TV. React.js Components lifecycle are one of them.
-
-`TVDML.createComponent` tries to behave as much as posible as React.js component but with some limitations:
-
-1. There is no need for child components in TVDML so this feature isn't supported. But is a subject to change in future.
-1. Rendering mechanism are different from ones used in react.js so interoperability with react components are not tested and most likely not possible.
-
-What is not supported (from [Component Specs and Lifecycle](https://facebook.github.io/react/docs/component-specs.html)):
-
-- `propTypes`
-- `mixins`
-- `statics`
-- `displayName`
-
-Lets see how previous example will look like if it were written using TVDML components:
-
-```javascript
-/** @jsx TVDML.jsx */
-
-import * as TVDML from 'tvdml';
-
-TVDML
-  .subscribe(TVDML.event.LAUNCH)
-  .pipe(() => TVDML.navigate('start'));
-
-TVDML
-  .handleRoute('start')
-  .pipe(downloadTVShows())
-  .pipe(TVDML.render(TVDML.createComponent({
-    render() {
-      return (
-        <document>
-          <stackTemplate>
-            <banner>
-              <title>TV Shows</title>
-            </banner>
-            <collectionList>
-              <grid>
-                {this.props.tvshows.map(tvshow => {
-                  return (
-                    <lockup key={tvshow.id}>
-                      <img src={tvshow.cover} width="250" height="250" />
-                      <title>{tvshow.title}</title>
-                    </lockup>
-                  );
-                })}
-              </grid>
-            </collectionList>
-          </stackTemplate>
-        </document>
-      );
-    },
-  })));
-```
-
-As you can see the main diference is that we need to specify `render` method and `tvshows` are now retrieved from `this.props` object.
-
-> The whole payload passed to `TVDML.render()` will be available as `this.props`.
-
-Now lets implement "Load more" button with pagination and spinner for initial loading.
-
-```javascript
-/** @jsx TVDML.jsx */
-
-import * as TVDML from 'tvdml';
-
-TVDML
-  .subscribe(TVDML.event.LAUNCH)
-  .pipe(() => TVDML.navigate('start'));
-
-TVDML
-  .handleRoute('start')
-  .pipe(TVDML.render(TVDML.createComponent({
-    getInitialState() {
-      return {
-        page: 1,
-        tvshows: [],
-        loading: true,
-      };
-    },
-
-    componentDidMount() {
-      // Loading initial tv shows list when component is mounted
-      downloadTVShows(this.state.page).then(tvshows => {
-        this.setState({
-          tvshows,
-          loading: false,
-        });
-      });
-    },
-
-    render() {
-      // Showing spinner while initial data is loading
-      if (this.state.loading) {
-        return (
-          <document>
-            <loadingTemplate>
-              <activityIndicator />
-            </loadingTemplate>
-          </document>
-        );
-      }
-
-      return (
-        <document>
-          <stackTemplate>
-            <banner>
-              <title>TV Shows</title>
-            </banner>
-            <collectionList>
-              <grid>
-                {this.state.tvshows.map(tvshow => {
-                  return (
-                    <lockup key={tvshow.id}>
-                      <img src={tvshow.cover} width="250" height="250" />
-                      <title>{tvshow.title}</title>
-                    </lockup>
-                  );
-                })}
-              </grid>
-              <separator>
-                <button onSelect={this.onLoadNextPage}>
-                  <text>Load page #{this.state.page + 1}</text>
-                </button>
-              </separator>
-            </collectionList>
-          </stackTemplate>
-        </document>
-      );
-    },
-
-    onLoadNextPage() {
-      const nextPage = this.state.page + 1;
-
-      // Loading next page and merging new data with existing.
-      // Document update will be immediately invoked on state change.
-      downloadTVShows(nextPage).then(tvshows => {
-        this.setState({
-          page: nextPage,
-          tvshows: this.state.tvshows.concat(tvshows),
-        });
-      });
-    },
-  })));
-```
-
-Looks nice! But what can we do with document parts that are need to be reused in other places? Please welcome partials!
-
-### Partials
-
-Partials are elements that can encapsulate complex markup and logic. They can be distinguished by names that starts with capital letters.
-
-```javascript
-TVDML.createComponent({
-  render() {
-    // Showing spinner while initial data is loading
-    if (this.state.loading) {
-      return <Loader title="Loading..." />;
-    }
-  },
-})
-```
-
-So how is `<Loading />` looks from the inside.
-
-```javascript
-function Loader({ attrs = {} }) {
-  const { title } = attrs;
-
-  return (
+  // Creating modal document rendering pipeline.
+  const pipeline = TVDML.renderModal((
     <document>
-      <loadingTemplate>
-        <activityIndicator>
-          <title>{title}</title>
-        </activityIndicator>
-      </loadingTemplate>
+      <descriptiveAlertTemplate>
+        <title>{tvshow.title}</title>
+        <description>{tvshow.description}</description>
+      </descriptiveAlertTemplate>
     </document>
-  );
+  ));
+
+  // Invoking created pipeline.
+  pipeline.sink();
 }
-```
-
-Partials will receive `node` object in [UVDOM notation](https://github.com/gcanti/uvdom#uvdom-formal-type-definition) as first argument.
-
-`Loader` partial in our example will receive next object:
-
-```javascript
-{
-  tag: function Loader() {...},
-  attrs: {
-    title: 'Loading...'
-  }
-}
-```
-
-Full `node` specification:
-
-```javascript
-{
-  tag: string | function,
-  attrs: {
-    key: string,
-    ...
-  },
-  events: {
-    eventName: function,
-    ...
-  },
-  key: string,
-  ref: function,
-  children: string | node | array<string | node>
-}
-```
-
-The last thing that we need to cover is how to style elements.
-
-### Styling elements
-
-There is a big [section in TVML documentation](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/ITMLStyles.html) related to elements styling. And there are two ways you can attach styles to elements.
-
-#### Inline styles
-
-You can write styles directly on elements using `style` attribute.
-
-```javascript
-<title style="tv-text-highlight-style: marquee-on-highlight; color: rgb(84, 82, 80)">
-  Hello world
-</title>
-```
-
-If you need to set multiple of styles on one element you can use ES6 template literals (template strings) in JSX.
-
-```javascript
-<textBadge
-  type="fill"
-  style={`
-    font-size: 20;
-    border-radius: 30;
-    margin: 0 10 12 0;
-    padding: 1 8;
-    tv-align: right;
-    tv-position: bottom;
-    tv-tint-color: rgb(255, 255, 255);
-  `}
->{counter}</textBadge>
-```
-
-#### Document styles and class names
-
-If you have repeated styles or want to keep all styles in one place then you should use document styles. They are must be defined in `<style />` tag inside document's `<head />`.
-
-```javascript
-<document>
-  <head>
-    <style content={`
-      .controls_container {
-        margin: 40 0 0;
-        tv-align: center;
-        tv-content-align: top;
-      }
-
-      .control {
-        margin: 0 24;
-      }
-
-      .item {
-        background-color: rgba(255, 255, 255, 0.05);
-        tv-highlight-color: rgba(255, 255, 255, 0.9);
-      }
-
-      .item--disabled {
-        color: rgba(0, 0, 0, 0.3);
-      }
-
-      .title {
-        tv-text-highlight-style: marquee-on-highlight;
-      }
-    `} />
-  </head>
-  <compilationTemplate>
-    ...
-  </compilationTemplate>
-<document>
-```
-
-> `style` tag is TVDML's predefined partial.
-
-After defining class names you can attach them to elements using `class` attribute.
-
-```javascript
-<buttonLockup class="control">
-  <badge src="resource://button-remove" />
-  <title>Mark as Unwatched</title>
-</buttonLockup>
-
-<listItemLockup class="item item--disabled">
-  <ordinal minLength="3">
-    {episodeNumber}
-  </ordinal>
-  <title class="title">
-    {episode.title}
-  </title>
-  <decorationLabel>
-    {dateTitle}
-  </decorationLabel>
-</listItemLockup>
 ```
 
 ### Working with `menuBar`
@@ -788,24 +438,19 @@ One of the trickiest things in TVML is configure and use [menu bar](https://deve
 TVDML provides easy to use solution for this issue.
 
 ```javascript
-/** @jsx TVDML.jsx */
-
+import React from 'react';
 import * as TVDML from 'tvdml';
 
 TVDML
   .subscribe(TVDML.event.LAUNCH)
-  .pipe(() => TVDML.navigate('main'));
-
-TVDML
-  .handleRoute('main')
-  .pipe(TVDML.render(
+  .pipe(TVDML.render(() => (
     <document>
       <menuBarTemplate>
         <menuBar>
           <menuItem route="search">
             <title>Search</title>
           </menuItem>
-          <menuItem autoHighlight="true" route="my">
+          <menuItem route="my" autoHighlight>
             <title>My</title>
           </menuItem>
           <menuItem route="all">
@@ -817,7 +462,7 @@ TVDML
         </menuBar>
       </menuBarTemplate>
     </document>
-  ));
+  )));
 
 TVDML
   .handleRoute('my')
@@ -854,40 +499,38 @@ We got you covered! Here is an updated example from "[Requesting and rendering d
 TVDML
   .handleRoute('start')
   .pipe(downloadTVShows())
-  .pipe(TVDML.render(tvshows => {
-    return (
-      <document>
-        <stackTemplate>
-          <banner>
-            <title>TV Shows</title>
-          </banner>
-          <collectionList>
-            <grid>
-              <prototypes>
-                <lockup prototype="tvshow">
-                  <img binding="@src:{cover}" width="250" height="250" />
-                  <title binding="textContent:{title}" />
-                </lockup>
-              </prototypes>
-              <section
-                binding="items:{tvshows}"
-                dataItem={{
-                  tvshows: tvshows.map(tvshow => {
-                    const item = new DataItem('tvshow', tvshow.id);
+  .pipe(TVDML.render(payload => (
+    <document>
+      <stackTemplate>
+        <banner>
+          <title>TV Shows</title>
+        </banner>
+        <collectionList>
+          <grid>
+            <prototypes>
+              <lockup prototype="tvshow">
+                <img binding="@src:{cover}" width="250" height="250" />
+                <title binding="textContent:{title}" />
+              </lockup>
+            </prototypes>
+            <section
+              binding="items:{tvshows}"
+              dataItem={{
+                tvshows: tvshows.map(tvshow => {
+                  const item = new DataItem('tvshow', tvshow.id);
 
-                    item.cover = tvshow.cover;
-                    item.title = tvshow.title;
+                  item.cover = tvshow.cover;
+                  item.title = tvshow.title;
 
-                    return item;
-                  }),
-                }}
-              />
-            </grid>
-          </collectionList>
-        </stackTemplate>
-      </document>
-    );
-  }));
+                  return item;
+                }),
+              }}
+            />
+          </grid>
+        </collectionList>
+      </stackTemplate>
+    </document>
+  )));
 ```
 
 The key difference from the example provided by Apple is `dataItem` attribute. It's responsible to apply `DataItems` to final document and this:
@@ -938,24 +581,16 @@ function parseJson(information) {
 
 ### Complete rendering module api
 
-- `TVDML.render(template)` — Main rendering factory that transforms JSX templates to TVML documents and responsible for rendering them to screen. Uses `TVDML.parseDocument` to parse and evaluate `template` object into TVML document before applying to `NavigationDocument`.
+- `TVDML.render(renderingFactory)` — ...
 
-- `TVDML.parseDocument(template)` — Responsible for transforming JSX templates to TVML documents. In most cases you are not supposed to use this method but it may be useful to create documents for `player.overlayDocument` or `player.interactiveOverlayDocument`.
+- `TVDML.renderModal(renderingFactory)` — ...
 
-  `template` can be:
+- `TVDML.dismissModal()` — ...
 
-  - JSX template.
-  - function that will return JSX template on execution.
+- `TVDML.ReactTVML` — ...
 
-  Remember that you need to manualy mount/unmount documents created with `TVDML.createComponent`. This can be done with `document.didMount` and `document.destroyComponent`. Also there is `document.updateComponent` for updating mounted component.
-
-- `TVDML.renderModal(template)` — Same as `TVDML.render(template)` but will render passed document in modal overlay.
-
-- `TVDML.removeModal()` — Removes any rendered modals.
-
-- `TVDML.createComponent(spec)` — You should provide a specification object that contains at least `render` method and can optionaly contains other lifecycle methods described [here](https://facebook.github.io/react/docs/component-specs.html). Please check for differences with react.js specification in [Creating interactive components](#creating-interactive-components) section.
-
-- `TVDML.jsx` — Transforms virtual DOM elements from JSX notation into [hyperscript](https://github.com/Matt-Esch/virtual-dom/tree/master/virtual-hyperscript) notation.
+  - `TVDML.ReactTVML.render(element, container, callback)` — ...
+  - `TVDML.ReactTVML.unmountComponentAtNode(container)` — ...
 
 ## Pipelines and Streams
 
@@ -1222,8 +857,11 @@ function isMenuButtonPressNavigatedTo(targetDocument) {
 
 You can check example application [written using TVDML](https://github.com/a-ignatov-parc/tvos-soap4.me) for [soap4.me](https://soap4.me/) video service.
 
+Or [boilerplate app](https://github.com/a-ignatov-parc/tvdml-app-boilerplate) with base configuration and basic examples.
+
 ## Useful Links
 
+- [React.js documentation](https://reactjs.org/docs/hello-world.html)
 - [TVMLKit JS](https://developer.apple.com/reference/tvmljs)
 - [TVML Programming Guide](https://developer.apple.com/library/content/documentation/TVMLKitJS/Conceptual/TVMLProgrammingGuide/)
 - [Apple TV Markup Language Reference](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/)
@@ -1231,9 +869,9 @@ You can check example application [written using TVDML](https://github.com/a-ign
 
 ## Contributions
 
-1. Fork the project
-1. Commit your enhancements and bug fixes
-1. Create a pull request describing the changes
+1. Fork the project.
+1. Commit your enhancements and bug fixes.
+1. Create a pull request describing the changes.
 
 ## License
 
