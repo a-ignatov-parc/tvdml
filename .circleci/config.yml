@@ -195,26 +195,26 @@ workflows:
             - build
           filters:
             tags:
-              only: /.*/
+              only: /[-]+/
       - publish-next:
           requires:
             - approve-publish-next
           filters:
             tags:
-              only: /.*/
+              only: /[-]+/
       - approve-publish:
           type: approval
           requires:
             - build
           filters:
             tags:
-              only: /.*/
+              only: /[^-]+/
       - publish:
           requires:
             - approve-publish
           filters:
             tags:
-              only: /.*/
+              only: /[^-]+/
 
   test-and-release:
     jobs:
