@@ -9,7 +9,7 @@
       "props": false
     }],
     "no-underscore-dangle": ["error", {
-      "allow": ["_internalRoot", "_reactRootContainer"]
+      "allow": ["_sink", "_internalRoot", "_reactRootContainer"]
     }],
     "no-prototype-builtins": "off"
   },

@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-
 export default class Stream {
   constructor(options = {}) {
     Object.assign(this, options.extend);
