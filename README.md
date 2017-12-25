@@ -40,7 +40,7 @@ This is the new version of tvdml, `6.X`.
 
 ### Update highlights
 
-- Switched old renderer to React.js (**Breaking**).
+- Switched TVML renderer to React.js (**Breaking**).
 - Unified different ways to create TVML documents (**Breaking**).
 - Simpler syntax to create stylesheets using `<style>` element (**Breaking**).
 - Improved Menu button click detection.
