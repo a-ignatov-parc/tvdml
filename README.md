@@ -313,7 +313,7 @@ Because TVML and TVJS are not your normal browser they have some limitations. An
 
 Everythin else should be as you expected.
 
-### Rendering to player documents
+### Rendering to player's documents
 
 `player.overlayDocument` and `player.interactiveOverlayDocument` are not default targets for rendering components but there are two ways to do this:
 
@@ -348,8 +348,12 @@ Everythin else should be as you expected.
       </document>
     ), document, () => {
       player.interactiveOverlayDocument = document;
-    })
+    });
     ```
+
+Just don't forget to unmount components when you clear player's documents or you may face memory leaks and many other issues.
+
+You can unmount component by passing previously rendered document to `TVDML.ReactTVML.unmountComponentAtNode(document)`.
 
 ### Modals
 
@@ -616,16 +620,22 @@ function parseJson(information) {
 
 - `TVDML.render(renderFactory)` — Main rendering pipeline for React.js components. Responsible for rendering new document to `navigationDocument` or update previously rendered documents passed through pipeline.
 
-- `TVDML.renderModal(renderFactory)` — ...
+- `TVDML.renderModal(renderFactory)` — Same as `TVDML.render()` but for modals.
 
-- `TVDML.dismissModal()` — ...
+- `TVDML.dismissModal()` — Pipeline that removes active modal with ability to track progress.
 
-- `TVDML.ReactTVML` — ...
+- `TVDML.removeModal()` — Utility over `TVDML.dismissModal()`. Use it when you don't need to track modal dismissal and don't want to invoke pipeline manually.
 
-  - `TVDML.ReactTVML.render(element, container, callback)` — ...
-  - `TVDML.ReactTVML.unmountComponentAtNode(container)` — ...
+- `TVDML.ReactTVML` — Publicly exposed React.js' reconciler for TVML. May be useful for advanced usage. It contains next methods:
 
-- `TVDML.createEmptyDocument()` — ...
+  - `render(element, container, callback)` — Mount React.js element to container (usualy TVML document).
+  - `unmountComponentAtNode(container)` — Unmount active React.js components at container and clears markup.
+
+- `TVDML.createEmptyDocument()` — Method to create empty TVML document. May be useful when using `TVDML.ReactTVML` directly. It does same as:
+
+    ```jsx
+    DOMImplementationRegistry.getDOMImplementation().createDocument();
+    ```
 
 ## Pipelines and Streams
 
