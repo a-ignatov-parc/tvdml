@@ -33,7 +33,7 @@ export function removeModal() {
   return dismissModal().sink();
 }
 
-export function renderModal(renderingFactory) {
+export function renderModal(renderFactory) {
   return createPipeline()
     .pipe(passthrough((payload = {}) => {
       if (!modalDocument) {
@@ -52,13 +52,13 @@ export function renderModal(renderingFactory) {
         document.isAttached = true;
       }
 
-      const element = renderingFactory(payload);
+      const element = renderFactory(payload);
 
       ReactTVML.render(element, modalDocument);
     }));
 }
 
-export function render(renderingFactory) {
+export function render(renderFactory) {
   return createPipeline()
     .pipe(passthrough((payload = {}) => {
       const {
@@ -71,7 +71,7 @@ export function render(renderingFactory) {
       const isMenuDocument = menuBar && menuItem;
       const menuItemDocument = isMenuDocument && menuBar.getDocument(menuItem);
 
-      const element = renderingFactory(payload);
+      const element = renderFactory(payload);
 
       let { document } = payload;
 
