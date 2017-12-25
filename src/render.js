@@ -9,15 +9,15 @@ const RENDERING_ANIMATION = 600;
 
 let modalDocument = null;
 
-function createDocument() {
-  return DOMImplementationRegistry.getDOMImplementation().createDocument();
-}
-
 subscribe('uncontrolled-document-dismissal').pipe((document) => {
   if (document === modalDocument) {
     modalDocument = null;
   }
 });
+
+export function createEmptyDocument() {
+  return DOMImplementationRegistry.getDOMImplementation().createDocument();
+}
 
 export function dismissModal() {
   return createPipeline()
@@ -38,7 +38,7 @@ export function renderModal(renderFactory) {
     .pipe(passthrough((payload = {}) => {
       if (!modalDocument) {
         const { route } = payload;
-        const document = createDocument();
+        const document = createEmptyDocument();
         const lastDocument = navigationDocument.documents.pop();
 
         document.modal = true;
@@ -85,7 +85,7 @@ export function render(renderFactory) {
       } else if (menuItemDocument) {
         document = menuItemDocument;
       } else {
-        document = createDocument();
+        document = createEmptyDocument();
 
         document.route = route
           || (!navigationDocument.documents.length && 'main');
