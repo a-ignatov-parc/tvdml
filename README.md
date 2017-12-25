@@ -4,6 +4,9 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [New!](#new)
+  - [Update highlights](#update-highlights)
+  - [Migration guide](#migration-guide)
 - [Intro](#intro)
 - [System Requirements](#system-requirements)
 - [Getting started](#getting-started)
