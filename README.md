@@ -311,7 +311,6 @@ But there are some things you need to remember about TVML and React.js.
 
 Because TVML and TVJS are not your normal browser they have some limitations. And to be able to work with them as best as possible react's tvml renderer have some quirks:
 
-1. `style` prop is just simple string not an object.
 1. To set `class` attribute just use `class` prop. There is no `className`.
 1. Attribute names should be written in props as they are written in [docs](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/TVJSAttributes.html).
 1. Events are normal DOM events provided by TVML.

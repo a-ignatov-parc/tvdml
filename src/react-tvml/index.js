@@ -9,6 +9,8 @@ import {
 } from './node-types';
 
 const NAMESPACE = 'http://www.w3.org/1999/xhtml';
+
+const STYLE = 'style';
 const CHILDREN = 'children';
 
 const eventNameRegex = /^on[A-Z]/;
@@ -20,6 +22,26 @@ const supportedEventMapping = {
   onHighlight: 'highlight',
   onHoldselect: 'holdselect',
 };
+
+function toDashCase(str) {
+  return str.replace(/([A-Z])/g, match => `-${match[0].toLowerCase()}`);
+}
+
+function styleObjToString(styleObj) {
+  return Object
+    .keys(styleObj)
+    .reduce((result, key) => {
+      const value = styleObj[key];
+      const hasValue = (typeof value === 'string' && value)
+        || typeof value === 'number';
+
+      if (hasValue) {
+        result.push(`${toDashCase(key)}:${value}`);
+      }
+      return result;
+    }, [])
+    .join(';');
+}
 
 function getOwnerDocumentFromRootContainer(rootContainerElement) {
   return rootContainerElement.nodeType === DOCUMENT_NODE
@@ -65,7 +87,13 @@ function setInitialProperties(
           domElement.addEventListener(eventName, propValue);
         }
       } else if (propValue != null) {
-        domElement.setAttribute(propName, propValue);
+        let attrValue = propValue;
+
+        if (propName === STYLE) {
+          attrValue = styleObjToString(propValue);
+        }
+
+        domElement.setAttribute(propName, attrValue);
       }
     });
 
@@ -124,6 +152,13 @@ function diffProperties(
         if (shouldUpdate) {
           (updatePayload = updatePayload || []).push(propName, `${propValue}`);
         }
+      } else if (propName === STYLE) {
+        const oldStyleValue = styleObjToString(oldPropValue);
+        const styleValue = styleObjToString(propValue);
+
+        if (oldStyleValue !== styleValue) {
+          (updatePayload = updatePayload || []).push(propName, propValue);
+        }
       } else {
         (updatePayload = updatePayload || []).push(propName, propValue);
       }
@@ -164,7 +199,13 @@ function updateProperties(
     } else if (propValue === null || typeof propValue === 'undefined') {
       domElement.removeAttribute(propName);
     } else {
-      domElement.setAttribute(propName, propValue);
+      let attrValue = propValue;
+
+      if (propName === STYLE) {
+        attrValue = styleObjToString(propValue);
+      }
+
+      domElement.setAttribute(propName, attrValue);
     }
   }
 }
