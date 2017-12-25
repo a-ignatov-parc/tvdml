@@ -4,7 +4,7 @@
 
 Now every document must be React.js component. And here is how you can migrate your old components
 
-[Rendering static document](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1#rendering-static-document) translates to
+[Static documents](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1#rendering-static-document) translates to:
 
 ```js
 TVDML
@@ -23,7 +23,7 @@ TVDML
 
 [Rendering document with render factory](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1#rendering-custom-data-using-factory-approach) stays exactly the same.
 
-To migrate your [interactive components](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1#creating-interactive-components) use [`create-react-class`](https://www.npmjs.com/package/create-react-class) module to transform old code to React.js components. Or update your old components to React.js ES6 syntax with [this guide](https://reactjs.org/docs/react-without-es6.html)
+To migrate your [interactive components](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1#creating-interactive-components) use [`create-react-class`](https://www.npmjs.com/package/create-react-class) module to transform old code to React.js components. Or update your old components to React.js ES6 syntax with [this guide](https://reactjs.org/docs/react-without-es6.html).
 
 Updated example from "Load more" implementation
 
@@ -152,7 +152,7 @@ Goes to:
 
 It's important to note that inline styles are must be defined as object with props named written in camelCase as keys.
 
-[This styles](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1#inline-styles)
+[This styles](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1#inline-styles):
 
 ```js
 <title style="tv-text-highlight-style: marquee-on-highlight; color: rgb(84, 82, 80)">
@@ -175,4 +175,4 @@ Transforms to:
 
 Every next invocation of `TVDML.renderModal()` will rerender active modal without closing it.
 
-Please check `TVDML.dismissModal()` if you need old behavour.
+Please check `TVDML.dismissModal()` if you need to keep old behavour.
