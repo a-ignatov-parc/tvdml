@@ -14,7 +14,8 @@
     "watch": "webpack --watch --progress",
     "dist": "NODE_ENV=production webpack --progress",
     "lint": "eslint webpack.config.js src test",
-    "test": "NODE_ENV=test mocha --reporter spec --timeout 4000 --require babel-register"
+    "test": "NODE_ENV=test mocha --reporter spec --timeout 4000 --require babel-register",
+    "update-readme-toc": "npx doctoc README.md"
   },
   "repository": {
     "type": "git",

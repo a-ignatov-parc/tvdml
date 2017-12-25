@@ -1,22 +1,17 @@
 # TVDML [![CircleCI](https://circleci.com/gh/a-ignatov-parc/tvdml.svg?style=svg)](https://circleci.com/gh/a-ignatov-parc/tvdml)
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
 - [Intro](#intro)
 - [System Requirements](#system-requirements)
 - [Getting started](#getting-started)
 - [Routing](#routing)
-- [Templating and styling](#templating-and-styling)
-  - [Rendering static document](#rendering-static-document)
-  - [Rendering custom data using factory approach](#rendering-custom-data-using-factory-approach)
-  - [Requesting and rendering data](#requesting-and-rendering-data)
-    - [Important note](#important-note)
+- [Using React.js](#using-reactjs)
+  - [Styling elements](#styling-elements)
   - [Events](#events)
   - [Modals](#modals)
-  - [Working with rendered elements](#working-with-rendered-elements)
-  - [Creating interactive components](#creating-interactive-components)
-  - [Partials](#partials)
-  - [Styling elements](#styling-elements)
-    - [Inline styles](#inline-styles)
-    - [Document styles and class names](#document-styles-and-class-names)
   - [Working with `menuBar`](#working-with-menubar)
   - [Working with `DataItem`](#working-with-dataitem)
   - [Complete rendering module api](#complete-rendering-module-api)
@@ -32,6 +27,8 @@
 - [Useful Links](#useful-links)
 - [Contributions](#contributions)
 - [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Intro
 
