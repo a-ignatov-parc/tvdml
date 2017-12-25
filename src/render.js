@@ -1,7 +1,5 @@
 /* global navigationDocument, DOMImplementationRegistry */
 
-import React from 'react';
-
 import ReactTVML from './react-tvml';
 import { subscribe } from './event-bus';
 import { promisedTimeout } from './utils';
@@ -35,7 +33,7 @@ export function removeModal() {
   return dismissModal().sink();
 }
 
-export function renderModal(Component) {
+export function renderModal(renderingFactory) {
   return createPipeline()
     .pipe(passthrough((payload = {}) => {
       if (!modalDocument) {
@@ -54,13 +52,13 @@ export function renderModal(Component) {
         document.isAttached = true;
       }
 
-      const element = React.createElement(Component, payload);
+      const element = renderingFactory(payload);
 
       ReactTVML.render(element, modalDocument);
     }));
 }
 
-export function render(Component) {
+export function render(renderingFactory) {
   return createPipeline()
     .pipe(passthrough((payload = {}) => {
       const {
@@ -73,7 +71,7 @@ export function render(Component) {
       const isMenuDocument = menuBar && menuItem;
       const menuItemDocument = isMenuDocument && menuBar.getDocument(menuItem);
 
-      const element = React.createElement(Component, payload);
+      const element = renderingFactory(payload);
 
       let { document } = payload;
 
