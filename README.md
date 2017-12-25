@@ -31,6 +31,24 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## New!
+
+This is the new version of tvdml, `6.X`.
+
+### Update highlights
+
+- Switched old renderer to React.js (**Breaking**).
+- Unified different ways to create TVML documents (**Breaking**).
+- Simpler syntax to create stylesheets using `<style>` element (**Breaking**).
+- Improved Menu button click detection.
+- Changed `TVDML.renderModal()` rerendering behavour (**Breaking**).
+
+### Migration guide
+
+Check out [migration guide from `5.X`](docs/MIGRATION_5.md).
+
+For the older version of tvdml, refer to the [`5.X` branch](https://github.com/a-ignatov-parc/tvdml/tree/v5.1.1).
+
 ## Intro
 
 This is a library that main goal is to greatly simplify app development for Apple TV using [React.js](https://reactjs.org/) and providing tools to solve problems like:
@@ -42,7 +60,7 @@ This is a library that main goal is to greatly simplify app development for Appl
 
 ## System Requirements
 
-Starting from `v4.X.X` TVDML drops support for tvOS < 10. If you need that support please consider using [`v3.X.X`](https://github.com/a-ignatov-parc/tvdml/tree/v3.0.4).
+Starting from `4.X` TVDML drops support for tvOS < 10. If you need that support please consider using [`3.X`](https://github.com/a-ignatov-parc/tvdml/tree/v3.0.4).
 
 ## Getting started
 
