@@ -15,7 +15,7 @@
   - [Styling elements](#styling-elements)
   - [Events](#events)
   - [Working with `DataItem`](#working-with-dataitem)
-  - [Complete rendering module api](#complete-rendering-module-api)
+  - [Complete rendering api](#complete-rendering-api)
 - [Pipelines and Streams](#pipelines-and-streams)
   - [Streams](#streams)
     - [Streams' public api](#streams-public-api)
@@ -617,7 +617,7 @@ function parseJson(information) {
 }
 ```
 
-### Complete rendering module api
+### Complete rendering api
 
 - `TVDML.render(renderFactory)` — Main rendering pipeline for React.js components. Responsible for rendering new document to `navigationDocument` or update previously rendered documents passed through pipeline.
 
