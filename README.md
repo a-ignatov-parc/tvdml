@@ -319,37 +319,37 @@ Everythin else should be as you expected.
 
 1. Sink empty document to `TVDML.render()`:
 
-  ```js
-  const document = TVDML.createEmptyDocument();
+    ```js
+    const document = TVDML.createEmptyDocument();
 
-  const pipeline = TVDML.renderModal(() => (
-    <document>
-      <alertTemplate>
-        <title>Hello</title>
-      </alertTemplate>
-    </document>
-  ));
+    const pipeline = TVDML.renderModal(() => (
+      <document>
+        <alertTemplate>
+          <title>Hello</title>
+        </alertTemplate>
+      </document>
+    ));
 
-  pipeline.sink({ document }).then(() => {
-    player.interactiveOverlayDocument = document;
-  });
-  ```
+    pipeline.sink({ document }).then(() => {
+      player.interactiveOverlayDocument = document;
+    });
+    ```
 
 1. Use TVML renderer directly
 
-  ```js
-  const document = TVDML.createEmptyDocument();
+    ```js
+    const document = TVDML.createEmptyDocument();
 
-  TVDML.ReactTVML.render((
-    <document>
-      <alertTemplate>
-        <title>Hello</title>
-      </alertTemplate>
-    </document>
-  ), document, () => {
-    player.interactiveOverlayDocument = document;
-  })
-  ```
+    TVDML.ReactTVML.render((
+      <document>
+        <alertTemplate>
+          <title>Hello</title>
+        </alertTemplate>
+      </document>
+    ), document, () => {
+      player.interactiveOverlayDocument = document;
+    })
+    ```
 
 ### Modals
 
