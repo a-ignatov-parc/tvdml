@@ -11,8 +11,20 @@ subscribe('uncontrolled-document-dismissal').pipe((document) => {
   const {
     modal,
     route,
-    prevRouteDocument,
   } = document;
+
+  let { prevRouteDocument } = document;
+
+  const prevDocumentElement = prevRouteDocument.documentElement;
+  const menuBar = prevDocumentElement
+    .getElementsByTagName('menuBar')
+    .item(0);
+
+  if (menuBar) {
+    const menuBarDocument = menuBar.getFeature('MenuBarDocument');
+    const menuItem = menuBarDocument.getSelectedItem();
+    prevRouteDocument = menuBarDocument.getDocument(menuItem);
+  }
 
   const {
     route: prevRoute,

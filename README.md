@@ -323,7 +323,7 @@ Everythin else should be as you expected.
     ```js
     const document = TVDML.createEmptyDocument();
 
-    const pipeline = TVDML.renderModal(() => (
+    const pipeline = TVDML.render(() => (
       <document>
         <alertTemplate>
           <title>Hello</title>
@@ -397,7 +397,7 @@ TVDML
 
 function showTVShowDescription(tvshow) {
   // Creating modal document rendering pipeline.
-  const pipeline = TVDML.renderModal((
+  const pipeline = TVDML.renderModal(() => (
     <document>
       <descriptiveAlertTemplate>
         <title>{tvshow.title}</title>
@@ -409,6 +409,30 @@ function showTVShowDescription(tvshow) {
   // Invoking created pipeline.
   pipeline.sink();
 }
+```
+
+Every next invocation of `TVDML.renderModal()` will rerender active modal without closing it.
+
+If you need to close and then open modal again use `TVDML.dismissModal()` pipeline.
+
+```js
+TVDML
+  .subscribe(TVDML.event.LAUNCH)
+  .pipe(TVDML.renderModal(() => (
+    <document>
+      <descriptiveAlertTemplate>
+        <title>Modal #1</title>
+      </descriptiveAlertTemplate>
+    </document>
+  )))
+  .pipe(TVDML.dismissModal())
+  .pipe(TVDML.renderModal(() => (
+    <document>
+      <descriptiveAlertTemplate>
+        <title>Modal #2</title>
+      </descriptiveAlertTemplate>
+    </document>
+  )));
 ```
 
 ### Working with `menuBar`
@@ -865,38 +889,40 @@ TVDML
 With this snippet you can detect when user returned to specific screen and perform some activity like update results etc.
 
 ```js
-TVDML
-  .createPipeline()
-  .pipe(TVDML.render(TVDML.createComponent({
-    componentDidMount() {
-      const currentDocument = this._rootNode.ownerDocument;
-
-      this.menuButtonPressStream = TVDML.subscribe('menu-button-press');
-      this.menuButtonPressStream
-        .pipe(isMenuButtonPressNavigatedTo(currentDocument))
-        .pipe(isNavigated => isNavigated && this.loadData().then(this.setState.bind(this)));
-    },
-
-    componentWillUnmount() {
-      this.menuButtonPressStream.unsubscribe();
-    },
-
-    loadData() {...},
-
-    render() {...},
-  })));
-
 function isMenuButtonPressNavigatedTo(targetDocument) {
-  return ({ to: { document } }) => {
-    const { menuBarDocument } = document;
+  return ({ to: { document } }) => targetDocument === document;
+}
 
-    if (menuBarDocument) {
-      document = menuBarDocument.getDocument(menuBarDocument.getSelectedItem());
-    }
+class MyComponent extends React.PureComponent {
+  componentDidMount() {
+    const currentDocument = this.document.ownerDocument;
 
-    return targetDocument === document;
+    this.menuButtonPressStream = TVDML.subscribe('menu-button-press');
+    this.menuButtonPressStream
+      .pipe(isMenuButtonPressNavigatedTo(currentDocument))
+      .pipe(isNavigated => isNavigated && this.loadData().then(this.setState.bind(this)));
+  }
+
+  componentWillUnmount() {
+    this.menuButtonPressStream.unsubscribe();
+  }
+
+  loadData() {...}
+
+  render() {
+    return (
+      <document ref={node => (this.document = node)}>
+        ...
+      </document>
+    );
   }
 }
+
+TVDML
+  .createPipeline()
+  .pipe(TVDML.render(() => (
+    <MyComponent />
+  )));
 ```
 
 ## Sample code

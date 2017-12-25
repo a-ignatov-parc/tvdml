@@ -39,11 +39,24 @@ export function renderModal(renderFactory) {
       if (!modalDocument) {
         const { route } = payload;
         const document = createEmptyDocument();
-        const lastDocument = navigationDocument.documents.pop();
+        const prevRouteDocument = navigationDocument.documents.pop();
+
+        let prevRouteDocumentRoute = prevRouteDocument.route;
+
+        const prevDocumentElement = prevRouteDocument.documentElement;
+        const menuBar = prevDocumentElement
+          .getElementsByTagName('menuBar')
+          .item(0);
+
+        if (menuBar) {
+          const menuBarDocument = menuBar.getFeature('MenuBarDocument');
+          const menuItem = menuBarDocument.getSelectedItem();
+          prevRouteDocumentRoute = menuBarDocument.getDocument(menuItem).route;
+        }
 
         document.modal = true;
-        document.prevRouteDocument = lastDocument;
-        document.route = `${route || (lastDocument || {}).route}-modal`;
+        document.prevRouteDocument = prevRouteDocument;
+        document.route = `${route || prevRouteDocumentRoute}-modal`;
 
         modalDocument = document;
 
