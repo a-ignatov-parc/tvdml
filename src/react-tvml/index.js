@@ -1,3 +1,5 @@
+/* global DataItem */
+
 import ReactFiberReconciler from 'react-reconciler';
 
 import { broadcast } from '../event-bus';
@@ -12,6 +14,7 @@ const NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
 const STYLE = 'style';
 const CHILDREN = 'children';
+const DATAITEM = 'dataItem';
 
 /**
  * This props has special behaviour.
@@ -105,6 +108,17 @@ function setInitialProperties(
         } else if (typeof propValue === 'number') {
           domElement.textContent = `${propValue}`;
         }
+      } else if (propName === DATAITEM) {
+        if (propValue instanceof DataItem) {
+          domElement.dataItem = propValue;
+        } else if (propValue) {
+          domElement.dataItem = new DataItem();
+          Object
+            .keys(propValue)
+            .forEach((key) => {
+              domElement.dataItem.setPropertyPath(key, propValue[key]);
+            });
+        }
       } else if (booleanAttributes.includes(propName)) {
         if (propValue) {
           domElement.setAttribute(propName, true);
@@ -181,6 +195,10 @@ function diffProperties(
         if (shouldUpdate) {
           (updatePayload = updatePayload || []).push(propName, `${propValue}`);
         }
+      } else if (propName === DATAITEM) {
+        if (oldPropValue !== propValue) {
+          (updatePayload = updatePayload || []).push(propName, propValue);
+        }
       } else if (booleanAttributes.includes(propName)) {
         const oldBoolValue = !!oldPropValue;
         const boolValue = !!propValue;
@@ -220,6 +238,19 @@ function updateProperties(
       } else {
         domElement.textContent = propValue;
       }
+    } else if (propName === DATAITEM) {
+      if (propValue == null) {
+        delete domElement.dataItem;
+      } else if (propValue instanceof DataItem) {
+        domElement.dataItem = propValue;
+      } else {
+        domElement.dataItem = new DataItem();
+        Object
+          .keys(propValue)
+          .forEach((key) => {
+            domElement.dataItem.setPropertyPath(key, propValue[key]);
+          });
+      }
     } else if (booleanAttributes.includes(propName)) {
       if (propValue) {
         domElement.setAttribute(propName, true);
@@ -238,7 +269,7 @@ function updateProperties(
           domElement.addEventListener(eventName, propValue);
         }
       }
-    } else if (propValue === null || typeof propValue === 'undefined') {
+    } else if (propValue == null) {
       domElement.removeAttribute(propName);
     } else {
       let attrValue = propValue;
