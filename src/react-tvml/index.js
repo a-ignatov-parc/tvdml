@@ -13,6 +13,31 @@ const NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const STYLE = 'style';
 const CHILDREN = 'children';
 
+/**
+ * This props has special behaviour.
+ *
+ * If they are set to `true` or any truthy value then attribute value
+ * will be set to `true` as a string.
+ *
+ * If they are set to `false` or any falsy value then attribute won't be
+ * set at all. As if it was set to `undefined`.
+ *
+ * More info can be found here:
+ * https://goo.gl/TG4fXG
+ */
+const booleanAttributes = [
+  'allowsZooming',
+  'aspectFill',
+  'autoHighlight',
+  'centered',
+  'disabled',
+  'handlesOverflow',
+  'opaque',
+  'showSpinner',
+  'showsScrollIndicator',
+  'secure',
+];
+
 const eventNameRegex = /^on[A-Z]/;
 
 const supportedEventMapping = {
@@ -79,6 +104,10 @@ function setInitialProperties(
           if (propValue !== '') domElement.textContent = propValue;
         } else if (typeof propValue === 'number') {
           domElement.textContent = `${propValue}`;
+        }
+      } else if (booleanAttributes.includes(propName)) {
+        if (propValue) {
+          domElement.setAttribute(propName, true);
         }
       } else if (eventNameRegex.test(propName)) {
         const eventName = supportedEventMapping[propName];
@@ -152,6 +181,13 @@ function diffProperties(
         if (shouldUpdate) {
           (updatePayload = updatePayload || []).push(propName, `${propValue}`);
         }
+      } else if (booleanAttributes.includes(propName)) {
+        const oldBoolValue = !!oldPropValue;
+        const boolValue = !!propValue;
+
+        if (oldBoolValue !== boolValue) {
+          (updatePayload = updatePayload || []).push(propName, propValue);
+        }
       } else if (propName === STYLE) {
         const oldStyleValue = styleObjToString(oldPropValue);
         const styleValue = styleObjToString(propValue);
@@ -183,6 +219,12 @@ function updateProperties(
         domElement.innerHTML = propValue;
       } else {
         domElement.textContent = propValue;
+      }
+    } else if (booleanAttributes.includes(propName)) {
+      if (propValue) {
+        domElement.setAttribute(propName, true);
+      } else {
+        domElement.removeAttribute(propName);
       }
     } else if (eventNameRegex.test(propName)) {
       const eventName = supportedEventMapping[propName];
