@@ -209,9 +209,6 @@ workflows:
           filters:
             tags:
               only: /^v(\d|\.)+-\d+$/
-      - publish-next:
-          requires:
-            - approve-publish-next
       - approve-publish:
           type: approval
           requires:
@@ -219,6 +216,9 @@ workflows:
           filters:
             tags:
               only: /[^-]+/
+      - publish-next:
+          requires:
+            - approve-publish-next
       - publish:
           requires:
             - approve-publish
