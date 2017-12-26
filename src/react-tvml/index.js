@@ -48,6 +48,7 @@ const supportedEventMapping = {
   onSelect: 'select',
   onChange: 'change',
   onHighlight: 'highlight',
+  onNeedsmore: 'needsmore',
   onHoldselect: 'holdselect',
 };
 

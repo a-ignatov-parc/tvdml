@@ -561,6 +561,7 @@ List of available handlers:
 - `onChange` — Triggers when element change its value. `<ratingBadge />` for example.
 - `onHighlight` — Triggers when element becoming highlighted.
 - `onHoldselect` — Triggers when Touchpad is pressed with a long press.
+- `onNeedsmore` — Triggers when user approaches end of the list by scrolling.
 
 ```js
 <button onSelect={event => console.log(event.target)}>
