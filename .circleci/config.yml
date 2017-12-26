@@ -195,13 +195,10 @@ workflows:
             - build
           filters:
             tags:
-              only: /[-]+/
+              only: /(\d|\.)+-\d+/
       - publish-next:
           requires:
             - approve-publish-next
-          filters:
-            tags:
-              only: /[-]+/
       - approve-publish:
           type: approval
           requires:
@@ -212,9 +209,6 @@ workflows:
       - publish:
           requires:
             - approve-publish
-          filters:
-            tags:
-              only: /[^-]+/
 
   test-and-release:
     jobs:
