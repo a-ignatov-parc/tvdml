@@ -219,9 +219,15 @@ workflows:
       - publish-next:
           requires:
             - approve-publish-next
+          filters:
+            tags:
+              only: /^v(\d|\.)+-\d+$/
       - publish:
           requires:
             - approve-publish
+          filters:
+            tags:
+              only: /[^-]+/
 
   test-and-release:
     jobs:
