@@ -5,24 +5,31 @@ export { subscribe };
 export * from './render';
 export * from './pipelines';
 export * from './navigation';
-export { default as jsx } from './jsx';
-export { default as createComponent } from './render/component';
+export { default as ReactTVML } from './react-tvml';
 
-subscribe('uncontrolled-document-pop').pipe(({ document }) => {
+subscribe('uncontrolled-document-dismissal').pipe((document) => {
   const {
     modal,
     route,
-    prevRouteDocument,
   } = document;
 
-  const prevDocument = modal ? document : prevRouteDocument;
-  const { route: prevRoute } = prevDocument;
+  let { prevRouteDocument } = document;
 
-  let { modal: prevModal } = prevDocument;
+  const prevDocumentElement = prevRouteDocument.documentElement;
+  const menuBar = prevDocumentElement
+    .getElementsByTagName('menuBar')
+    .item(0);
 
-  if (modal) {
-    prevModal = false;
+  if (menuBar) {
+    const menuBarDocument = menuBar.getFeature('MenuBarDocument');
+    const menuItem = menuBarDocument.getSelectedItem();
+    prevRouteDocument = menuBarDocument.getDocument(menuItem);
   }
+
+  const {
+    route: prevRoute,
+    modal: prevModal,
+  } = prevRouteDocument;
 
   broadcast('menu-button-press', {
     from: {
@@ -32,7 +39,7 @@ subscribe('uncontrolled-document-pop').pipe(({ document }) => {
     },
     to: {
       route: prevRoute,
-      document: prevDocument,
+      document: prevRouteDocument,
       modal: !!prevModal,
     },
   });

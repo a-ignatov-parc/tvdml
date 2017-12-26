@@ -3,7 +3,7 @@ version: 2
 job-configuration: &job-configuration
   working_directory: ~/app
   docker:
-    - image: circleci/node:6.10
+    - image: circleci/node:8.9.1
 
 prepare-git: &prepare-git
   name: Preparing git working directory
@@ -29,11 +29,8 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
       - run:
-          name: Install local yarn
-          command: npm run yarn:install
-      - run:
           name: Install dependencies using local yarn
-          command: npm run yarn:install-deps
+          command: npm run install-deps
       - save_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
@@ -97,6 +94,19 @@ jobs:
           paths:
             - dist
 
+  publish-next:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Prepare .npmrc
+          command: |
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run:
+          name: Publish to npm
+          command: npm publish --tag next
+
   publish:
     <<: *job-configuration
     steps:
@@ -109,6 +119,19 @@ jobs:
       - run:
           name: Publish to npm
           command: npm publish
+
+  release-premajor:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump pre major version
+          command: npm version premajor -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
 
   release-major:
     <<: *job-configuration
@@ -166,19 +189,32 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - approve-publish-next:
+          type: approval
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[-]+/
+      - publish-next:
+          requires:
+            - approve-publish-next
+          filters:
+            tags:
+              only: /[-]+/
       - approve-publish:
           type: approval
           requires:
             - build
           filters:
             tags:
-              only: /.*/
+              only: /[^-]+/
       - publish:
           requires:
             - approve-publish
           filters:
             tags:
-              only: /.*/
+              only: /[^-]+/
 
   test-and-release:
     jobs:
@@ -189,6 +225,14 @@ workflows:
       - lint:
           requires:
             - install-deps
+      - approve-premajor:
+          type: approval
+          requires:
+            - test
+            - lint
+          filters:
+            branches:
+              only: master
       - approve-major:
           type: approval
           requires:
@@ -213,6 +257,9 @@ workflows:
           filters:
             branches:
               only: master
+      - release-premajor:
+          requires:
+            - approve-premajor
       - release-major:
           requires:
             - approve-major

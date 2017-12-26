@@ -2,6 +2,15 @@
   "extends": "airbnb",
   "rules": {
     "max-len": ["error", 80],
-    "no-console": ["error", { allow: ["info", "warn", "error"] }]
+    "no-console": ["error", {
+      allow: ["info", "warn", "error"]
+    }],
+    "no-param-reassign": ["error", {
+      "props": false
+    }],
+    "no-underscore-dangle": ["error", {
+      "allow": ["_sink", "_internalRoot", "_reactRootContainer"]
+    }],
+    "no-prototype-builtins": "off"
   },
 }
