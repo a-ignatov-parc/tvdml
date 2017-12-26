@@ -617,6 +617,7 @@ TVDML
             </prototypes>
             <section
               binding="items:{tvshows};"
+              onSelect={event => console.log(event.target.dataItem)}
               dataItem={{
                 tvshows: mockData.map((cover, i) => {
                   const item = new DataItem('tvshow', i);
