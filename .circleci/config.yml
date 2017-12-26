@@ -128,8 +128,21 @@ jobs:
       - run:
           <<: *prepare-git
       - run:
-          name: Bump pre major version
+          name: Bump premajor version
           command: npm version premajor -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
+
+  release-prerelease:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump prerelease version
+          command: npm version prerelease -m "%s [skip ci]"
       - run:
           <<: *publish-to-git
 
@@ -195,7 +208,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /(\d|\.)+-\d+/
+              only: /^(\d|\.)+-\d+$/
       - publish-next:
           requires:
             - approve-publish-next
@@ -205,7 +218,7 @@ workflows:
             - build
           filters:
             tags:
-              only: /[^-]+/
+              only: /^[^-]+$/
       - publish:
           requires:
             - approve-publish
@@ -220,6 +233,14 @@ workflows:
           requires:
             - install-deps
       - approve-premajor:
+          type: approval
+          requires:
+            - test
+            - lint
+          filters:
+            branches:
+              only: master
+      - approve-prerelease:
           type: approval
           requires:
             - test
@@ -254,6 +275,9 @@ workflows:
       - release-premajor:
           requires:
             - approve-premajor
+      - release-prerelease:
+          requires:
+            - approve-prerelease
       - release-major:
           requires:
             - approve-major
