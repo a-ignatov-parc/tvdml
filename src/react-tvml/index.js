@@ -371,8 +371,6 @@ const TVMLRenderer = ReactFiberReconciler({
 
   now: () => Date.now(),
 
-  useSyncScheduling: true,
-
   mutation: {
     commitMount(domElement, type, newProps) {
       console.info(
@@ -431,6 +429,22 @@ const TVMLRenderer = ReactFiberReconciler({
       }
     },
   },
+
+  scheduleDeferredCallback(callback) {
+    return setTimeout(() => {
+      callback({
+        timeRemaining() {
+          return Infinity;
+        },
+      });
+    });
+  },
+
+  cancelDeferredCallback(timeoutId) {
+    clearTimeout(timeoutId);
+  },
+
+  useSyncScheduling: true,
 });
 
 class ReactRoot {
