@@ -5,6 +5,7 @@ import ReactFiberReconciler from 'react-reconciler';
 import { broadcast } from '../event-bus';
 
 import {
+  TEXT_NODE,
   COMMENT_NODE,
   DOCUMENT_NODE,
   DOCUMENT_FRAGMENT_NODE,
@@ -52,6 +53,10 @@ const supportedEventMapping = {
   onHoldselect: 'holdselect',
 };
 
+function isTextNode(node) {
+  return node && node.nodeType === TEXT_NODE;
+}
+
 function toDashCase(str) {
   return str.replace(/([A-Z])/g, match => `-${match[0].toLowerCase()}`);
 }
@@ -88,6 +93,13 @@ function createTextNode(text, rootContainerElement) {
   const ownerDocument = getOwnerDocumentFromRootContainer(rootContainerElement);
   const textNode = ownerDocument.createTextNode(text);
   return textNode;
+}
+
+function updateNodeValue(node) {
+  if (node._handledTextNodes) {
+    const newValue = node._handledTextNodes.map(({ value }) => value).join('');
+    node.nodeValue = newValue;
+  }
 }
 
 function setInitialProperties(
@@ -332,6 +344,29 @@ const TVMLRenderer = ReactFiberReconciler({
   },
 
   appendInitialChild(parentInstance, child) {
+    const target = parentInstance.lastChild;
+
+    /**
+     * TVML merge sibling text nodes into one but reconciler don't do this.
+     * To workaround this issue we create references to each created text nodes
+     * for later updates.
+     */
+    if (isTextNode(target) && isTextNode(child)) {
+      if (!target._handledTextNodes) {
+        target._handledTextNodes = [{
+          node: target,
+          value: target.nodeValue,
+        }];
+      }
+
+      target._handledTextNodes.push({
+        node: child,
+        value: child.nodeValue,
+      });
+
+      child._targetTextNode = target;
+    }
+
     parentInstance.appendChild(child);
   },
 
@@ -390,10 +425,52 @@ const TVMLRenderer = ReactFiberReconciler({
     },
 
     commitTextUpdate(textInstance, oldText, newText) {
-      textInstance.nodeValue = newText;
+      let target;
+
+      /**
+       * If text node update is commited we need to check if there any
+       * reference text nodes to figure out which one to update.
+       */
+      if (textInstance._targetTextNode) {
+        target = textInstance._targetTextNode;
+      } else if (textInstance._handledTextNodes) {
+        target = textInstance;
+      }
+
+      if (target) {
+        const nodes = target._handledTextNodes;
+        const reference = nodes.find(({ node }) => node === textInstance);
+
+        reference.value = newText;
+        updateNodeValue(target);
+      } else {
+        textInstance.nodeValue = newText;
+      }
     },
 
     appendChild(parentInstance, child) {
+      const target = parentInstance.lastChild;
+
+      /**
+       * If we need to attach text node in update we performing same checks
+       * as in `appendInitialChild`.
+       */
+      if (isTextNode(target) && isTextNode(child)) {
+        if (!target._handledTextNodes) {
+          target._handledTextNodes = [{
+            node: target,
+            value: target.nodeValue,
+          }];
+        }
+
+        target._handledTextNodes.push({
+          node: child,
+          value: child.nodeValue,
+        });
+
+        child._targetTextNode = target;
+      }
+
       parentInstance.appendChild(child);
     },
 
@@ -406,6 +483,28 @@ const TVMLRenderer = ReactFiberReconciler({
     },
 
     insertBefore(parentInstance, child, beforeChild) {
+      /**
+       * When in TVML text node is inserted before another text node its value
+       * will be merged with existed and it will be removed.
+       *
+       * Check `appendInitialChild` for more info.
+       */
+      if (isTextNode(beforeChild) && isTextNode(child)) {
+        if (!beforeChild._handledTextNodes) {
+          beforeChild._handledTextNodes = [{
+            node: beforeChild,
+            value: beforeChild.nodeValue,
+          }];
+        }
+
+        beforeChild._handledTextNodes.unshift({
+          node: child,
+          value: child.nodeValue,
+        });
+
+        child._targetTextNode = beforeChild;
+      }
+
       parentInstance.insertBefore(child, beforeChild);
     },
 
@@ -418,7 +517,31 @@ const TVMLRenderer = ReactFiberReconciler({
     },
 
     removeChild(parentInstance, child) {
-      parentInstance.removeChild(child);
+      /**
+       * If we deleting text node with parent node then we just clearing any
+       * references. No need to use `removeChild` because it was never attached
+       * to document.
+       *
+       * Also we can't remove parent node with active references. But we can
+       * empty its value.
+       */
+      if (child._targetTextNode) {
+        const target = child._targetTextNode;
+        const nodes = target._handledTextNodes;
+        const referenceIndex = nodes.findIndex(({ node }) => node === child);
+
+        nodes.splice(referenceIndex, 1);
+        delete child._targetTextNode;
+        updateNodeValue(target);
+      } else if (child._handledTextNodes && child._handledTextNodes.length) {
+        const nodes = child._handledTextNodes;
+        const reference = nodes.find(({ node }) => node === child);
+
+        reference.value = '';
+        updateNodeValue(child);
+      } else {
+        parentInstance.removeChild(child);
+      }
     },
 
     removeChildFromContainer(container, child) {
