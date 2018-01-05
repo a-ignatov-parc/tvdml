@@ -116,10 +116,6 @@ function setInitialProperties(
       if (propName === CHILDREN) {
         if (type === 'style') {
           domElement.innerHTML = propValue;
-        } else if (typeof propValue === 'string') {
-          if (propValue !== '') domElement.textContent = propValue;
-        } else if (typeof propValue === 'number') {
-          domElement.textContent = `${propValue}`;
         }
       } else if (propName === DATAITEM) {
         if (propValue instanceof DataItem) {
@@ -248,8 +244,6 @@ function updateProperties(
     if (propName === CHILDREN) {
       if (type === 'style') {
         domElement.innerHTML = propValue;
-      } else {
-        domElement.textContent = propValue;
       }
     } else if (propName === DATAITEM) {
       if (propValue == null) {
