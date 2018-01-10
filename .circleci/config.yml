@@ -6,7 +6,7 @@ job-configuration: &job-configuration
     - image: circleci/node:8.9.1
 
 prepare-git: &prepare-git
-  name: Preparing git working directory
+  name: Prepare git working directory
   command: |
     git clean -d -f
     git checkout -- .
@@ -20,6 +20,11 @@ publish-to-git: &publish-to-git
   command: |
     git push origin $CIRCLE_BRANCH
     git push --tags
+
+prepare-npm: &prepare-npm
+  name: Prepare npm credentials
+  command: |
+    echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
 
 jobs:
   install-deps:
@@ -100,9 +105,7 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: Prepare .npmrc
-          command: |
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          <<: *prepare-npm
       - run:
           name: Publish to npm
           command: npm publish --tag next
@@ -113,9 +116,7 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: Prepare .npmrc
-          command: |
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          <<: *prepare-npm
       - run:
           name: Publish to npm
           command: npm publish
