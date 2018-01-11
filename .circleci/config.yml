@@ -293,7 +293,7 @@ workflows:
           requires:
             - install-deps
 
-      - release-candidate:
+      - release-as-candidate:
           type: approval
           requires:
             - test
@@ -304,28 +304,28 @@ workflows:
       - premajor:
           type: approval
           requires:
-            - release-candidate
+            - release-as-candidate
           filters:
             branches:
               only: master
       - preminor:
           type: approval
           requires:
-            - release-candidate
+            - release-as-candidate
           filters:
             branches:
               only: master
       - prepatch:
           type: approval
           requires:
-            - release-candidate
+            - release-as-candidate
           filters:
             branches:
               only: master
       - prerelease:
           type: approval
           requires:
-            - release-candidate
+            - release-as-candidate
           filters:
             branches:
               only: master
