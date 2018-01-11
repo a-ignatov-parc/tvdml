@@ -15,7 +15,9 @@
     "dist": "NODE_ENV=production webpack --progress",
     "lint": "eslint webpack.config.js src test",
     "test": "NODE_ENV=test mocha --reporter spec --timeout 4000 --require babel-register",
-    "update-readme-toc": "npx doctoc README.md"
+    "update-readme-toc": "npx doctoc README.md",
+    "add-old-tag": "npm dist-tag add $npm_package_name@$npm_package_version old",
+    "remove-next-tag": "npm dist-tag rm $npm_package_name next"
   },
   "repository": {
     "type": "git",

@@ -107,7 +107,7 @@ jobs:
       - run:
           <<: *prepare-npm
       - run:
-          name: Publish to npm
+          name: Publish to npm under "next" tag
           command: npm publish --tag next
 
   publish:
@@ -118,10 +118,24 @@ jobs:
       - run:
           <<: *prepare-npm
       - run:
-          name: Publish to npm
-          command: npm publish
+          name: Publish to npm and remove "next" tag
+          command: |
+            npm publish
+            npm run remove-next-tag
 
-  release-premajor:
+  mark-old:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-npm
+      - run:
+          name: Mark with "old" tag
+          command: |
+            npm run add-old-tag
+
+  release-major-candidate:
     <<: *job-configuration
     steps:
       - attach_workspace:
@@ -134,7 +148,33 @@ jobs:
       - run:
           <<: *publish-to-git
 
-  release-prerelease:
+  release-minor-candidate:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump preminor version
+          command: npm version preminor -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
+
+  release-patch-candidate:
+    <<: *job-configuration
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          <<: *prepare-git
+      - run:
+          name: Bump prepatch version
+          command: npm version prepatch -m "%s [skip ci]"
+      - run:
+          <<: *publish-to-git
+
+  release-candidate:
     <<: *job-configuration
     steps:
       - attach_workspace:
@@ -217,6 +257,13 @@ workflows:
           filters:
             tags:
               only: /[^-]+/
+      - mark-as-old:
+          type: approval
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[^-]+/
       - publish-next:
           requires:
             - approve-publish-next
@@ -226,6 +273,12 @@ workflows:
       - publish:
           requires:
             - approve-publish
+          filters:
+            tags:
+              only: /[^-]+/
+      - mark-old:
+          requires:
+            - mark-as-old
           filters:
             tags:
               only: /[^-]+/
@@ -239,7 +292,8 @@ workflows:
       - lint:
           requires:
             - install-deps
-      - approve-premajor:
+
+      - release-candidate:
           type: approval
           requires:
             - test
@@ -247,7 +301,49 @@ workflows:
           filters:
             branches:
               only: master
-      - approve-prerelease:
+      - premajor:
+          type: approval
+          requires:
+            - release-candidate
+          filters:
+            branches:
+              only: master
+      - preminor:
+          type: approval
+          requires:
+            - release-candidate
+          filters:
+            branches:
+              only: master
+      - prepatch:
+          type: approval
+          requires:
+            - release-candidate
+          filters:
+            branches:
+              only: master
+      - prerelease:
+          type: approval
+          requires:
+            - release-candidate
+          filters:
+            branches:
+              only: master
+
+      - release-major-candidate:
+          requires:
+            - premajor
+      - release-minor-candidate:
+          requires:
+            - preminor
+      - release-patch-candidate:
+          requires:
+            - prepatch
+      - release-candidate:
+          requires:
+            - prerelease
+
+      - release:
           type: approval
           requires:
             - test
@@ -255,42 +351,34 @@ workflows:
           filters:
             branches:
               only: master
-      - approve-major:
+      - major:
           type: approval
           requires:
-            - test
-            - lint
+            - release
           filters:
             branches:
               only: master
-      - approve-minor:
+      - minor:
           type: approval
           requires:
-            - test
-            - lint
+            - release
           filters:
             branches:
               only: master
-      - approve-patch:
+      - patch:
           type: approval
           requires:
-            - test
-            - lint
+            - release
           filters:
             branches:
               only: master
-      - release-premajor:
-          requires:
-            - approve-premajor
-      - release-prerelease:
-          requires:
-            - approve-prerelease
+
       - release-major:
           requires:
-            - approve-major
+            - major
       - release-minor:
           requires:
-            - approve-minor
+            - minor
       - release-patch:
           requires:
-            - approve-patch
+            - patch
