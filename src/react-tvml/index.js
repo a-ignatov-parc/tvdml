@@ -560,8 +560,6 @@ const TVMLRenderer = ReactFiberReconciler({
   cancelDeferredCallback(timeoutId) {
     clearTimeout(timeoutId);
   },
-
-  useSyncScheduling: true,
 });
 
 class ReactRoot {
