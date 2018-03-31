@@ -573,7 +573,7 @@ List of available handlers:
 
 In tvOS 11 [`DataItem`](https://developer.apple.com/documentation/tvmljs/dataitem) binding api was presented to fix performance issues with large documents that may ended up with very long parsing and rendering.
 
-Here is a [short example](https://developer.apple.com/library/content/documentation/TVMLKitJS/Conceptual/TVMLProgrammingGuide/GeneratingContentForYourApp.html) how apple suggests to use it.
+Here is a [short example](https://developer.apple.com/library/content/documentation/TVMLKitJS/Conceptual/TVMLProgrammingGuide/GeneratingContentForYourApp.html) how Apple suggests to use it.
 
 So now you may wondering how we can use this cool feature in JSX?
 
