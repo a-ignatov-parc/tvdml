@@ -49,7 +49,9 @@ jobs:
             - node_modules
             - src
             - test
+            - LICENSE
             - package.json
+            - README.md
             - webpack.config.js
 
   lint:
