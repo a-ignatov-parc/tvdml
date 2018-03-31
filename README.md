@@ -43,8 +43,8 @@ This is the new version of tvdml, `6.X`.
 - Switched TVML renderer to React.js (**Breaking**).
 - Unified different ways to create TVML documents (**Breaking**).
 - Simpler syntax to create stylesheets using `<style>` element (**Breaking**).
-- Improved Menu button click detection.
-- Changed `TVDML.renderModal()` rerendering behavour (**Breaking**).
+- Improved Menu button detection.
+- Changed `TVDML.renderModal()` rerendering behavior (**Breaking**).
 
 ### Migration guide
 
@@ -54,12 +54,12 @@ For the older version of tvdml, refer to the [`5.X` branch](https://github.com/a
 
 ## Intro
 
-This is a library that main goal is to greatly simplify app development for Apple TV using [React.js](https://reactjs.org/) and providing tools to solve problems like:
+This is a library that's the main goal is to greatly simplify app development for Apple TV using [React.js](https://reactjs.org/) and provide tools to solve problems like:
 
 - React.js integration with TVML and TVJS.
 - Routing.
 - Event binding.
-- Detecting "Menu" button.
+- "Menu" button detection.
 
 ## System Requirements
 
@@ -67,10 +67,15 @@ Starting from `4.X` TVDML drops support for tvOS < 10. If you need that support 
 
 ## Getting started
 
-TVDML is shipping as [npm package](https://www.npmjs.com/package/tvdml) and can be installed with npm. In addition you need to install React.js.
+TVDML is shipping as [npm package](https://www.npmjs.com/package/tvdml) and can be installed with npm or `yarn`. In addition you'll need to install React.js.
 
 ```
 npm install --save tvdml react
+```
+
+Or using `yarn`
+```
+yarn add tvdml react
 ```
 
 TVDML is written in ES6 and built using UMD wrapper so it can be used in any environment with any of this ways:
@@ -153,9 +158,9 @@ Well! Now we know how to write apps using ES6 and JSX so let's start from the ba
 
 ## Routing
 
-tvOS provided great foundation to write apps using [TVML](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/index.html) and [TVJS](https://developer.apple.com/reference/tvmljs). But you need somehow to react on user's activity and map it to UI.
+tvOS provided great foundation to write apps using [TVML](https://developer.apple.com/library/content/documentation/LanguagesUtilities/Conceptual/ATV_Template_Guide/index.html) and [TVJS](https://developer.apple.com/reference/tvmljs). But you need somehow to react on user's activity and map it to the UI.
 
-To help you solving this issues TVDML provides navigation module.
+To help you solve this issues TVDML provides navigation module.
 
 ```js
 import React from 'react';
@@ -191,9 +196,9 @@ TVDML
   )));
 ```
 
-> This is small example of using navigation and rendering modules to handle routes and show them to user.
+> This is a small example of navigation and rendering modules usage which helps handle routes and show views to the user.
 
-Here is a complete api of navigation module:
+Here is a complete navigation module api:
 
 - `TVDML.handleRoute(routeName)` — Creates pipeline for route handling. Only one pipeline can be created for the route. Otherwise it will throw error.
 
@@ -275,7 +280,7 @@ With TVDML your main way to create documents will be React.js.
 
 To render any react component you need to provide rendering factory to `TVDML.render` pipeline.
 
-Pipeline's payload will be passed as first argument to rendering factory so you'll be able to map it's props to rendering tree.
+Pipeline's payload will be passed as the first argument to rendering factory so you'll be able to map it's props to rendering tree.
 
 ```js
 import React from 'react';
