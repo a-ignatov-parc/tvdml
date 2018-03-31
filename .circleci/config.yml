@@ -121,7 +121,7 @@ jobs:
           name: Publish to npm and remove "next" tag
           command: |
             npm publish
-            npm run remove-next-tag
+            npm run remove-next-tag || true
 
   mark-old:
     <<: *job-configuration
