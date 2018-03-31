@@ -12,8 +12,8 @@ function unmount(document) {
    * This is just a guess but still can be handy.
    */
   document.possiblyDismissedByUser = true;
-  ReactTVML.unmountComponentAtNode(document);
   document.isAttached = false;
+  ReactTVML.unmountComponentAtNode(document);
 }
 
 function handleUnload({ target: { ownerDocument: document } }) {

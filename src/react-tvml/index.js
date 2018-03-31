@@ -541,6 +541,14 @@ const TVMLRenderer = ReactFiberReconciler({
     removeChildFromContainer(container, child) {
       if (container.nodeType === COMMENT_NODE) {
         container.parentNode.removeChild(child);
+      } else if (container.nodeType === DOCUMENT_NODE) {
+        /**
+         * Starting from tvOS 11.3 if we try to remove children from dismissed
+         * document we'll get uncaught exception.
+         */
+        if (container.isAttached) {
+          container.removeChild(child);
+        }
       } else {
         container.removeChild(child);
       }
