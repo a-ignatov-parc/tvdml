@@ -116,11 +116,10 @@ export function render(renderFactory) {
         }
       } else if (!document.isAttached) {
         if (redirect) {
-          const index = navigationDocument.documents.indexOf(document);
-          const prevDocument = navigationDocument.documents[index - 1];
+          const lastDocument = navigationDocument.documents.pop();
 
-          if (prevDocument) {
-            navigationDocument.replaceDocument(document, prevDocument);
+          if (lastDocument) {
+            navigationDocument.replaceDocument(document, lastDocument);
           }
         } else {
           navigationDocument.pushDocument(document);
