@@ -400,160 +400,7 @@ const TVMLRenderer = ReactFiberReconciler({
 
   now: () => Date.now(),
 
-  mutation: {
-    commitMount(domElement, type, newProps) {
-      console.info(
-        'commitMount',
-        domElement,
-        type,
-        newProps,
-      );
-    },
-
-    commitUpdate(domElement, updatePayload, type, oldProps, newProps) {
-      updateProperties(domElement, updatePayload, type, oldProps, newProps);
-    },
-
-    resetTextContent(domElement) {
-      domElement.textContent = '';
-    },
-
-    commitTextUpdate(textInstance, oldText, newText) {
-      let target;
-
-      /**
-       * If text node update is commited we need to check if there any
-       * reference text nodes to figure out which one to update.
-       */
-      if (textInstance._targetTextNode) {
-        target = textInstance._targetTextNode;
-      } else if (textInstance._handledTextNodes) {
-        target = textInstance;
-      }
-
-      if (target) {
-        const nodes = target._handledTextNodes;
-        const reference = nodes.find(({ node }) => node === textInstance);
-
-        reference.value = newText;
-        updateNodeValue(target);
-      } else {
-        textInstance.nodeValue = newText;
-      }
-    },
-
-    appendChild(parentInstance, child) {
-      const target = parentInstance.lastChild;
-
-      /**
-       * If we need to attach text node in update we performing same checks
-       * as in `appendInitialChild`.
-       */
-      if (isTextNode(target) && isTextNode(child)) {
-        if (!target._handledTextNodes) {
-          target._handledTextNodes = [{
-            node: target,
-            value: target.nodeValue,
-          }];
-        }
-
-        target._handledTextNodes.push({
-          node: child,
-          value: child.nodeValue,
-        });
-
-        child._targetTextNode = target;
-      }
-
-      parentInstance.appendChild(child);
-    },
-
-    appendChildToContainer(container, child) {
-      if (container.nodeType === COMMENT_NODE) {
-        container.parentNode.insertBefore(child, container);
-      } else {
-        container.appendChild(child);
-      }
-    },
-
-    insertBefore(parentInstance, child, beforeChild) {
-      /**
-       * When in TVML text node is inserted before another text node its value
-       * will be merged with existed and it will be removed.
-       *
-       * Check `appendInitialChild` for more info.
-       */
-      if (isTextNode(beforeChild) && isTextNode(child)) {
-        if (!beforeChild._handledTextNodes) {
-          beforeChild._handledTextNodes = [{
-            node: beforeChild,
-            value: beforeChild.nodeValue,
-          }];
-        }
-
-        beforeChild._handledTextNodes.unshift({
-          node: child,
-          value: child.nodeValue,
-        });
-
-        child._targetTextNode = beforeChild;
-      }
-
-      parentInstance.insertBefore(child, beforeChild);
-    },
-
-    insertInContainerBefore(container, child, beforeChild) {
-      if (container.nodeType === COMMENT_NODE) {
-        container.parentNode.insertBefore(child, beforeChild);
-      } else {
-        container.insertBefore(child, beforeChild);
-      }
-    },
-
-    removeChild(parentInstance, child) {
-      /**
-       * If we deleting text node with parent node then we just clearing any
-       * references. No need to use `removeChild` because it was never attached
-       * to document.
-       *
-       * Also we can't remove parent node with active references. But we can
-       * empty its value.
-       */
-      if (child._targetTextNode) {
-        const target = child._targetTextNode;
-        const nodes = target._handledTextNodes;
-        const referenceIndex = nodes.findIndex(({ node }) => node === child);
-
-        nodes.splice(referenceIndex, 1);
-        delete child._targetTextNode;
-        updateNodeValue(target);
-      } else if (child._handledTextNodes && child._handledTextNodes.length) {
-        const nodes = child._handledTextNodes;
-        const reference = nodes.find(({ node }) => node === child);
-
-        reference.value = '';
-        updateNodeValue(child);
-      } else {
-        parentInstance.removeChild(child);
-      }
-    },
-
-    removeChildFromContainer(container, child) {
-      if (container.nodeType === COMMENT_NODE) {
-        container.parentNode.removeChild(child);
-      } else if (container.nodeType === DOCUMENT_NODE) {
-        /**
-         * Starting from tvOS 11.3 if we try to remove children from dismissed
-         * document we'll get uncaught exception.
-         */
-        if (container.isAttached) {
-          container.removeChild(child);
-        }
-      } else {
-        container.removeChild(child);
-      }
-    },
-  },
+  isPrimaryRenderer: true,
 
   scheduleDeferredCallback(callback) {
     return setTimeout(() => {
@@ -568,6 +415,159 @@ const TVMLRenderer = ReactFiberReconciler({
   cancelDeferredCallback(timeoutId) {
     clearTimeout(timeoutId);
   },
+
+  supportsMutation: true,
+  supportsPersistence: false,
+
+  commitMount(/* domElement, type, newProps */) {
+    // noop
+  },
+
+  commitUpdate(domElement, updatePayload, type, oldProps, newProps) {
+    updateProperties(domElement, updatePayload, type, oldProps, newProps);
+  },
+
+  resetTextContent(domElement) {
+    domElement.textContent = '';
+  },
+
+  commitTextUpdate(textInstance, oldText, newText) {
+    let target;
+
+    /**
+     * If text node update is commited we need to check if there any
+     * reference text nodes to figure out which one to update.
+     */
+    if (textInstance._targetTextNode) {
+      target = textInstance._targetTextNode;
+    } else if (textInstance._handledTextNodes) {
+      target = textInstance;
+    }
+
+    if (target) {
+      const nodes = target._handledTextNodes;
+      const reference = nodes.find(({ node }) => node === textInstance);
+
+      reference.value = newText;
+      updateNodeValue(target);
+    } else {
+      textInstance.nodeValue = newText;
+    }
+  },
+
+  appendChild(parentInstance, child) {
+    const target = parentInstance.lastChild;
+
+    /**
+     * If we need to attach text node in update we performing same checks
+     * as in `appendInitialChild`.
+     */
+    if (isTextNode(target) && isTextNode(child)) {
+      if (!target._handledTextNodes) {
+        target._handledTextNodes = [{
+          node: target,
+          value: target.nodeValue,
+        }];
+      }
+
+      target._handledTextNodes.push({
+        node: child,
+        value: child.nodeValue,
+      });
+
+      child._targetTextNode = target;
+    }
+
+    parentInstance.appendChild(child);
+  },
+
+  appendChildToContainer(container, child) {
+    if (container.nodeType === COMMENT_NODE) {
+      container.parentNode.insertBefore(child, container);
+    } else {
+      container.appendChild(child);
+    }
+  },
+
+  insertBefore(parentInstance, child, beforeChild) {
+    /**
+     * When in TVML text node is inserted before another text node its value
+     * will be merged with existed and it will be removed.
+     *
+     * Check `appendInitialChild` for more info.
+     */
+    if (isTextNode(beforeChild) && isTextNode(child)) {
+      if (!beforeChild._handledTextNodes) {
+        beforeChild._handledTextNodes = [{
+          node: beforeChild,
+          value: beforeChild.nodeValue,
+        }];
+      }
+
+      beforeChild._handledTextNodes.unshift({
+        node: child,
+        value: child.nodeValue,
+      });
+
+      child._targetTextNode = beforeChild;
+    }
+
+    parentInstance.insertBefore(child, beforeChild);
+  },
+
+  insertInContainerBefore(container, child, beforeChild) {
+    if (container.nodeType === COMMENT_NODE) {
+      container.parentNode.insertBefore(child, beforeChild);
+    } else {
+      container.insertBefore(child, beforeChild);
+    }
+  },
+
+  removeChild(parentInstance, child) {
+    /**
+     * If we deleting text node with parent node then we just clearing any
+     * references. No need to use `removeChild` because it was never attached
+     * to document.
+     *
+     * Also we can't remove parent node with active references. But we can
+     * empty its value.
+     */
+    if (child._targetTextNode) {
+      const target = child._targetTextNode;
+      const nodes = target._handledTextNodes;
+      const referenceIndex = nodes.findIndex(({ node }) => node === child);
+
+      nodes.splice(referenceIndex, 1);
+      delete child._targetTextNode;
+      updateNodeValue(target);
+    } else if (child._handledTextNodes && child._handledTextNodes.length) {
+      const nodes = child._handledTextNodes;
+      const reference = nodes.find(({ node }) => node === child);
+
+      reference.value = '';
+      updateNodeValue(child);
+    } else {
+      parentInstance.removeChild(child);
+    }
+  },
+
+  removeChildFromContainer(container, child) {
+    if (container.nodeType === COMMENT_NODE) {
+      container.parentNode.removeChild(child);
+    } else if (container.nodeType === DOCUMENT_NODE) {
+      /**
+       * Starting from tvOS 11.3 if we try to remove children from dismissed
+       * document we'll get uncaught exception.
+       */
+      if (container.isAttached) {
+        container.removeChild(child);
+      }
+    } else {
+      container.removeChild(child);
+    }
+  },
+
+  supportsHydration: false,
 });
 
 class ReactRoot {
