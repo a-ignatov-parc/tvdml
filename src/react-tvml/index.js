@@ -53,6 +53,28 @@ const supportedEventMapping = {
   onHoldselect: 'holdselect',
 };
 
+let uid = 0;
+
+function getNodeId(node) {
+  if (node) {
+    if (node._uid == null) {
+      /**
+       * `console.info` is a weird workaround that prevents nodes
+       * from the aggressive GC in tvOS 12.
+       *
+       * This fixes:
+       * - ITMLKit (9): EXC_BAD_ACCESS
+       * - ITMLKit (8): signal SIGABRT
+       */
+      console.info('Preventing node from GC', node);
+      uid += 1;
+      node._uid = uid;
+    }
+    return node._uid;
+  }
+  return null;
+}
+
 function isTextNode(node) {
   return node && node.nodeType === TEXT_NODE;
 }
@@ -348,13 +370,13 @@ const TVMLRenderer = ReactFiberReconciler({
     if (isTextNode(target) && isTextNode(child)) {
       if (!target._handledTextNodes) {
         target._handledTextNodes = [{
-          node: target,
+          id: getNodeId(target),
           value: target.nodeValue,
         }];
       }
 
       target._handledTextNodes.push({
-        node: child,
+        id: getNodeId(child),
         value: child.nodeValue,
       });
 
@@ -446,7 +468,8 @@ const TVMLRenderer = ReactFiberReconciler({
 
     if (target) {
       const nodes = target._handledTextNodes;
-      const reference = nodes.find(({ node }) => node === textInstance);
+      const nodeId = getNodeId(textInstance);
+      const reference = nodes.find(({ id }) => id === nodeId);
 
       reference.value = newText;
       updateNodeValue(target);
@@ -465,13 +488,13 @@ const TVMLRenderer = ReactFiberReconciler({
     if (isTextNode(target) && isTextNode(child)) {
       if (!target._handledTextNodes) {
         target._handledTextNodes = [{
-          node: target,
+          id: getNodeId(target),
           value: target.nodeValue,
         }];
       }
 
       target._handledTextNodes.push({
-        node: child,
+        id: getNodeId(child),
         value: child.nodeValue,
       });
 
@@ -499,13 +522,13 @@ const TVMLRenderer = ReactFiberReconciler({
     if (isTextNode(beforeChild) && isTextNode(child)) {
       if (!beforeChild._handledTextNodes) {
         beforeChild._handledTextNodes = [{
-          node: beforeChild,
+          id: getNodeId(beforeChild),
           value: beforeChild.nodeValue,
         }];
       }
 
       beforeChild._handledTextNodes.unshift({
-        node: child,
+        id: getNodeId(child),
         value: child.nodeValue,
       });
 
@@ -535,14 +558,16 @@ const TVMLRenderer = ReactFiberReconciler({
     if (child._targetTextNode) {
       const target = child._targetTextNode;
       const nodes = target._handledTextNodes;
-      const referenceIndex = nodes.findIndex(({ node }) => node === child);
+      const nodeId = getNodeId(child);
+      const referenceIndex = nodes.findIndex(({ id }) => id === nodeId);
 
       nodes.splice(referenceIndex, 1);
       delete child._targetTextNode;
       updateNodeValue(target);
     } else if (child._handledTextNodes && child._handledTextNodes.length) {
       const nodes = child._handledTextNodes;
-      const reference = nodes.find(({ node }) => node === child);
+      const nodeId = getNodeId(child);
+      const reference = nodes.find(({ id }) => id === nodeId);
 
       reference.value = '';
       updateNodeValue(child);

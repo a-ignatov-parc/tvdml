@@ -10,6 +10,7 @@
     }],
     "no-underscore-dangle": ["error", {
       "allow": [
+        "_uid",
         "_sink",
         "_internalRoot",
         "_targetTextNode",
