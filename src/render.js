@@ -108,8 +108,6 @@ export function render(renderFactory) {
           : navigationDocument.documents.pop();
       }
 
-      ReactTVML.render(element, document);
-
       if (isMenuDocument) {
         if (!menuItemDocument) {
           menuBar.setDocument(document, menuItem);
@@ -127,6 +125,8 @@ export function render(renderFactory) {
       }
 
       document.isAttached = true;
+
+      ReactTVML.render(element, document);
 
       return {
         document,
