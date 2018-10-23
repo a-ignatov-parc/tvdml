@@ -394,9 +394,11 @@ const TVMLRenderer = ReactFiberReconciler({
 
         child._targetTextNode = target;
         preservedNodes.set(child);
-      }
 
-      parentInstance.appendChild(child);
+        updateNodeValue(target);
+      } else {
+        parentInstance.appendChild(child);
+      }
     }
   },
 
@@ -517,9 +519,11 @@ const TVMLRenderer = ReactFiberReconciler({
 
         child._targetTextNode = target;
         preservedNodes.set(child);
-      }
 
-      parentInstance.appendChild(child);
+        updateNodeValue(target);
+      } else {
+        parentInstance.appendChild(child);
+      }
     }
   },
 
@@ -575,29 +579,54 @@ const TVMLRenderer = ReactFiberReconciler({
   removeChild(parentInstance, child) {
     if (canUpdateDocument(parentInstance)) {
       /**
-       * If we deleting text node with parent node then we just clearing any
-       * references. No need to use `removeChild` because it was never attached
-       * to document.
+       * If we are trying to delete text node we need to check if it's
+       * virtual or real node first.
        *
-       * Also we can't remove parent node with active references. But we can
-       * empty its value.
+       * We can't use `child._targetTextNode` because it may reference
+       * dismissed node and we'll get `EXC_BAD_ACCESS` exception.
        */
-      if (child._targetTextNode) {
-        const target = child._targetTextNode;
-        const nodes = target._handledTextNodes;
-        const nodeId = getNodeId(child);
-        const referenceIndex = nodes.findIndex(({ id }) => id === nodeId);
+      if (isTextNode(child)) {
+        const childNodesCount = parentInstance.childNodes.length;
 
-        nodes.splice(referenceIndex, 1);
-        delete child._targetTextNode;
-        updateNodeValue(target);
-      } else if (child._handledTextNodes && child._handledTextNodes.length) {
-        const nodes = child._handledTextNodes;
-        const nodeId = getNodeId(child);
-        const reference = nodes.find(({ id }) => id === nodeId);
+        /**
+         * To find if `child` is virtual node we traverse all `parentInstance`
+         * child nodes.
+         *
+         * If any of children text nodes controls `child`, then it's a virtual
+         * node. Otherwise, it's a real text node.
+         */
+        for (let index = 0; index < childNodesCount; index += 1) {
+          const node = parentInstance.childNodes.item(index);
 
-        reference.value = '';
-        updateNodeValue(child);
+          if (isTextNode(node)) {
+            const nodeHasControlledNodes = node._handledTextNodes
+              && node._handledTextNodes.length > 1;
+
+            if (node === child) {
+              if (nodeHasControlledNodes) {
+                const nodes = node._handledTextNodes;
+                const nodeId = getNodeId(child);
+                const reference = nodes.find(({ id }) => id === nodeId);
+
+                reference.value = '';
+                updateNodeValue(node);
+              } else {
+                parentInstance.removeChild(child);
+              }
+              break;
+            } else if (nodeHasControlledNodes) {
+              const nodes = node._handledTextNodes;
+              const nodeId = getNodeId(child);
+              const referenceIndex = nodes.findIndex(({ id }) => id === nodeId);
+
+              if (referenceIndex >= 0) {
+                nodes.splice(referenceIndex, 1);
+                updateNodeValue(node);
+                break;
+              }
+            }
+          }
+        }
       } else {
         parentInstance.removeChild(child);
       }
