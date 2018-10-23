@@ -55,6 +55,20 @@ const supportedEventMapping = {
 
 let uid = 0;
 
+/**
+ * Starting from tvOS 11.3 TVMLKit has aggressive garbage collection of
+ * the DOM nodes, and if we try to access any nodes references after
+ * a document or an element is dismissed, we'll get an exception.
+ *
+ * As a workaround, we can preserve nodes in `Map` until we finishes
+ * all cleanups.
+ *
+ * This fixes:
+ * - ITMLKit (9): EXC_BAD_ACCESS
+ * - ITMLKit (8): signal SIGABRT
+ */
+const preservedNodes = new Map();
+
 function getNodeId(node) {
   if (node) {
     if (node._uid == null) {
@@ -379,6 +393,7 @@ const TVMLRenderer = ReactFiberReconciler({
         });
 
         child._targetTextNode = target;
+        preservedNodes.set(child);
       }
 
       parentInstance.appendChild(child);
@@ -501,6 +516,7 @@ const TVMLRenderer = ReactFiberReconciler({
         });
 
         child._targetTextNode = target;
+        preservedNodes.set(child);
       }
 
       parentInstance.appendChild(child);
@@ -539,6 +555,7 @@ const TVMLRenderer = ReactFiberReconciler({
         });
 
         child._targetTextNode = beforeChild;
+        preservedNodes.set(child);
       }
 
       parentInstance.insertBefore(child, beforeChild);
@@ -585,6 +602,7 @@ const TVMLRenderer = ReactFiberReconciler({
         parentInstance.removeChild(child);
       }
     }
+    preservedNodes.delete(child);
   },
 
   removeChildFromContainer(container, child) {
@@ -633,8 +651,6 @@ function createRoot(container) {
   return new ReactRoot(container);
 }
 
-const preservedNodes = new Map();
-
 const ReactTVML = {
   render(element, container, callback) {
     let root = container._reactRootContainer;
@@ -669,19 +685,6 @@ const ReactTVML = {
 
   unmountComponentAtNode(container) {
     if (container._reactRootContainer) {
-      /**
-       * Starting from tvOS 11.3 TVMLKit has aggressive garbage collection of
-       * the DOM nodes, and if we try to access any nodes references after
-       * a document is dismissed, we'll get an exception.
-       *
-       * To let react clean everything we're adding `container`
-       * to the dictionary created with `Map` this helps to preserve reference
-       * from GC.
-       *
-       * This fixes:
-       * - ITMLKit (9): EXC_BAD_ACCESS
-       * - ITMLKit (8): signal SIGABRT
-       */
       preservedNodes.set(container);
 
       /**
@@ -692,6 +695,7 @@ const ReactTVML = {
       TVMLRenderer.unbatchedUpdates(() => {
         this.render(null, container, () => {
           container._reactRootContainer = null;
+          preservedNodes.delete(container);
         });
       });
       return true;
