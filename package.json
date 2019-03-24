@@ -14,7 +14,7 @@
     "watch": "webpack --watch --progress",
     "dist": "NODE_ENV=production webpack --progress",
     "lint": "eslint webpack.config.js src test",
-    "test": "NODE_ENV=test mocha --reporter spec --timeout 4000 --require babel-register",
+    "test": "NODE_ENV=test mocha --reporter spec --timeout 4000 --require @babel/register",
     "update-readme-toc": "npx doctoc README.md",
     "add-old-tag": "npm dist-tag add $npm_package_name@$npm_package_version old",
     "remove-next-tag": "npm dist-tag rm $npm_package_name next"
@@ -38,14 +38,14 @@
   },
   "homepage": "https://github.com/a-ignatov-parc/tvdml#readme",
   "dependencies": {
-    "react-reconciler": "^0.15.0"
+    "react-reconciler": "^0.20.3"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.4",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-register": "^6.26.0",
+    "@babel/core": "^7.4.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.4.0",
+    "@babel/register": "^7.4.0",
+    "babel-loader": "^8.0.5",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.12.0",
@@ -53,12 +53,12 @@
     "eslint-plugin-react": "^7.8.2",
     "mocha": "^4.0.1",
     "mocha-junit-reporter": "^1.15.0",
-    "react": "^16.5.2",
-    "uglifyjs-webpack-plugin": "^1.1.4",
-    "webpack": "^3.10.0"
+    "react": "^16.8.5",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
   },
   "peerDependencies": {
-    "react": "^16.5.2"
+    "react": "^16.8.5"
   },
   "files": [
     "dist"

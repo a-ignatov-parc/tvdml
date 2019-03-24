@@ -1,7 +1,6 @@
 const path = require('path');
 
 const webpack = require('webpack');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 function resolveFromRoot(dir) {
   return path.resolve(__dirname, dir);
@@ -39,28 +38,6 @@ const plugins = [
   }),
 ];
 
-if (isProd) {
-  plugins.push(...[
-    new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.optimize.OccurrenceOrderPlugin(),
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        compress: {
-          keep_fnames: true,
-          warnings: false,
-        },
-        output: {
-          comments: false,
-        },
-        mangle: {
-          keep_fnames: true,
-        },
-      },
-      sourceMap: true,
-    }),
-  ]);
-}
-
 module.exports = {
   entry: resolveFromRoot('./src'),
   output: {
@@ -68,8 +45,10 @@ module.exports = {
     libraryTarget: 'umd',
     filename: 'tvdml.js',
     path: resolveFromRoot('./dist'),
+    globalObject: 'this', // tvjs doesn't have window object
   },
   devtool: isProd ? 'source-map' : 'eval-source-map',
+  mode: isProd ? 'production' : 'development',
   externals: ['react'], // peerDependencies
   module: { rules },
   plugins,

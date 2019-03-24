@@ -2,18 +2,18 @@
   "env": {
     "development": {
       "plugins": [
-        "transform-object-rest-spread"
+        "@babel/plugin-proposal-object-rest-spread"
       ]
     },
     "production": {
       "plugins": [
-        "transform-object-rest-spread"
+        "@babel/plugin-proposal-object-rest-spread"
       ]
     },
     "test": {
       "plugins": [
-        "transform-es2015-modules-commonjs",
-        "transform-object-rest-spread"
+        "@babel/plugin-transform-modules-commonjs",
+        "@babel/plugin-proposal-object-rest-spread"
       ]
     }
   }
