@@ -14,7 +14,7 @@
     "watch": "webpack --watch --progress",
     "dist": "NODE_ENV=production webpack --progress",
     "lint": "eslint webpack.config.js src test",
-    "prettier": "prettier --write webpack.config.js src test",
+    "prettier": "prettier --write webpack.config.js src/**/*.js test/**/*.js",
     "test": "NODE_ENV=test mocha --reporter spec --timeout 4000 --require @babel/register",
     "update-readme-toc": "npx doctoc README.md",
     "add-old-tag": "npm dist-tag add $npm_package_name@$npm_package_version old",

@@ -11,7 +11,7 @@ export function plusFive(value) {
 }
 
 export function iterator(list, transform) {
-  return (value) => {
+  return value => {
     const newValue = transform(value);
     list.push(newValue);
     return newValue;

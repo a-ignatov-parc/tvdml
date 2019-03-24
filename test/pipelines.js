@@ -2,11 +2,7 @@
 
 import assert from 'assert';
 
-import {
-  plusOne,
-  plusFive,
-  iterator,
-} from './utils';
+import { plusOne, plusFive, iterator } from './utils';
 
 import Stream from '../src/pipelines/stream';
 import Pipeline from '../src/pipelines/pipeline';
@@ -29,22 +25,22 @@ describe('Pipelines', () => {
   it('data flow', () => {
     const head = new Pipeline();
 
-    const body = head.pipe((value) => {
+    const body = head.pipe(value => {
       assert.equal(value, 1, 'initial value should not be changed');
       return value + 1;
     });
 
-    const body2 = head.pipe((value) => {
+    const body2 = head.pipe(value => {
       assert.equal(value, 2, 'initial value should not be changed');
       return value + 1;
     });
 
-    const tail = body.pipe((value) => {
+    const tail = body.pipe(value => {
       assert.equal(value, 2, 'passed value should be changed as supposed');
       return value;
     });
 
-    const tail2 = body2.pipe((value) => {
+    const tail2 = body2.pipe(value => {
       assert.equal(value, 3, 'value should be equal to passed one');
       return value;
     });
@@ -53,18 +49,16 @@ describe('Pipelines', () => {
 
     assert.ok(promise instanceof Promise, 'sink should return promise');
 
-    return Promise
-      .all([promise, tail2.sink(2)])
-      .then(([value1, value2]) => {
-        assert.equal(value1, 2, 'value1 should be equal to passed one');
-        assert.equal(value2, 3, 'value2 should be equal to passed one');
-      });
+    return Promise.all([promise, tail2.sink(2)]).then(([value1, value2]) => {
+      assert.equal(value1, 2, 'value1 should be equal to passed one');
+      assert.equal(value2, 3, 'value2 should be equal to passed one');
+    });
   });
 
   it('subsink', () => {
     const pipeline = new Pipeline();
 
-    const head = pipeline.pipe((value) => {
+    const head = pipeline.pipe(value => {
       assert.equal(value, 1, 'value should be equal to passed one');
       return value;
     });
@@ -106,9 +100,7 @@ describe('Pipelines', () => {
     const stream = new Stream();
     const pipeline = new Pipeline();
 
-    stream
-      .pipe(iterator(values, plusFive))
-      .pipe(iterator(values, plusFive));
+    stream.pipe(iterator(values, plusFive)).pipe(iterator(values, plusFive));
 
     return pipeline
       .pipe(iterator(values, plusOne))

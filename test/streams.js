@@ -2,12 +2,7 @@
 
 import assert from 'assert';
 
-import {
-  noop,
-  plusOne,
-  plusFive,
-  iterator,
-} from './utils';
+import { noop, plusOne, plusFive, iterator } from './utils';
 
 import Stream from '../src/pipelines/stream';
 import Pipeline from '../src/pipelines/pipeline';
@@ -44,22 +39,22 @@ describe('Streams', () => {
   it('data flow', () => {
     const head = new Stream();
 
-    const body = head.pipe((value) => {
+    const body = head.pipe(value => {
       assert.equal(value, 1, 'initial value should not be changed');
       return value + 1;
     });
 
-    const body2 = head.pipe((value) => {
+    const body2 = head.pipe(value => {
       assert.equal(value, 1, 'initial value should not be changed');
       return value;
     });
 
-    body.pipe((value) => {
+    body.pipe(value => {
       assert.equal(value, 2, 'passed value should be changed as supposed');
       return value;
     });
 
-    body2.pipe((value) => {
+    body2.pipe(value => {
       assert.equal(value, 1, 'value should be equal to passed one');
       return value;
     });
@@ -78,7 +73,7 @@ describe('Streams', () => {
       throw new Error('should not execute this part');
     });
 
-    const tail = head.pipe((value) => {
+    const tail = head.pipe(value => {
       assert.equal(value, 1, 'value should be equal to passed one');
       return value;
     });
@@ -102,21 +97,19 @@ describe('Streams', () => {
       .pipe(secondary)
       .pipe(iterator(mainValues, plusOne));
 
-    return main
-      .sink(1)
-      .then(() => {
-        assert.deepEqual(
-          mainValues,
-          [2, 3],
-          '"mainValues" should be equal to expected ones',
-        );
+    return main.sink(1).then(() => {
+      assert.deepEqual(
+        mainValues,
+        [2, 3],
+        '"mainValues" should be equal to expected ones',
+      );
 
-        assert.deepEqual(
-          secondaryValues,
-          [7, 12],
-          '"secondaryValues" should be equal to expected ones',
-        );
-      });
+      assert.deepEqual(
+        secondaryValues,
+        [7, 12],
+        '"secondaryValues" should be equal to expected ones',
+      );
+    });
   });
 
   it('extend', () => {
@@ -180,21 +173,19 @@ describe('Streams', () => {
       .pipe(value => value + 1)
       .pipe(noop());
 
-    return stream
-      .sink(1)
-      .then(() => {
-        assert.deepEqual(
-          values,
-          [1, 2, 3],
-          'values should be equal to expected ones',
-        );
+    return stream.sink(1).then(() => {
+      assert.deepEqual(
+        values,
+        [1, 2, 3],
+        'values should be equal to expected ones',
+      );
 
-        assert.deepEqual(
-          queue,
-          [1, 2, 3],
-          'queue should be equal to expected ones',
-        );
-      });
+      assert.deepEqual(
+        queue,
+        [1, 2, 3],
+        'queue should be equal to expected ones',
+      );
+    });
   });
 
   it('onSinkStepEnd', () => {
@@ -214,21 +205,19 @@ describe('Streams', () => {
       .pipe(value => value + 1)
       .pipe(noop());
 
-    return stream
-      .sink(1)
-      .then(() => {
-        assert.deepEqual(
-          values,
-          [2, 3, undefined],
-          'values should be equal to expected ones',
-        );
+    return stream.sink(1).then(() => {
+      assert.deepEqual(
+        values,
+        [2, 3, undefined],
+        'values should be equal to expected ones',
+      );
 
-        assert.deepEqual(
-          queue,
-          [undefined, 3, 2],
-          'queue should be equal to expected ones',
-        );
-      });
+      assert.deepEqual(
+        queue,
+        [undefined, 3, 2],
+        'queue should be equal to expected ones',
+      );
+    });
   });
 
   it('onSinkComplete', () => {
@@ -253,27 +242,25 @@ describe('Streams', () => {
       .pipe(value => value + 1)
       .pipe(noop());
 
-    return stream
-      .sink(1)
-      .then((result) => {
-        assert.deepEqual(
-          values,
-          [1, 2, 3, 4],
-          'values should be equal to expected ones',
-        );
+    return stream.sink(1).then(result => {
+      assert.deepEqual(
+        values,
+        [1, 2, 3, 4],
+        'values should be equal to expected ones',
+      );
 
-        assert.deepEqual(
-          result,
-          10,
-          'result value should be equal to expected ones',
-        );
+      assert.deepEqual(
+        result,
+        10,
+        'result value should be equal to expected ones',
+      );
 
-        assert.deepEqual(
-          complete,
-          1,
-          'complete value should be equal to expected ones',
-        );
-      });
+      assert.deepEqual(
+        complete,
+        1,
+        'complete value should be equal to expected ones',
+      );
+    });
   });
 
   it('pipelines interoperability', () => {
@@ -290,18 +277,15 @@ describe('Streams', () => {
       .pipe(iterator(values, plusOne))
       .pipe(pipelineTail);
 
-
     streamTail.pipe(iterator(values, plusOne));
     streamTail.pipe(iterator(values, plusOne));
 
-    return stream
-      .sink(1)
-      .then(() => {
-        assert.deepEqual(
-          values,
-          [2, 7, 12, 13, 13],
-          '"values" should be equal to expected ones',
-        );
-      });
+    return stream.sink(1).then(() => {
+      assert.deepEqual(
+        values,
+        [2, 7, 12, 13, 13],
+        '"values" should be equal to expected ones',
+      );
+    });
   });
 });
