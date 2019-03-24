@@ -1,9 +1,9 @@
 {
-  "extends": "airbnb",
+  "extends": ["airbnb", "prettier"],
   "rules": {
     "max-len": ["error", 80],
     "no-console": ["error", {
-      allow: ["info", "warn", "error"]
+      "allow": ["info", "warn", "error"]
     }],
     "no-param-reassign": ["error", {
       "props": false
@@ -19,5 +19,5 @@
       ]
     }],
     "no-prototype-builtins": "off"
-  },
+  }
 }

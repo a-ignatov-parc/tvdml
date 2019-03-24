@@ -95,12 +95,11 @@ function toDashCase(str) {
 }
 
 function styleObjToString(styleObj) {
-  return Object
-    .keys(styleObj)
+  return Object.keys(styleObj)
     .reduce((result, key) => {
       const value = styleObj[key];
-      const hasValue = (typeof value === 'string' && value)
-        || typeof value === 'number';
+      const hasValue =
+        (typeof value === 'string' && value) || typeof value === 'number';
 
       if (hasValue) {
         result.push(`${toDashCase(key)}:${value}`);
@@ -141,46 +140,42 @@ function setInitialProperties(
   props,
   // rootContainerElement,
 ) {
-  Object
-    .keys(props)
-    .forEach((propName) => {
-      const propValue = props[propName];
+  Object.keys(props).forEach(propName => {
+    const propValue = props[propName];
 
-      if (propName === CHILDREN) {
-        if (type === 'style') {
-          domElement.innerHTML = propValue;
-        }
-      } else if (propName === DATAITEM) {
-        if (propValue instanceof DataItem) {
-          domElement.dataItem = propValue;
-        } else if (propValue) {
-          domElement.dataItem = new DataItem();
-          Object
-            .keys(propValue)
-            .forEach((key) => {
-              domElement.dataItem.setPropertyPath(key, propValue[key]);
-            });
-        }
-      } else if (booleanAttributes.includes(propName)) {
-        if (propValue) {
-          domElement.setAttribute(propName, true);
-        }
-      } else if (eventNameRegex.test(propName)) {
-        const eventName = supportedEventMapping[propName];
-
-        if (eventName && typeof propValue === 'function') {
-          domElement.addEventListener(eventName, propValue);
-        }
-      } else if (propValue != null) {
-        let attrValue = propValue;
-
-        if (propName === STYLE) {
-          attrValue = styleObjToString(propValue);
-        }
-
-        domElement.setAttribute(propName, attrValue);
+    if (propName === CHILDREN) {
+      if (type === 'style') {
+        domElement.innerHTML = propValue;
       }
-    });
+    } else if (propName === DATAITEM) {
+      if (propValue instanceof DataItem) {
+        domElement.dataItem = propValue;
+      } else if (propValue) {
+        domElement.dataItem = new DataItem();
+        Object.keys(propValue).forEach(key => {
+          domElement.dataItem.setPropertyPath(key, propValue[key]);
+        });
+      }
+    } else if (booleanAttributes.includes(propName)) {
+      if (propValue) {
+        domElement.setAttribute(propName, true);
+      }
+    } else if (eventNameRegex.test(propName)) {
+      const eventName = supportedEventMapping[propName];
+
+      if (eventName && typeof propValue === 'function') {
+        domElement.addEventListener(eventName, propValue);
+      }
+    } else if (propValue != null) {
+      let attrValue = propValue;
+
+      if (propName === STYLE) {
+        attrValue = styleObjToString(propValue);
+      }
+
+      domElement.setAttribute(propName, attrValue);
+    }
+  });
 
   if (type === 'menuItem') {
     domElement.addEventListener('select', ({ target: menuItem }) => {
@@ -204,72 +199,62 @@ function diffProperties(
 ) {
   let updatePayload = null;
 
-  Object
-    .keys(oldProps)
-    .forEach((propName) => {
-      const propValue = oldProps[propName];
-      const shouldSkip = newProps.hasOwnProperty(propName)
-        || !oldProps.hasOwnProperty(propName)
-        || propValue == null;
+  Object.keys(oldProps).forEach(propName => {
+    const propValue = oldProps[propName];
+    const shouldSkip =
+      newProps.hasOwnProperty(propName) ||
+      !oldProps.hasOwnProperty(propName) ||
+      propValue == null;
 
-      if (shouldSkip) return;
-      (updatePayload = updatePayload || []).push(propName, null);
-    });
+    if (shouldSkip) return;
+    (updatePayload = updatePayload || []).push(propName, null);
+  });
 
-  Object
-    .keys(newProps)
-    .forEach((propName) => {
-      const propValue = newProps[propName];
-      const oldPropValue = oldProps != null ? oldProps[propName] : undefined;
+  Object.keys(newProps).forEach(propName => {
+    const propValue = newProps[propName];
+    const oldPropValue = oldProps != null ? oldProps[propName] : undefined;
 
-      const shouldSkip = !newProps.hasOwnProperty(propName)
-        || propValue === oldPropValue
-        || (propValue == null && oldPropValue == null);
+    const shouldSkip =
+      !newProps.hasOwnProperty(propName) ||
+      propValue === oldPropValue ||
+      (propValue == null && oldPropValue == null);
 
-      if (shouldSkip) return;
-      if (propName === CHILDREN) {
-        const shouldUpdate = oldPropValue !== propValue
-          && (
-            typeof propValue === 'string'
-            || typeof propValue === 'number'
-          );
+    if (shouldSkip) return;
+    if (propName === CHILDREN) {
+      const shouldUpdate =
+        oldPropValue !== propValue &&
+        (typeof propValue === 'string' || typeof propValue === 'number');
 
-        if (shouldUpdate) {
-          (updatePayload = updatePayload || []).push(propName, `${propValue}`);
-        }
-      } else if (propName === DATAITEM) {
-        if (oldPropValue !== propValue) {
-          (updatePayload = updatePayload || []).push(propName, propValue);
-        }
-      } else if (booleanAttributes.includes(propName)) {
-        const oldBoolValue = !!oldPropValue;
-        const boolValue = !!propValue;
-
-        if (oldBoolValue !== boolValue) {
-          (updatePayload = updatePayload || []).push(propName, propValue);
-        }
-      } else if (propName === STYLE) {
-        const oldStyleValue = styleObjToString(oldPropValue);
-        const styleValue = styleObjToString(propValue);
-
-        if (oldStyleValue !== styleValue) {
-          (updatePayload = updatePayload || []).push(propName, propValue);
-        }
-      } else {
+      if (shouldUpdate) {
+        (updatePayload = updatePayload || []).push(propName, `${propValue}`);
+      }
+    } else if (propName === DATAITEM) {
+      if (oldPropValue !== propValue) {
         (updatePayload = updatePayload || []).push(propName, propValue);
       }
-    });
+    } else if (booleanAttributes.includes(propName)) {
+      const oldBoolValue = !!oldPropValue;
+      const boolValue = !!propValue;
+
+      if (oldBoolValue !== boolValue) {
+        (updatePayload = updatePayload || []).push(propName, propValue);
+      }
+    } else if (propName === STYLE) {
+      const oldStyleValue = styleObjToString(oldPropValue);
+      const styleValue = styleObjToString(propValue);
+
+      if (oldStyleValue !== styleValue) {
+        (updatePayload = updatePayload || []).push(propName, propValue);
+      }
+    } else {
+      (updatePayload = updatePayload || []).push(propName, propValue);
+    }
+  });
 
   return updatePayload;
 }
 
-function updateProperties(
-  domElement,
-  updatePayload,
-  type,
-  oldProps,
-  newProps,
-) {
+function updateProperties(domElement, updatePayload, type, oldProps, newProps) {
   for (let i = 0; i < updatePayload.length; i += 2) {
     const propName = updatePayload[i];
     const propValue = updatePayload[i + 1];
@@ -285,11 +270,9 @@ function updateProperties(
         domElement.dataItem = propValue;
       } else {
         domElement.dataItem = new DataItem();
-        Object
-          .keys(propValue)
-          .forEach((key) => {
-            domElement.dataItem.setPropertyPath(key, propValue[key]);
-          });
+        Object.keys(propValue).forEach(key => {
+          domElement.dataItem.setPropertyPath(key, propValue[key]);
+        });
       }
     } else if (booleanAttributes.includes(propName)) {
       if (propValue) {
@@ -321,6 +304,20 @@ function updateProperties(
       domElement.setAttribute(propName, attrValue);
     }
   }
+}
+
+function scheduleDeferredCallback(callback) {
+  return setTimeout(() => {
+    callback({
+      timeRemaining() {
+        return Infinity;
+      },
+    });
+  });
+}
+
+function cancelDeferredCallback(timeoutId) {
+  clearTimeout(timeoutId);
 }
 
 const TVMLRenderer = ReactFiberReconciler({
@@ -381,10 +378,12 @@ const TVMLRenderer = ReactFiberReconciler({
        */
       if (isTextNode(target) && isTextNode(child)) {
         if (!target._handledTextNodes) {
-          target._handledTextNodes = [{
-            id: getNodeId(target),
-            value: target.nodeValue,
-          }];
+          target._handledTextNodes = [
+            {
+              id: getNodeId(target),
+              value: target.nodeValue,
+            },
+          ];
         }
 
         target._handledTextNodes.push({
@@ -407,13 +406,7 @@ const TVMLRenderer = ReactFiberReconciler({
     return false;
   },
 
-  prepareUpdate(
-    domElement,
-    type,
-    oldProps,
-    newProps,
-    rootContainerInstance,
-  ) {
+  prepareUpdate(domElement, type, oldProps, newProps, rootContainerInstance) {
     return diffProperties(
       domElement,
       type,
@@ -440,19 +433,11 @@ const TVMLRenderer = ReactFiberReconciler({
 
   isPrimaryRenderer: true,
 
-  scheduleDeferredCallback(callback) {
-    return setTimeout(() => {
-      callback({
-        timeRemaining() {
-          return Infinity;
-        },
-      });
-    });
-  },
+  scheduleDeferredCallback,
+  cancelDeferredCallback,
 
-  cancelDeferredCallback(timeoutId) {
-    clearTimeout(timeoutId);
-  },
+  schedulePassiveEffects: scheduleDeferredCallback,
+  cancelPassiveEffects: cancelDeferredCallback,
 
   supportsMutation: true,
   supportsPersistence: false,
@@ -467,6 +452,22 @@ const TVMLRenderer = ReactFiberReconciler({
 
   resetTextContent(domElement) {
     domElement.textContent = '';
+  },
+
+  hideInstance(/* instance */) {
+    // noop
+  },
+
+  hideTextInstance(/* textInstance */) {
+    // noop
+  },
+
+  unhideInstance(/* instance, props */) {
+    // noop
+  },
+
+  unhideTextInstance(/* textInstance, text */) {
+    // noop
   },
 
   commitTextUpdate(textInstance, oldText, newText) {
@@ -506,10 +507,12 @@ const TVMLRenderer = ReactFiberReconciler({
        */
       if (isTextNode(target) && isTextNode(child)) {
         if (!target._handledTextNodes) {
-          target._handledTextNodes = [{
-            id: getNodeId(target),
-            value: target.nodeValue,
-          }];
+          target._handledTextNodes = [
+            {
+              id: getNodeId(target),
+              value: target.nodeValue,
+            },
+          ];
         }
 
         target._handledTextNodes.push({
@@ -547,10 +550,12 @@ const TVMLRenderer = ReactFiberReconciler({
        */
       if (isTextNode(beforeChild) && isTextNode(child)) {
         if (!beforeChild._handledTextNodes) {
-          beforeChild._handledTextNodes = [{
-            id: getNodeId(beforeChild),
-            value: beforeChild.nodeValue,
-          }];
+          beforeChild._handledTextNodes = [
+            {
+              id: getNodeId(beforeChild),
+              value: beforeChild.nodeValue,
+            },
+          ];
         }
 
         beforeChild._handledTextNodes.unshift({
@@ -599,8 +604,8 @@ const TVMLRenderer = ReactFiberReconciler({
           const node = parentInstance.childNodes.item(index);
 
           if (isTextNode(node)) {
-            const nodeHasControlledNodes = node._handledTextNodes
-              && node._handledTextNodes.length > 1;
+            const nodeHasControlledNodes =
+              node._handledTextNodes && node._handledTextNodes.length > 1;
 
             if (node === child) {
               if (nodeHasControlledNodes) {
