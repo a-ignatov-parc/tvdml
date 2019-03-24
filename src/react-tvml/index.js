@@ -1,6 +1,12 @@
 /* global DataItem */
 
 import ReactFiberReconciler from 'react-reconciler';
+import {
+  unstable_now as now,
+  unstable_shouldYield as shouldYield,
+  unstable_scheduleCallback as scheduleDeferredCallback,
+  unstable_cancelCallback as cancelDeferredCallback,
+} from 'scheduler';
 
 import { broadcast } from '../event-bus';
 
@@ -306,20 +312,6 @@ function updateProperties(domElement, updatePayload, type, oldProps, newProps) {
   }
 }
 
-function scheduleDeferredCallback(callback) {
-  return setTimeout(() => {
-    callback({
-      timeRemaining() {
-        return Infinity;
-      },
-    });
-  });
-}
-
-function cancelDeferredCallback(timeoutId) {
-  clearTimeout(timeoutId);
-}
-
 const TVMLRenderer = ReactFiberReconciler({
   getRootHostContext(rootContainerInstance) {
     const { nodeType } = rootContainerInstance;
@@ -429,10 +421,10 @@ const TVMLRenderer = ReactFiberReconciler({
     return textNode;
   },
 
-  now: () => Date.now(),
-
   isPrimaryRenderer: true,
 
+  now,
+  shouldYield,
   scheduleDeferredCallback,
   cancelDeferredCallback,
 

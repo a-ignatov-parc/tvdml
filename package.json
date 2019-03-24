@@ -51,7 +51,8 @@
     ]
   },
   "dependencies": {
-    "react-reconciler": "^0.20.3"
+    "react-reconciler": "^0.20.3",
+    "scheduler": "^0.13.5"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
