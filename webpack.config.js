@@ -38,13 +38,6 @@ const plugins = [
   }),
 ];
 
-if (isProd) {
-  plugins.push(...[
-    new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.optimize.OccurrenceOrderPlugin(),
-  ]);
-}
-
 module.exports = {
   entry: resolveFromRoot('./src'),
   output: {
