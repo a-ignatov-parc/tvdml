@@ -54,7 +54,7 @@ const handlers = {
   },
 
   clear() {
-    navigationDocument.documents.forEach((document) => {
+    navigationDocument.documents.forEach(document => {
       unmount(document);
       document.removeEventListener('unload', handleUnload);
     });
@@ -70,21 +70,17 @@ const handlers = {
   popToDocument(document) {
     const index = navigationDocument.documents.indexOf(document);
 
-    navigationDocument.documents
-      .slice(index + 1)
-      .forEach((documentItem) => {
-        unmount(documentItem);
-        documentItem.removeEventListener('unload', handleUnload);
-      });
+    navigationDocument.documents.slice(index + 1).forEach(documentItem => {
+      unmount(documentItem);
+      documentItem.removeEventListener('unload', handleUnload);
+    });
   },
 
   popToRootDocument() {
-    navigationDocument.documents
-      .slice(1)
-      .forEach((document) => {
-        unmount(document);
-        document.removeEventListener('unload', handleUnload);
-      });
+    navigationDocument.documents.slice(1).forEach(document => {
+      unmount(document);
+      document.removeEventListener('unload', handleUnload);
+    });
   },
 
   removeDocument(document) {
@@ -107,7 +103,7 @@ export function enable() {
     throw new Error('Hooks already enabled');
   }
 
-  methodsToPatch.forEach((name) => {
+  methodsToPatch.forEach(name => {
     navigationDocument[name] = function TVDMLWrapper(...args) {
       if (handlers[name]) handlers[name].apply(this, args);
       return originalMethods[name].apply(this, args);
@@ -119,10 +115,10 @@ export function enable() {
 
 export function disable() {
   if (!enabled) {
-    throw new Error('Hooks aren\'t enabled');
+    throw new Error("Hooks aren't enabled");
   }
 
-  methodsToPatch.forEach((name) => {
+  methodsToPatch.forEach(name => {
     navigationDocument[name] = originalMethods[name];
   });
 

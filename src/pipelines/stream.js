@@ -32,10 +32,10 @@ export default class Stream {
     }
 
     const stream = new this.constructor(this.options);
-    const resolver = (step, ctx, payload) => Promise
-      .resolve(payload)
-      .then(handler)
-      .then(stream._sink.bind(stream, step + 1, ctx));
+    const resolver = (step, ctx, payload) =>
+      Promise.resolve(payload)
+        .then(handler)
+        .then(stream._sink.bind(stream, step + 1, ctx));
 
     return { stream, resolver };
   }
@@ -45,24 +45,25 @@ export default class Stream {
 
     return this._sink(0, ctx, payload)
       .then(this.handleSinkComplete(ctx))
-      .catch((error) => {
+      .catch(error => {
         console.error(error);
         return Promise.reject(error);
       });
   }
 
   _sink(step = 0, ctx, payload) {
-    return Promise
-      .all(this.forks.map(resolver => Promise
-        .resolve(payload)
-        .then(this.handleSinkByStep(step, ctx))
-        .then(resolver.bind(resolver, step, ctx))
-        .then(this.handleSinkByStepEnd(step, ctx))))
-      .then(() => payload);
+    return Promise.all(
+      this.forks.map(resolver =>
+        Promise.resolve(payload)
+          .then(this.handleSinkByStep(step, ctx))
+          .then(resolver.bind(resolver, step, ctx))
+          .then(this.handleSinkByStepEnd(step, ctx)),
+      ),
+    ).then(() => payload);
   }
 
   handleSinkByStep(step, ctx) {
-    return (payload) => {
+    return payload => {
       const { onSinkStep } = this.options;
 
       if (typeof onSinkStep === 'function') {
@@ -73,7 +74,7 @@ export default class Stream {
   }
 
   handleSinkByStepEnd(step, ctx) {
-    return (payload) => {
+    return payload => {
       const { onSinkStepEnd } = this.options;
 
       if (typeof onSinkStepEnd === 'function') {
@@ -84,7 +85,7 @@ export default class Stream {
   }
 
   handleSinkComplete(ctx) {
-    return (payload) => {
+    return payload => {
       const { onSinkComplete } = this.options;
 
       if (typeof onSinkComplete === 'function') {
