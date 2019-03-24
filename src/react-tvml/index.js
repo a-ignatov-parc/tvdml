@@ -455,6 +455,7 @@ const TVMLRenderer = ReactFiberReconciler({
   },
 
   hideInstance(/* instance */) {
+    // We can't hide tvml elements.
     // noop
   },
 
