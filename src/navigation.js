@@ -1,6 +1,5 @@
-/* global App */
+/* global App, navigationDocument */
 import { createStream } from './pipelines';
-import { subscribe } from './event-bus';
 import { Symbol } from './utils';
 
 const routes = {};
@@ -97,9 +96,8 @@ export function redirect(routeName, params) {
   return navigate(routeName, params, true);
 }
 
-subscribe('menu-item-select').pipe(({ menuItem }) => {
-  const routeName = menuItem.getAttribute('route');
-  if (routeName) {
-    navigate(routeName);
+export function navigateBack() {
+  if (navigationDocument.documents.length > 1) {
+    navigationDocument.documents.pop();
   }
-});
+}

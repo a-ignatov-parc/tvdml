@@ -35,6 +35,7 @@ export function subscribe(name) {
 }
 
 export function broadcast(name, data) {
+  console.info(`broadcast: ${name}`, data);
   (subscriptions[name] || []).forEach(stream => stream.sink(data));
 }
 

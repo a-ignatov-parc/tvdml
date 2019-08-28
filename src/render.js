@@ -1,13 +1,16 @@
 /* global navigationDocument, DOMImplementationRegistry */
-
 import ReactTVML from './react-tvml';
 import { subscribe } from './event-bus';
 import { promisedTimeout } from './utils';
 import { passthrough, createPipeline } from './pipelines';
+import { navigate } from './navigation';
 
 const RENDERING_ANIMATION = 600;
 
+let mainMenu;
+let mainMenuDoc;
 let modalDocument = null;
+
 subscribe('uncontrolled-document-dismissal').pipe(document => {
   if (document === modalDocument) {
     modalDocument = null;
@@ -79,9 +82,6 @@ function getLastDocument() {
   return length > 1 ? navigationDocument.documents[length - 1] : null;
 }
 
-let mainMenu;
-let mainMenuDoc;
-
 export function render(renderFactory) {
   return createPipeline()
     .pipe(
@@ -100,8 +100,8 @@ export function render(renderFactory) {
           }
           document = createEmptyDocument();
           document.route = route;
-          document.prevRouteDocument = mainMenuDoc
-            ? mainMenuDoc.ownerDocument
+          document.prevRouteDocument = mainMenu
+            ? mainMenu.ownerDocument
             : getLastDocument();
         }
 
@@ -111,6 +111,7 @@ export function render(renderFactory) {
           for (let i = 0; i < menuItems.length; i += 1) {
             const menuItem = menuItems.item(i);
             if (menuItem.getAttribute('route') === route) {
+              mainMenuDoc.setSelectedItem(menuItem);
               mainMenuDoc.setDocument(document, menuItem);
               document.isAttached = true;
               break;
@@ -129,13 +130,13 @@ export function render(renderFactory) {
           document.isAttached = true;
         }
 
-        // finally render stuff
+        // render stuff
         const element = renderFactory(payload);
         ReactTVML.render(element, document);
 
         // grab the main menu
         if (route === 'main') {
-          const list = document.getElementsByTagName('menuBar');
+          const list = document.documentElement.getElementsByTagName('menuBar');
           if (list.length === 1) {
             mainMenu = list.item(0);
             mainMenuDoc = mainMenu.getFeature('MenuBarDocument');
@@ -152,3 +153,10 @@ export function render(renderFactory) {
     )
     .pipe(passthrough(() => promisedTimeout(RENDERING_ANIMATION)));
 }
+
+subscribe('menu-item-select').pipe(({ menuItem }) => {
+  const routeName = menuItem.getAttribute('route');
+  if (routeName) {
+    navigate(routeName);
+  }
+});
