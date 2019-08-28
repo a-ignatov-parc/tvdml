@@ -1,24 +1,19 @@
 import * as hooks from './navigation/hooks';
-import { subscribe, broadcast } from './event-bus';
+import { event, broadcast, subscribe } from './event-bus';
 
-export { subscribe };
+export { event, subscribe };
 export * from './render';
 export * from './pipelines';
 export * from './navigation';
 export { default as ReactTVML } from './react-tvml';
 
-subscribe('uncontrolled-document-dismissal').pipe((document) => {
-  const {
-    modal,
-    route,
-  } = document;
+subscribe('uncontrolled-document-dismissal').pipe(document => {
+  const { modal, route } = document;
 
   let { prevRouteDocument } = document;
 
   const prevDocumentElement = prevRouteDocument.documentElement;
-  const menuBar = prevDocumentElement
-    .getElementsByTagName('menuBar')
-    .item(0);
+  const menuBar = prevDocumentElement.getElementsByTagName('menuBar').item(0);
 
   if (menuBar) {
     const menuBarDocument = menuBar.getFeature('MenuBarDocument');
@@ -26,10 +21,7 @@ subscribe('uncontrolled-document-dismissal').pipe((document) => {
     prevRouteDocument = menuBarDocument.getDocument(menuItem);
   }
 
-  const {
-    route: prevRoute,
-    modal: prevModal,
-  } = prevRouteDocument;
+  const { route: prevRoute, modal: prevModal } = prevRouteDocument;
 
   broadcast('menu-button-press', {
     from: {

@@ -1,21 +1,9 @@
 /* global App */
-
 import { createStream } from './pipelines';
-import { broadcast, subscribe } from './event-bus';
+import { subscribe } from './event-bus';
 import { Symbol } from './utils';
 
-let launched = false;
-
 const routes = {};
-
-export const event = {
-  EXIT: new Symbol('onExit'),
-  ERROR: new Symbol('onError'),
-  LAUNCH: new Symbol('onLaunch'),
-  RELOAD: new Symbol('onReload'),
-  RESUME: new Symbol('onResume'),
-  SUSPEND: new Symbol('onSuspend'),
-};
 
 export const route = {
   NOT_FOUND: new Symbol('Not found'),
@@ -25,40 +13,42 @@ export function handleRoute(routeName) {
   if (!routeName) {
     throw new Error('Route handler need route to process');
   }
-
   if (routes[routeName]) {
-    throw new Error(`Handler for "${routeName}" is already specified`);
+    throw new Error(
+      `Handler for "${routeName.toString()}" is already specified`,
+    );
   }
 
   routes[routeName] = createStream({
     onSinkStepEnd(step, payload, ctx) {
+      if (!ctx.documents) {
+        ctx.documents = [];
+      }
+
       const hasDocument = payload && payload.document;
-
-      if (!ctx.documents) ctx.documents = [];
-
-      // eslint-disable-next-line no-bitwise
-      if (hasDocument && !~ctx.documents.indexOf(payload.document)) {
+      if (hasDocument && ctx.documents.indexOf(payload.document) === -1) {
         ctx.documents.push(payload.document);
       }
       return payload;
     },
 
-    onSinkComplete(payload, ctx) {
-      const { documents } = ctx;
-
-      if (!documents.length) {
-        // eslint-disable-next-line max-len
-        console.warn(`Navigation to route "${routeName}" ended without rendering any navigation record!`);
-      }
-
-      if (documents.length > 1) {
-        // eslint-disable-next-line max-len
-        console.warn(`Navigation to route "${routeName}" ended with rendering more than one navigation record!`);
+    onSinkComplete(payload, { documents }) {
+      if (documents.length === 0) {
+        console.warn(
+          `Navigation to route "${routeName.toString()}" ended without rendering any navigation record!`,
+        );
+      } else if (documents.length > 1) {
+        console.warn(
+          `Navigation to route "${routeName.toString()}" ended with rendering more than one navigation record!`,
+        );
       }
 
       if (documents[0].route !== routeName) {
-        // eslint-disable-next-line max-len
-        console.warn(`Navigation to route "${routeName}" ended with unexpected navigation document "${documents[0].route}"!`);
+        console.warn(
+          `Navigation to route "${routeName.toString()}" ended with unexpected navigation document "${
+            documents[0].route
+          }"!`,
+        );
       }
 
       return payload;
@@ -81,12 +71,11 @@ export function dismissRoute(routeName) {
 }
 
 export function navigate(routeName, params, isRedirect = false) {
-  if (!launched) {
-    throw new Error('Can\'t process navigation before app is launched');
+  if (!App.launched) {
+    throw new Error("Can't process navigation before app is launched");
   }
 
   const targetRoute = routes[routeName];
-
   if (targetRoute) {
     return targetRoute.sink({
       route: routeName,
@@ -95,8 +84,8 @@ export function navigate(routeName, params, isRedirect = false) {
     });
   }
 
-  console.error(`Unable to resolve route "${routeName}"`);
-
+  // use toString as route may be a Symbol
+  console.error(`Unable to resolve route "${routeName.toString()}"`);
   if (routeName !== route.NOT_FOUND) {
     return navigate(route.NOT_FOUND, params);
   }
@@ -108,20 +97,9 @@ export function redirect(routeName, params) {
   return navigate(routeName, params, true);
 }
 
-Object
-  .keys(event)
-  .forEach((id) => {
-    const symbol = event[id];
-    const name = symbol.toString();
-
-    App[name] = (options) => {
-      console.info('Fired handler for app lifecycle', name, options);
-      if (name === 'onLaunch') launched = true;
-      broadcast(symbol, options);
-    };
-  });
-
 subscribe('menu-item-select').pipe(({ menuItem, menuBar }) => {
   const routeValue = menuItem.getAttribute('route');
-  if (routeValue) navigate(routeValue, { menuItem, menuBar });
+  if (routeValue) {
+    navigate(routeValue, { menuItem, menuBar });
+  }
 });

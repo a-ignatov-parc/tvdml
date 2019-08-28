@@ -1,6 +1,17 @@
+/* global App */
 import { createStream } from './pipelines';
+import { Symbol } from './utils';
 
 const subscriptions = {};
+
+export const event = {
+  EXIT: new Symbol('onExit'),
+  ERROR: new Symbol('onError'),
+  LAUNCH: new Symbol('onLaunch'),
+  RELOAD: new Symbol('onReload'),
+  RESUME: new Symbol('onResume'),
+  SUSPEND: new Symbol('onSuspend'),
+};
 
 export function subscribe(name) {
   if (!subscriptions[name]) {
@@ -11,9 +22,7 @@ export function subscribe(name) {
     extend: {
       unsubscribe() {
         const index = subscriptions[name].indexOf(this);
-
-        // eslint-disable-next-line no-bitwise
-        if (~index) {
+        if (index !== -1) {
           subscriptions[name].splice(index, 1);
         }
       },
@@ -28,3 +37,15 @@ export function subscribe(name) {
 export function broadcast(name, data) {
   (subscriptions[name] || []).forEach(stream => stream.sink(data));
 }
+
+Object.keys(event).forEach(id => {
+  const symbol = event[id];
+  const name = symbol.toString();
+  App[name] = options => {
+    console.info('Fired handler for app lifecycle', name, options);
+    if (name === 'onLaunch') {
+      App.launched = true;
+    }
+    broadcast(symbol, options);
+  };
+});
