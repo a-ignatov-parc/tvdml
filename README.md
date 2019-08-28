@@ -1,8 +1,7 @@
-# TVDML [![CircleCI](https://circleci.com/gh/a-ignatov-parc/tvdml.svg?style=svg)](https://circleci.com/gh/a-ignatov-parc/tvdml)
+# TVDML
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 
 - [New!](#new)
   - [Update highlights](#update-highlights)
@@ -34,7 +33,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## New!
+## New
 
 This is the new version of tvdml, `6.X`.
 
@@ -69,12 +68,13 @@ Starting from `4.X` TVDML drops support for tvOS < 10. If you need that support 
 
 TVDML is shipping as [npm package](https://www.npmjs.com/package/tvdml) and can be installed with npm or `yarn`. In addition you'll need to install React.js.
 
-```
+```sh
 npm install --save tvdml react
 ```
 
 Or using `yarn`
-```
+
+```sh
 yarn add tvdml react
 ```
 
