@@ -4857,10 +4857,7 @@ object-assign
             }),
               'menuItem' === t &&
                 e.addEventListener('select', ({ target: e }) => {
-                  y('menu-item-select', {
-                    menuItem: e,
-                    menuBar: e.parentNode.getFeature('MenuBarDocument'),
-                  });
+                  y('menu-item-select', { menuItem: e });
                 });
           })(e, t, n),
           !1
@@ -5154,16 +5151,18 @@ object-assign
           {},
         );
       const $ = 600;
-      let q = null;
-      function Y() {
+      let q,
+        Y,
+        Z = null;
+      function G() {
         return DOMImplementationRegistry.getDOMImplementation().createDocument();
       }
-      function Z(e) {
+      function K(e) {
         return p().pipe(
           m((t = {}) => {
-            if (!q) {
+            if (!Z) {
               const { route: e } = t,
-                n = Y(),
+                n = G(),
                 r = navigationDocument.documents.pop();
               let i = r.route;
               const l = r.documentElement
@@ -5177,72 +5176,82 @@ object-assign
               (n.modal = !0),
                 (n.prevRouteDocument = r),
                 (n.route = `${e || i}-modal`),
-                (q = n),
+                (Z = n),
                 navigationDocument.presentModal(n),
                 (n.isAttached = !0);
             }
             const n = e(t);
-            W.render(n, q);
+            W.render(n, Z);
           }),
         );
       }
-      function G() {
+      function X() {
         return p().pipe(
           m(() =>
-            q ? ((q = null), navigationDocument.dismissModal(!0), u($)) : null,
+            Z ? ((Z = null), navigationDocument.dismissModal(!0), u($)) : null,
           ),
         );
       }
-      function K() {
-        return G().sink();
+      function J() {
+        return X().sink();
       }
-      function X(e) {
+      function ee() {
+        const { length: e } = navigationDocument.documents;
+        return e > 1 ? navigationDocument.documents[e - 1] : null;
+      }
+      function te(e) {
         return p()
           .pipe(
             m((t = {}) => {
-              const { route: n, redirect: r, navigation: i = {} } = t,
-                { menuBar: l, menuItem: o } = i,
-                a = Boolean(l && o),
-                u = a && l.getDocument(o),
-                c = e(t);
-              let { document: s } = t;
-              if (s) {
-                if (s.possiblyDismissedByUser) return null;
+              let { document: n, route: r } = t;
+              if (n) {
+                if (n.possiblyDismissedByUser) return null;
               } else
-                u
-                  ? (s = u)
-                  : (((s = Y()).route =
-                      n || (!navigationDocument.documents.length && 'main')),
-                    (s.prevRouteDocument = l
-                      ? l.ownerDocument
-                      : navigationDocument.documents.pop()));
-              if (a) u || l.setDocument(s, o);
-              else if (!s.isAttached) {
-                const e = r && navigationDocument.documents.pop();
-                e
-                  ? navigationDocument.replaceDocument(s, e)
-                  : navigationDocument.pushDocument(s);
+                r || 0 !== navigationDocument.documents.length || (r = 'main'),
+                  ((n = G()).route = r),
+                  (n.prevRouteDocument = Y ? Y.ownerDocument : ee());
+              if (q) {
+                const e = q.getElementsByTagName('menuItem');
+                for (let t = 0; t < e.length; t += 1) {
+                  const i = e.item(t);
+                  if (i.getAttribute('route') === r) {
+                    Y.setDocument(n, i), (n.isAttached = !0);
+                    break;
+                  }
+                }
               }
-              return (
-                (s.isAttached = !0),
-                W.render(c, s),
-                { document: s, redirect: !1 }
-              );
+              if (!n.isAttached) {
+                const e = t.redirect && ee();
+                e
+                  ? navigationDocument.replaceDocument(n, e)
+                  : navigationDocument.pushDocument(n),
+                  (n.isAttached = !0);
+              }
+              const i = e(t);
+              if ((W.render(i, n), 'main' === r)) {
+                const e = n.getElementsByTagName('menuBar');
+                1 === e.length
+                  ? ((q = e.item(0)), (Y = q.getFeature('MenuBarDocument')))
+                  : console.warn(
+                      'You should render a menuBar in the main document',
+                    );
+              }
+              return { document: n, redirect: !1 };
             }),
           )
           .pipe(m(() => u($)));
       }
       v('uncontrolled-document-dismissal').pipe(e => {
-        e === q && (q = null);
+        e === Z && (Z = null);
       });
-      const J = {},
-        ee = { NOT_FOUND: new c('Not found') };
-      function te(e) {
+      const ne = {},
+        re = { NOT_FOUND: new c('Not found') };
+      function ie(e) {
         if (!e) throw new Error('Route handler need route to process');
-        if (J[e])
+        if (ne[e])
           throw new Error(`Handler for "${e.toString()}" is already specified`);
         return (
-          (J[e] = d({
+          (ne[e] = d({
             onSinkStepEnd: (e, t, n) => (
               n.documents || (n.documents = []),
               t &&
@@ -5269,29 +5278,29 @@ object-assign
               t
             ),
           })),
-          J[e]
+          ne[e]
         );
       }
-      function ne(e) {
+      function le(e) {
         if (!e) throw new Error('Route handler need route to process');
-        if (!J[e]) throw new Error(`Handler for "${e}" isn't specified`);
-        delete J[e];
+        if (!ne[e]) throw new Error(`Handler for "${e}" isn't specified`);
+        delete ne[e];
       }
-      function re(e, t, n = !1) {
+      function oe(e, t, n = !1) {
         if (!App.launched)
           throw new Error("Can't process navigation before app is launched");
-        const r = J[e];
+        const r = ne[e];
         return r
           ? r.sink({ route: e, navigation: t, redirect: n })
           : (console.error(`Unable to resolve route "${e.toString()}"`),
-            e !== ee.NOT_FOUND ? re(ee.NOT_FOUND, t) : Promise.reject());
+            e !== re.NOT_FOUND ? oe(re.NOT_FOUND, t) : Promise.reject());
       }
-      function ie(e, t) {
-        return re(e, t, !0);
+      function ae(e, t) {
+        return oe(e, t, !0);
       }
-      v('menu-item-select').pipe(({ menuItem: e, menuBar: t }) => {
-        const n = e.getAttribute('route');
-        n && re(n, { menuItem: e, menuBar: t });
+      v('menu-item-select').pipe(({ menuItem: e }) => {
+        const t = e.getAttribute('route');
+        t && oe(t);
       }),
         n.d(t, 'event', function() {
           return g;
@@ -5300,19 +5309,19 @@ object-assign
           return v;
         }),
         n.d(t, 'createEmptyDocument', function() {
-          return Y;
-        }),
-        n.d(t, 'renderModal', function() {
-          return Z;
-        }),
-        n.d(t, 'dismissModal', function() {
           return G;
         }),
-        n.d(t, 'removeModal', function() {
+        n.d(t, 'renderModal', function() {
           return K;
         }),
-        n.d(t, 'render', function() {
+        n.d(t, 'dismissModal', function() {
           return X;
+        }),
+        n.d(t, 'removeModal', function() {
+          return J;
+        }),
+        n.d(t, 'render', function() {
+          return te;
         }),
         n.d(t, 'createStream', function() {
           return d;
@@ -5324,36 +5333,37 @@ object-assign
           return m;
         }),
         n.d(t, 'route', function() {
-          return ee;
-        }),
-        n.d(t, 'handleRoute', function() {
-          return te;
-        }),
-        n.d(t, 'dismissRoute', function() {
-          return ne;
-        }),
-        n.d(t, 'navigate', function() {
           return re;
         }),
-        n.d(t, 'redirect', function() {
+        n.d(t, 'handleRoute', function() {
           return ie;
+        }),
+        n.d(t, 'dismissRoute', function() {
+          return le;
+        }),
+        n.d(t, 'navigate', function() {
+          return oe;
+        }),
+        n.d(t, 'redirect', function() {
+          return ae;
         }),
         n.d(t, 'ReactTVML', function() {
           return W;
         }),
         v('uncontrolled-document-dismissal').pipe(e => {
-          const { modal: t, route: n } = e;
-          let { prevRouteDocument: r } = e;
-          const i = r.documentElement.getElementsByTagName('menuBar').item(0);
-          if (i) {
-            const e = i.getFeature('MenuBarDocument'),
-              t = e.getSelectedItem();
-            r = e.getDocument(t);
+          let { prevRouteDocument: t } = e;
+          if (!t) return;
+          const n = t.documentElement.getElementsByTagName('menuBar').item(0);
+          if (n) {
+            const e = n.getFeature('MenuBarDocument'),
+              r = e.getSelectedItem();
+            t = e.getDocument(r);
           }
-          const { route: l, modal: o } = r;
+          const { route: r, modal: i } = t,
+            { modal: l, route: o } = e;
           y('menu-button-press', {
-            from: { route: n, document: e, modal: !!t },
-            to: { route: l, document: r, modal: !!o },
+            from: { route: o, document: e, modal: !!l },
+            to: { route: r, document: t, modal: !!i },
           });
         }),
         (function() {

@@ -184,14 +184,8 @@ function setInitialProperties(
   });
 
   if (type === 'menuItem') {
-    domElement.addEventListener('select', ({ target: menuItem }) => {
-      const menuBar = menuItem.parentNode;
-      const feature = menuBar.getFeature('MenuBarDocument');
-
-      broadcast('menu-item-select', {
-        menuItem,
-        menuBar: feature,
-      });
+    domElement.addEventListener('select', ({ target }) => {
+      broadcast('menu-item-select', { menuItem: target });
     });
   }
 }

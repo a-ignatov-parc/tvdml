@@ -97,9 +97,9 @@ export function redirect(routeName, params) {
   return navigate(routeName, params, true);
 }
 
-subscribe('menu-item-select').pipe(({ menuItem, menuBar }) => {
-  const routeValue = menuItem.getAttribute('route');
-  if (routeValue) {
-    navigate(routeValue, { menuItem, menuBar });
+subscribe('menu-item-select').pipe(({ menuItem }) => {
+  const routeName = menuItem.getAttribute('route');
+  if (routeName) {
+    navigate(routeName);
   }
 });

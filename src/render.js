@@ -72,19 +72,21 @@ export function removeModal() {
   return dismissModal().sink();
 }
 
+function getLastDocument() {
+  // the first document is the 'main' document, typically containing the menu
+  // this way we avoid stuff from ever touching it
+  const { length } = navigationDocument.documents;
+  return length > 1 ? navigationDocument.documents[length - 1] : null;
+}
+
+let mainMenu;
+let mainMenuDoc;
+
 export function render(renderFactory) {
   return createPipeline()
     .pipe(
       passthrough((payload = {}) => {
-        const { route, redirect, navigation = {} } = payload;
-
-        const { menuBar, menuItem } = navigation;
-        const isMenuDocument = Boolean(menuBar && menuItem);
-        const menuItemDocument =
-          isMenuDocument && menuBar.getDocument(menuItem);
-        const element = renderFactory(payload);
-
-        let { document } = payload;
+        let { document, route } = payload;
         if (document) {
           // If we received dismissed document it means that user pressed menu
           // button and our pipeline is canceled. Now we must silently succeed
@@ -92,32 +94,55 @@ export function render(renderFactory) {
           if (document.possiblyDismissedByUser) {
             return null;
           }
-        } else if (menuItemDocument) {
-          document = menuItemDocument;
         } else {
+          if (!route && navigationDocument.documents.length === 0) {
+            route = 'main';
+          }
           document = createEmptyDocument();
-          document.route =
-            route || (!navigationDocument.documents.length && 'main');
-          document.prevRouteDocument = menuBar
-            ? menuBar.ownerDocument
-            : navigationDocument.documents.pop();
+          document.route = route;
+          document.prevRouteDocument = mainMenuDoc
+            ? mainMenuDoc.ownerDocument
+            : getLastDocument();
         }
 
-        if (isMenuDocument) {
-          if (!menuItemDocument) {
-            menuBar.setDocument(document, menuItem);
+        // does the route correspond to a menu item?
+        if (mainMenu) {
+          const menuItems = mainMenu.getElementsByTagName('menuItem');
+          for (let i = 0; i < menuItems.length; i += 1) {
+            const menuItem = menuItems.item(i);
+            if (menuItem.getAttribute('route') === route) {
+              mainMenuDoc.setDocument(document, menuItem);
+              document.isAttached = true;
+              break;
+            }
           }
-        } else if (!document.isAttached) {
-          const lastDocument = redirect && navigationDocument.documents.pop();
+        }
+
+        // make sure the document is always attached somewhere
+        if (!document.isAttached) {
+          const lastDocument = payload.redirect && getLastDocument();
           if (lastDocument) {
             navigationDocument.replaceDocument(document, lastDocument);
           } else {
             navigationDocument.pushDocument(document);
           }
+          document.isAttached = true;
         }
 
-        document.isAttached = true;
+        // finally render stuff
+        const element = renderFactory(payload);
         ReactTVML.render(element, document);
+
+        // grab the main menu
+        if (route === 'main') {
+          const list = document.getElementsByTagName('menuBar');
+          if (list.length === 1) {
+            mainMenu = list.item(0);
+            mainMenuDoc = mainMenu.getFeature('MenuBarDocument');
+          } else {
+            console.warn('You should render a menuBar in the main document');
+          }
+        }
 
         return {
           document,
