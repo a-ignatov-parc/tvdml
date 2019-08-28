@@ -1,7 +1,11 @@
 {
   "extends": ["airbnb", "prettier"],
   "rules": {
-    "max-len": ["error", 80],
+    "max-len": ["error", {
+      "code": 80,
+      "ignoreStrings": true,
+      "ignoreTemplateLiterals": true
+    }],
     "no-console": ["error", {
       "allow": ["info", "warn", "error"]
     }],
