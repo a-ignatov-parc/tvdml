@@ -87,14 +87,32 @@ export function render(renderFactory) {
     .pipe(
       passthrough((payload = {}) => {
         let { document, route } = payload;
-        if (document) {
-          // If we received dismissed document it means that user pressed menu
-          // button and our pipeline is canceled. Now we must silently succeed
-          // the rest of the pipeline without rendering anything.
-          if (document.possiblyDismissedByUser) {
-            return null;
+
+        // If we received dismissed document it means that user pressed menu
+        // button and our pipeline is canceled. Now we must silently succeed
+        // the rest of the pipeline without rendering anything.
+        if (document && document.possiblyDismissedByUser) {
+          return null;
+        }
+
+        // get a possible corresponding menu item
+        let menuItem;
+        if (mainMenu) {
+          const items = mainMenu.getElementsByTagName('menuItem');
+          for (let i = 0; i < items.length; i += 1) {
+            const item = items.item(i);
+            if (item.getAttribute('route') === route) {
+              menuItem = item;
+              if (!document) {
+                document = mainMenuDoc.getDocument(item);
+              }
+              break;
+            }
           }
-        } else {
+        }
+
+        // we have to always end up with a valid document
+        if (!document) {
           if (!route && navigationDocument.documents.length === 0) {
             route = 'main';
           }
@@ -103,19 +121,10 @@ export function render(renderFactory) {
           document.prevRouteDocument = mainMenu
             ? mainMenu.ownerDocument
             : getLastDocument();
-        }
 
-        // does the route correspond to a menu item?
-        if (mainMenu) {
-          const menuItems = mainMenu.getElementsByTagName('menuItem');
-          for (let i = 0; i < menuItems.length; i += 1) {
-            const menuItem = menuItems.item(i);
-            if (menuItem.getAttribute('route') === route) {
-              mainMenuDoc.setSelectedItem(menuItem);
-              mainMenuDoc.setDocument(document, menuItem);
-              document.isAttached = true;
-              break;
-            }
+          if (menuItem) {
+            mainMenuDoc.setDocument(document, menuItem);
+            document.isAttached = true;
           }
         }
 
@@ -134,8 +143,13 @@ export function render(renderFactory) {
         const element = renderFactory(payload);
         ReactTVML.render(element, document);
 
+        // set selection
+        if (menuItem) {
+          setTimeout(() => mainMenuDoc.setSelectedItem(menuItem), 1);
+        }
+
         // grab the main menu
-        if (route === 'main') {
+        if (route === 'main' && !mainMenu) {
           const list = document.documentElement.getElementsByTagName('menuBar');
           if (list.length === 1) {
             mainMenu = list.item(0);

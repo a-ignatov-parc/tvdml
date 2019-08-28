@@ -274,8 +274,8 @@
           L = r.cancelDeferredCallback,
           H = r.shouldYield,
           Q = r.setTimeout,
-          $ = r.clearTimeout,
-          V = r.noTimeout,
+          V = r.clearTimeout,
+          $ = r.noTimeout,
           q = r.schedulePassiveEffects,
           Y = r.cancelPassiveEffects,
           Z = r.now,
@@ -408,7 +408,7 @@
             !0
           );
         }
-        function $e(e, t, n) {
+        function Ve(e, t, n) {
           var r = e.stateNode;
           r || a('169'),
             n
@@ -420,7 +420,7 @@
               : De(je),
             Ie(je, n);
         }
-        var Ve = null,
+        var $e = null,
           qe = null;
         function Ye(e) {
           return function(t) {
@@ -1134,8 +1134,8 @@
           Lt = 128,
           Ht = u.ReactCurrentDispatcher,
           Qt = 0,
-          $t = null,
           Vt = null,
+          $t = null,
           qt = null,
           Yt = null,
           Zt = null,
@@ -1158,7 +1158,7 @@
         function on(e, t, n, r, i, l) {
           if (
             ((Qt = l),
-            ($t = t),
+            (Vt = t),
             (qt = null !== e ? e.memoizedState : null),
             (Ht.current = null === qt ? bn : Tn),
             (t = n(r, i)),
@@ -1169,7 +1169,7 @@
                 (nn += 1),
                 (qt = null !== e ? e.memoizedState : null),
                 (Gt = Yt),
-                (Xt = Zt = Vt = null),
+                (Xt = Zt = $t = null),
                 (Ht.current = Tn),
                 (t = n(r, i));
             } while (en);
@@ -1177,13 +1177,13 @@
           }
           return (
             (Ht.current = yn),
-            ((e = $t).memoizedState = Yt),
+            ((e = Vt).memoizedState = Yt),
             (e.expirationTime = Kt),
             (e.updateQueue = Xt),
             (e.effectTag |= Jt),
-            (e = null !== Vt && null !== Vt.next),
+            (e = null !== $t && null !== $t.next),
             (Qt = 0),
-            (Gt = Zt = Yt = qt = Vt = $t = null),
+            (Gt = Zt = Yt = qt = $t = Vt = null),
             (Kt = 0),
             (Xt = null),
             (Jt = 0),
@@ -1194,7 +1194,7 @@
         function an() {
           (Ht.current = yn),
             (Qt = 0),
-            (Gt = Zt = Yt = qt = Vt = $t = null),
+            (Gt = Zt = Yt = qt = $t = Vt = null),
             (Kt = 0),
             (Xt = null),
             (Jt = 0),
@@ -1214,17 +1214,17 @@
         }
         function cn() {
           if (null !== Gt)
-            (Gt = (Zt = Gt).next), (qt = null !== (Vt = qt) ? Vt.next : null);
+            (Gt = (Zt = Gt).next), (qt = null !== ($t = qt) ? $t.next : null);
           else {
             null === qt && a('310');
             var e = {
-              memoizedState: (Vt = qt).memoizedState,
-              baseState: Vt.baseState,
-              queue: Vt.queue,
-              baseUpdate: Vt.baseUpdate,
+              memoizedState: ($t = qt).memoizedState,
+              baseState: $t.baseState,
+              queue: $t.queue,
+              baseUpdate: $t.baseUpdate,
               next: null,
             };
-            (Zt = null === Zt ? (Yt = e) : (Zt.next = e)), (qt = Vt.next);
+            (Zt = null === Zt ? (Yt = e) : (Zt.next = e)), (qt = $t.next);
           }
           return Zt;
         }
@@ -1304,8 +1304,8 @@
           var i = cn();
           r = void 0 === r ? null : r;
           var l = void 0;
-          if (null !== Vt) {
-            var o = Vt.memoizedState;
+          if (null !== $t) {
+            var o = $t.memoizedState;
             if (((l = o.destroy), null !== r && ln(r, o.deps)))
               return void dn(Ot, n, l, r);
           }
@@ -1330,7 +1330,7 @@
         function vn(e, t, n) {
           25 > nn || a('301');
           var r = e.alternate;
-          if (e === $t || (null !== r && r === $t))
+          if (e === Vt || (null !== r && r === Vt))
             if (
               ((en = !0),
               (e = {
@@ -1429,7 +1429,7 @@
                   dispatch: null,
                   lastRenderedReducer: e,
                   lastRenderedState: t,
-                }).dispatch = vn.bind(null, $t, e)),
+                }).dispatch = vn.bind(null, Vt, e)),
                 [r.memoizedState, e]
               );
             },
@@ -1446,7 +1446,7 @@
                   dispatch: null,
                   lastRenderedReducer: sn,
                   lastRenderedState: e,
-                }).dispatch = vn.bind(null, $t, e)),
+                }).dispatch = vn.bind(null, Vt, e)),
                 [t.memoizedState, e]
               );
             },
@@ -1745,7 +1745,7 @@
         function Fn(e, t, n, r, i, l) {
           jn(e, t);
           var o = 0 != (64 & t.effectTag);
-          if (!r && !o) return i && $e(t, n, !1), Ln(e, t, l);
+          if (!r && !o) return i && Ve(t, n, !1), Ln(e, t, l);
           (r = t.stateNode), (zn.current = t);
           var a =
             o && 'function' != typeof n.getDerivedStateFromError
@@ -1758,7 +1758,7 @@
                 (t.child = St(t, null, a, l)))
               : Dn(e, t, a, l),
             (t.memoizedState = r.state),
-            i && $e(t, n, !0),
+            i && Ve(t, n, !0),
             t.child
           );
         }
@@ -2172,8 +2172,8 @@
           a('156');
         }
         var Qn = { current: null },
-          $n = null,
           Vn = null,
+          $n = null,
           qn = null;
         function Yn(e, t) {
           var n = e.type._context;
@@ -2188,7 +2188,7 @@
             G ? (e._currentValue = t) : (e._currentValue2 = t);
         }
         function Gn(e, t) {
-          ($n = e), (qn = Vn = null);
+          (Vn = e), (qn = $n = null);
           var n = e.contextDependencies;
           null !== n && n.expirationTime >= t && (Un = !0),
             (e.contextDependencies = null);
@@ -2201,11 +2201,11 @@
               (('number' == typeof t && 1073741823 !== t) ||
                 ((qn = e), (t = 1073741823)),
               (t = { context: e, observedBits: t, next: null }),
-              null === Vn
-                ? (null === $n && a('308'),
-                  (Vn = t),
-                  ($n.contextDependencies = { first: t, expirationTime: 0 }))
-                : (Vn = Vn.next = t)),
+              null === $n
+                ? (null === Vn && a('308'),
+                  ($n = t),
+                  (Vn.contextDependencies = { first: t, expirationTime: 0 }))
+                : ($n = $n.next = t)),
             G ? e._currentValue : e._currentValue2
           );
         }
@@ -2858,7 +2858,7 @@
           var r = t.value;
           return (
             (n.callback = function() {
-              Vi(r), kr(e, t);
+              $i(r), kr(e, t);
             }),
             n
           );
@@ -2929,8 +2929,8 @@
           Lr = -1,
           Hr = !1,
           Qr = null,
-          $r = !1,
-          Vr = null,
+          Vr = !1,
+          $r = null,
           qr = null,
           Yr = null,
           Zr = null;
@@ -3096,11 +3096,11 @@
               }
               'function' == typeof i ? i(l) : (i.current = l);
             }
-            512 & n && (Vr = e), (Qr = Qr.nextEffect);
+            512 & n && ($r = e), (Qr = Qr.nextEffect);
           }
         }
         function ei(e, t) {
-          Yr = qr = Vr = null;
+          Yr = qr = $r = null;
           var n = vi;
           vi = !0;
           do {
@@ -3125,7 +3125,7 @@
           null !== qr && Y(qr), null !== Yr && Yr();
         }
         function ni(e, t) {
-          ($r = Wr = !0), e.current === t && a('177');
+          (Vr = Wr = !0), e.current === t && a('177');
           var n = e.pendingCommitExpirationTime;
           0 === n && a('261'), (e.pendingCommitExpirationTime = 0);
           var r = t.expirationTime,
@@ -3205,7 +3205,7 @@
               oi(Qr, l),
               null !== Qr && (Qr = Qr.nextEffect));
           }
-          if (null !== r && null !== Vr) {
+          if (null !== r && null !== $r) {
             var u = ei.bind(null, e, r);
             (qr = o.unstable_runWithPriority(
               o.unstable_NormalPriority,
@@ -3215,8 +3215,8 @@
             )),
               (Yr = u);
           }
-          (Wr = $r = !1),
-            'function' == typeof Ve && Ve(t.stateNode),
+          (Wr = Vr = !1),
+            'function' == typeof $e && $e(t.stateNode),
             (n = t.expirationTime),
             0 === (t = (t = t.childExpirationTime) > n ? t : n) && (Zr = null),
             (function(e, t) {
@@ -3394,7 +3394,7 @@
               if (t) for (; null !== Fr && !Ai(); ) Fr = ii(Fr);
               else for (; null !== Fr; ) Fr = ii(Fr);
             } catch (t) {
-              if (((qn = Vn = $n = null), an(), null === Fr)) (i = !0), Vi(t);
+              if (((qn = $n = Vn = null), an(), null === Fr)) (i = !0), $i(t);
               else {
                 null === Fr && a('271');
                 var l = Fr,
@@ -3516,12 +3516,12 @@
                   Fr = ri(l);
                   continue;
                 }
-                (i = !0), Vi(t);
+                (i = !0), $i(t);
               }
             }
             break;
           }
-          if (((Wr = !1), (Or.current = n), (qn = Vn = $n = null), an(), i))
+          if (((Wr = !1), (Or.current = n), (qn = $n = Vn = null), an(), i))
             (Ar = null), (e.finishedWork = null);
           else if (null !== Fr) e.finishedWork = null;
           else {
@@ -3582,7 +3582,7 @@
           var n = o.unstable_getCurrentPriorityLevel(),
             r = void 0;
           if (0 == (1 & t.mode)) r = 1073741823;
-          else if (Wr && !$r) r = Br;
+          else if (Wr && !Vr) r = Br;
           else {
             switch (n) {
               case o.unstable_ImmediatePriority:
@@ -3660,7 +3660,7 @@
           null !== (e = si(e, t)) &&
             (!Wr && 0 !== Br && t > Br && Gr(),
             it(e, t),
-            (Wr && !$r && Ar === e) || Mi(e, e.expirationTime),
+            (Wr && !Vr && Ar === e) || Mi(e, e.expirationTime),
             zi > Ni && ((zi = 0), a('185')));
         }
         function di(e, t, n, r, i) {
@@ -3824,22 +3824,22 @@
           if ((vi && a('245'), (vi = !0), n)) {
             var r = e.finishedWork;
             null !== r
-              ? $i(e, r, t)
+              ? Vi(e, r, t)
               : ((e.finishedWork = null),
-                (r = e.timeoutHandle) !== V && ((e.timeoutHandle = V), $(r)),
+                (r = e.timeoutHandle) !== $ && ((e.timeoutHandle = $), V(r)),
                 li(e, n),
                 null !== (r = e.finishedWork) &&
-                  (Ai() ? (e.finishedWork = r) : $i(e, r, t)));
+                  (Ai() ? (e.finishedWork = r) : Vi(e, r, t)));
           } else
             null !== (r = e.finishedWork)
-              ? $i(e, r, t)
+              ? Vi(e, r, t)
               : ((e.finishedWork = null),
-                (r = e.timeoutHandle) !== V && ((e.timeoutHandle = V), $(r)),
+                (r = e.timeoutHandle) !== $ && ((e.timeoutHandle = $), V(r)),
                 li(e, n),
-                null !== (r = e.finishedWork) && $i(e, r, t));
+                null !== (r = e.finishedWork) && Vi(e, r, t));
           vi = !1;
         }
-        function $i(e, t, n) {
+        function Vi(e, t, n) {
           var r = e.firstBatch;
           if (
             null !== r &&
@@ -3856,7 +3856,7 @@
               },
             );
         }
-        function Vi(e) {
+        function $i(e) {
           null === yi && a('246'),
             (yi.expirationTime = 0),
             xi || ((xi = !0), (ki = e));
@@ -3929,7 +3929,7 @@
                 didError: !1,
                 pendingCommitExpirationTime: 0,
                 finishedWork: null,
-                timeoutHandle: V,
+                timeoutHandle: $,
                 context: null,
                 pendingContext: null,
                 hydrate: n,
@@ -4055,7 +4055,7 @@
               if (t.isDisabled || !t.supportsFiber) return !0;
               try {
                 var n = t.inject(e);
-                (Ve = Ye(function(e) {
+                ($e = Ye(function(e) {
                   return t.onCommitFiberRoot(n, e);
                 })),
                   (qe = Ye(function(e) {
@@ -4721,8 +4721,7 @@ object-assign
         return h[e].push(t), t;
       }
       function y(e, t) {
-        console.info(`broadcast: ${e}`, t),
-          (h[e] || []).forEach(e => e.sink(t));
+        (h[e] || []).forEach(e => e.sink(t));
       }
       Object.keys(g).forEach(e => {
         const t = g[e],
@@ -5147,18 +5146,18 @@ object-assign
           },
         },
         Q = Object.keys(H),
-        $ = Q.map(e => ({ name: e, method: navigationDocument[e] })).reduce(
+        V = Q.map(e => ({ name: e, method: navigationDocument[e] })).reduce(
           (e, { name: t, method: n }) => ((e[t] = n), e),
           {},
         );
-      const V = {},
+      const $ = {},
         q = { NOT_FOUND: new c('Not found') };
       function Y(e) {
         if (!e) throw new Error('Route handler need route to process');
-        if (V[e])
+        if ($[e])
           throw new Error(`Handler for "${e.toString()}" is already specified`);
         return (
-          (V[e] = d({
+          ($[e] = d({
             onSinkStepEnd: (e, t, n) => (
               n.documents || (n.documents = []),
               t &&
@@ -5185,18 +5184,18 @@ object-assign
               t
             ),
           })),
-          V[e]
+          $[e]
         );
       }
       function Z(e) {
         if (!e) throw new Error('Route handler need route to process');
-        if (!V[e]) throw new Error(`Handler for "${e}" isn't specified`);
-        delete V[e];
+        if (!$[e]) throw new Error(`Handler for "${e}" isn't specified`);
+        delete $[e];
       }
       function G(e, t, n = !1) {
         if (!App.launched)
           throw new Error("Can't process navigation before app is launched");
-        const r = V[e];
+        const r = $[e];
         return r
           ? r.sink({ route: e, navigation: t, redirect: n })
           : (console.error(`Unable to resolve route "${e.toString()}"`),
@@ -5264,42 +5263,49 @@ object-assign
         return p()
           .pipe(
             m((t = {}) => {
-              let { document: n, route: r } = t;
-              if (n) {
-                if (n.possiblyDismissedByUser) return null;
-              } else
-                r || 0 !== navigationDocument.documents.length || (r = 'main'),
-                  ((n = re()).route = r),
-                  (n.prevRouteDocument = ee ? ee.ownerDocument : ae());
+              let n,
+                { document: r, route: i } = t;
+              if (r && r.possiblyDismissedByUser) return null;
               if (ee) {
                 const e = ee.getElementsByTagName('menuItem');
                 for (let t = 0; t < e.length; t += 1) {
-                  const i = e.item(t);
-                  if (i.getAttribute('route') === r) {
-                    te.setSelectedItem(i),
-                      te.setDocument(n, i),
-                      (n.isAttached = !0);
+                  const l = e.item(t);
+                  if (l.getAttribute('route') === i) {
+                    (n = l), r || (r = te.getDocument(l));
                     break;
                   }
                 }
               }
-              if (!n.isAttached) {
+              if (
+                (r ||
+                  (i ||
+                    0 !== navigationDocument.documents.length ||
+                    (i = 'main'),
+                  ((r = re()).route = i),
+                  (r.prevRouteDocument = ee ? ee.ownerDocument : ae()),
+                  n && (te.setDocument(r, n), (r.isAttached = !0))),
+                !r.isAttached)
+              ) {
                 const e = t.redirect && ae();
                 e
-                  ? navigationDocument.replaceDocument(n, e)
-                  : navigationDocument.pushDocument(n),
-                  (n.isAttached = !0);
+                  ? navigationDocument.replaceDocument(r, e)
+                  : navigationDocument.pushDocument(r),
+                  (r.isAttached = !0);
               }
-              const i = e(t);
-              if ((W.render(i, n), 'main' === r)) {
-                const e = n.documentElement.getElementsByTagName('menuBar');
+              const l = e(t);
+              if (
+                (W.render(l, r),
+                n && setTimeout(() => te.setSelectedItem(n), 1),
+                'main' === i && !ee)
+              ) {
+                const e = r.documentElement.getElementsByTagName('menuBar');
                 1 === e.length
                   ? ((ee = e.item(0)), (te = ee.getFeature('MenuBarDocument')))
                   : console.warn(
                       'You should render a menuBar in the main document',
                     );
               }
-              return { document: n, redirect: !1 };
+              return { document: r, redirect: !1 };
             }),
           )
           .pipe(m(() => u(J)));
@@ -5382,7 +5388,7 @@ object-assign
           if (F) throw new Error('Hooks already enabled');
           Q.forEach(e => {
             navigationDocument[e] = function(...t) {
-              return H[e] && H[e].apply(this, t), $[e].apply(this, t);
+              return H[e] && H[e].apply(this, t), V[e].apply(this, t);
             };
           }),
             (F = !0);
